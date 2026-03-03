@@ -40,136 +40,159 @@ const LS_KEY              = 'chocoGame_highScore';
 const LAST_SECONDS        = 5;
 const RARE_CHANCE         = 0.08;
 
-// スコア基本値
 const BROWN_CHOCO_SCORE   = 1;
 const PURPLE_CHOCO_SCORE  = 2;
-const CROWN_SCORE         = 5;
 const HAT_SCORE           = 3;
 const HELD_SCORE          = 3;
 
-// 出現比率（合計 1.0）
 const SPAWN_RATIO_BROWN    = 0.45;
 const SPAWN_RATIO_PURPLE   = 0.10;
 const SPAWN_RATIO_DUMBBELL = 0.18;
 const SPAWN_RATIO_HAT      = 0.12;
 // HELD = 残り 0.15
 
-// 王冠
-const CROWN_SPAWN_MIN_SEC  = 5;
-const CROWN_SPAWN_MAX_SEC  = 20;
-const CROWN_W              = 40;
-const CROWN_H              = 26;
-
-// 帽子・手持ち当たり判定
 const HAT_ITEM_W           = 36;
 const HAT_ITEM_H           = 36;
 const HELD_ITEM_W          = 36;
 const HELD_ITEM_H          = 36;
 
-// 音響
 const BGM_BPM              = 150;
 const BGM_BPM_FAST         = 195;
 const BGM_VOL_NORM         = 0.40;
 const BGM_VOL_LAST         = 0.65;
 
 // ================================================================
-//  アイテム定義
+//  カラーバリエーション（5色）
 // ================================================================
-const HAT_TYPES  = ['cap', 'beanie', 'top_hat', 'wizard', 'helmet'];
-const HELD_TYPES = [
-  'controller', 'tote', 'backpack', 'suitcase', 'box',
-  'bicycle', 'bobblehead', 'icecream',
-  'camera', 'umbrella', 'sword_toy', 'book', 'flower',
-  'balloon', 'smartphone', 'flashlight', 'microphone',
-  'game_console', 'plush', 'donut', 'pizza', 'cup',
-  'paintbrush', 'guitar', 'tennis_racket', 'baseball',
-  'key', 'treasure_map', 'robot', 'star_wand',
+const COLOR_VARIANTS = [
+  {id:'red',   hex:'#ff4d4d', name:'赤'},
+  {id:'blue',  hex:'#4d79ff', name:'青'},
+  {id:'green', hex:'#4dff88', name:'緑'},
+  {id:'black', hex:'#555555', name:'黒'},
+  {id:'gold',  hex:'#FFD700', name:'金'},
 ];
-const ALL_HAT_KEYS = [...HAT_TYPES, 'crown']; // 6種
-
-const HAT_NAMES = {
-  cap: 'キャップ', beanie: 'ニット帽', top_hat: 'シルクハット',
-  wizard: '魔法帽', helmet: 'ヘルメット', crown: '王冠',
-};
-const HELD_NAMES = {
-  controller: 'コントローラー', tote: 'トートバッグ', backpack: 'リュック',
-  suitcase: 'スーツケース', box: 'ハコ',
-  bicycle: '自転車', bobblehead: 'ボブルヘッド', icecream: 'アイスクリーム',
-  camera: 'カメラ', umbrella: 'かさ', sword_toy: 'おもちゃの剣',
-  book: 'ほん', flower: 'はな', balloon: 'ふうせん',
-  smartphone: 'スマホ', flashlight: 'かいちゅう電灯', microphone: 'マイク',
-  game_console: 'ゲーム機', plush: 'ぬいぐるみ', donut: 'ドーナツ',
-  pizza: 'ピザ', cup: 'コップ', paintbrush: 'えふで',
-  guitar: 'ギター', tennis_racket: 'テニスラケット', baseball: 'やきゅうボール',
-  key: 'かぎ', treasure_map: 'たからの地図', robot: 'ロボット', star_wand: 'ほしのつえ',
-};
+const COLOR_HEX  = Object.fromEntries(COLOR_VARIANTS.map(c=>[c.id,c.hex]));
+const COLOR_NAME = Object.fromEntries(COLOR_VARIANTS.map(c=>[c.id,c.name]));
 
 // ================================================================
-//  Lucky Item（日替わり）
+//  アイテム定義（18ベース × 5色 = 90種）
 // ================================================================
-const LUCKY_POOL = [...HAT_TYPES, ...HELD_TYPES]; // 35種
+const HAT_BASE_TYPES = [
+  'cap','beanie','top_hat','wizard','helmet','crown',
+  'crown_prince','crown_queen','beret','cowboy','ninja','pirate',
+  'chef','santa','bunny','flower','cat_ears','headband',
+];
+const HELD_BASE_TYPES = [
+  'controller','tote','backpack','suitcase','box',
+  'bicycle','bobblehead','icecream',
+  'camera','umbrella','book','flower','smartphone',
+  'flashlight','microphone','plush','donut','star_wand',
+];
 
+// 全IDリスト生成（各90種）
+const ALL_HAT_IDS = [];
+for (const base of HAT_BASE_TYPES) for (const cv of COLOR_VARIANTS) ALL_HAT_IDS.push(`${base}_${cv.id}`);
+const ALL_HELD_IDS = [];
+for (const base of HELD_BASE_TYPES) for (const cv of COLOR_VARIANTS) ALL_HELD_IDS.push(`${base}_${cv.id}`);
+
+const HAT_BASE_NAMES = {
+  cap:'キャップ', beanie:'ニット帽', top_hat:'シルクハット', wizard:'魔法帽', helmet:'ヘルメット',
+  crown:'王冠', crown_prince:'王子冠', crown_queen:'女王冠', beret:'ベレー帽', cowboy:'カウボーイ帽',
+  ninja:'忍者頭巾', pirate:'海賊帽', chef:'シェフ帽', santa:'サンタ帽', bunny:'うさぎ耳',
+  flower:'花かんむり', cat_ears:'猫耳', headband:'ヘアバンド',
+};
+const HELD_BASE_NAMES = {
+  controller:'コントローラー', tote:'トートバッグ', backpack:'リュック',
+  suitcase:'スーツケース', box:'ハコ', bicycle:'自転車', bobblehead:'ボブルヘッド',
+  icecream:'アイス', camera:'カメラ', umbrella:'かさ', book:'ほん',
+  flower:'はな', smartphone:'スマホ', flashlight:'かいちゅう電灯',
+  microphone:'マイク', plush:'ぬいぐるみ', donut:'ドーナツ', star_wand:'ほしのつえ',
+};
+
+function parseItemId(id) {
+  for (const cv of COLOR_VARIANTS) {
+    if (id.endsWith('_'+cv.id)) return {base:id.slice(0,-(cv.id.length+1)), colorId:cv.id};
+  }
+  return {base:id, colorId:null};
+}
+function getItemName(id) {
+  const {base, colorId} = parseItemId(id);
+  const bn = HAT_BASE_NAMES[base] || HELD_BASE_NAMES[base] || base;
+  return colorId ? `${bn}(${COLOR_NAME[colorId]||colorId})` : bn;
+}
+
+// ================================================================
+//  Lucky Item（日替わり・IDで一致判定）
+// ================================================================
+const ALL_ITEM_IDS = [...ALL_HAT_IDS, ...ALL_HELD_IDS]; // 180種
 function getTodayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function hashStringToInt(str) {
   let h = 0;
-  for (let i = 0; i < str.length; i++) h = ((h * 31) + str.charCodeAt(i)) | 0;
+  for (let i = 0; i < str.length; i++) h = ((h*31)+str.charCodeAt(i))|0;
   return Math.abs(h);
 }
 function selectLuckyItem() {
-  return LUCKY_POOL[hashStringToInt(getTodayKey()) % LUCKY_POOL.length];
+  return ALL_ITEM_IDS[hashStringToInt(getTodayKey()) % ALL_ITEM_IDS.length];
 }
 const luckyItem = selectLuckyItem();
-function getLuckyItemName() {
-  return HAT_NAMES[luckyItem] || HELD_NAMES[luckyItem] || luckyItem;
+
+// ================================================================
+//  色ユーティリティ
+// ================================================================
+function shadeColor(hex, amt) {
+  const cl = v => Math.max(0,Math.min(255,v));
+  const r=cl(parseInt(hex.slice(1,3),16)+amt);
+  const g=cl(parseInt(hex.slice(3,5),16)+amt);
+  const b=cl(parseInt(hex.slice(5,7),16)+amt);
+  return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
 }
 
 // ================================================================
 //  スコア計算
 // ================================================================
-function calculateScore(itemType, subType, variant) {
-  if (itemType === 'crown') return CROWN_SCORE;
-  const base = { brown_choco: BROWN_CHOCO_SCORE, purple_choco: PURPLE_CHOCO_SCORE, hat: HAT_SCORE, held: HELD_SCORE }[itemType] || 0;
+function calculateScore(cat, id, variant) {
+  if (cat==='choco_brown') return BROWN_CHOCO_SCORE;
+  if (cat==='choco_purple') return PURPLE_CHOCO_SCORE;
+  const base = (cat==='hat') ? HAT_SCORE : HELD_SCORE;
   let mult = 1;
-  if (variant === 'rare') mult *= 2;
-  if (subType && subType === luckyItem) mult *= 2;
+  if (variant==='rare') mult *= 2;
+  if (id && id===luckyItem) mult *= 2;
   return base * mult;
 }
 
 // ================================================================
-//  図鑑システム v2
+//  図鑑システム v3
 // ================================================================
-const COLLECTION_KEY = 'collection_v2';
+const COLLECTION_KEY = 'collection_v3';
 
 function makeEmptyCollection() {
-  const hats = {};
-  for (const k of ALL_HAT_KEYS) hats[k] = { normal: 0, rare: 0 };
-  const held = {};
-  for (const k of HELD_TYPES) held[k] = { normal: 0, rare: 0 };
-  return { version: 2, hats, held, meta: { plays: 0, bestScore: 0 } };
+  const hats = {}; for (const id of ALL_HAT_IDS) hats[id]={normal:0,rare:0};
+  const held = {}; for (const id of ALL_HELD_IDS) held[id]={normal:0,rare:0};
+  return {version:3, hats, held, meta:{plays:0, bestScore:0, fullCompleteOnce:false}};
 }
 function loadCollection() {
   try {
     const raw = localStorage.getItem(COLLECTION_KEY);
     if (raw) {
       const d = JSON.parse(raw);
-      if (d.version === 2) {
-        if (!d.hats) d.hats = {};
-        if (!d.held) d.held = {};
-        if (!d.meta) d.meta = { plays: 0, bestScore: 0 };
-        for (const k of ALL_HAT_KEYS) if (!d.hats[k]) d.hats[k] = { normal: 0, rare: 0 };
-        for (const k of HELD_TYPES)   if (!d.held[k]) d.held[k] = { normal: 0, rare: 0 };
+      if (d.version===3) {
+        if (!d.hats) d.hats={};
+        if (!d.held) d.held={};
+        if (!d.meta) d.meta={plays:0,bestScore:0,fullCompleteOnce:false};
+        if (d.meta.fullCompleteOnce===undefined) d.meta.fullCompleteOnce=false;
+        for (const id of ALL_HAT_IDS)  if (!d.hats[id]) d.hats[id]={normal:0,rare:0};
+        for (const id of ALL_HELD_IDS) if (!d.held[id]) d.held[id]={normal:0,rare:0};
         return d;
       }
     }
-  } catch (e) {}
+    // v2からv3への移行: IDベースが異なるためリセット
+  } catch(e) {}
   return makeEmptyCollection();
 }
-function saveCollection() {
-  localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection));
-}
+function saveCollection() { localStorage.setItem(COLLECTION_KEY, JSON.stringify(collection)); }
 let collection = loadCollection();
 
 // ================================================================
@@ -186,7 +209,7 @@ const BGM_NOTES = [
 //  Canvas
 // ================================================================
 const canvas = document.getElementById('gameCanvas');
-canvas.width = CANVAS_W; canvas.height = CANVAS_H;
+canvas.width=CANVAS_W; canvas.height=CANVAS_H;
 const ctx = canvas.getContext('2d');
 
 // ================================================================
@@ -197,15 +220,15 @@ let bgmSchedulerTimer=null, bgmNoteIndex=0, bgmNextTime=0, soundOn=true;
 
 function initAudio() {
   if (audioCtx) return;
-  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  masterGain = audioCtx.createGain(); masterGain.gain.value=0.25; masterGain.connect(audioCtx.destination);
-  bgmGain = audioCtx.createGain(); bgmGain.gain.value=BGM_VOL_NORM; bgmGain.connect(masterGain);
-  seGain  = audioCtx.createGain(); seGain.gain.value=1.0; seGain.connect(masterGain);
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  masterGain=audioCtx.createGain(); masterGain.gain.value=0.25; masterGain.connect(audioCtx.destination);
+  bgmGain=audioCtx.createGain(); bgmGain.gain.value=BGM_VOL_NORM; bgmGain.connect(masterGain);
+  seGain=audioCtx.createGain(); seGain.gain.value=1.0; seGain.connect(masterGain);
 }
 function scheduleOneBGMNote(ni, st) {
-  const [freq, beats] = BGM_NOTES[ni];
-  const isFast = (timeLeft<=LAST_SECONDS && gameState==='playing');
-  const dur = (60/(isFast?BGM_BPM_FAST:BGM_BPM)/2)*beats;
+  const [freq,beats]=BGM_NOTES[ni];
+  const isFast=(timeLeft<=LAST_SECONDS&&gameState==='playing');
+  const dur=(60/(isFast?BGM_BPM_FAST:BGM_BPM)/2)*beats;
   const osc=audioCtx.createOscillator(), g=audioCtx.createGain();
   osc.connect(g); g.connect(bgmGain); osc.type='square'; osc.frequency.value=freq;
   g.gain.setValueAtTime(0.3,st); g.gain.exponentialRampToValueAtTime(0.001,st+dur*0.82);
@@ -213,8 +236,8 @@ function scheduleOneBGMNote(ni, st) {
 }
 function scheduleBGMNotes() {
   if (!audioCtx||!soundOn||gameState!=='playing') return;
-  bgmGain.gain.setTargetAtTime(timeLeft<=LAST_SECONDS?BGM_VOL_LAST:BGM_VOL_NORM, audioCtx.currentTime, 0.05);
-  while (bgmNextTime < audioCtx.currentTime+0.12) {
+  bgmGain.gain.setTargetAtTime(timeLeft<=LAST_SECONDS?BGM_VOL_LAST:BGM_VOL_NORM,audioCtx.currentTime,0.05);
+  while (bgmNextTime<audioCtx.currentTime+0.12) {
     const dur=scheduleOneBGMNote(bgmNoteIndex,bgmNextTime);
     bgmNextTime+=dur; bgmNoteIndex=(bgmNoteIndex+1)%BGM_NOTES.length;
   }
@@ -240,27 +263,35 @@ function playSE(type) {
       osc.start(nt); osc.stop(nt+dur);
     });
   };
-  if (type==='chocolate')   tone([800,1200],0.08,0.15,'square',0.08);
+  if (type==='chocolate')       tone([800,1200],0.08,0.15,'square',0.08);
   else if (type==='purple_choco') tone([1200,1600],0.10,0.18,'square',0.10);
-  else if (type==='hat')    tone([600,900],0.07,0.18,'square',0.07);
-  else if (type==='held')   tone([750,950],0.07,0.18,'square',0.07);
-  else if (type==='rare')   tone([700,1050,1300],0.09,0.20,'square',0.09);
-  else if (type==='lucky')  tone([900,1100,1400,1700],0.10,0.22,'triangle',0.09);
-  else if (type==='new_item') tone([700,1000,1400],0.09,0.22,'square',0.10);
-  else if (type==='crown')  tone([800,1200,1600],0.07,0.22,'square',0.07);
-  else if (type==='dumbbell'){
+  else if (type==='hat')        tone([600,900],0.07,0.18,'square',0.07);
+  else if (type==='held')       tone([750,950],0.07,0.18,'square',0.07);
+  else if (type==='rare')       tone([700,1050,1300],0.09,0.20,'square',0.09);
+  else if (type==='lucky')      tone([900,1100,1400,1700],0.10,0.22,'triangle',0.09);
+  else if (type==='new_item')   tone([700,1000,1400],0.09,0.22,'square',0.10);
+  else if (type==='crown')      tone([800,1200,1600],0.07,0.22,'square',0.07);
+  else if (type==='dumbbell') {
     const osc=audioCtx.createOscillator(),g=audioCtx.createGain();
     osc.connect(g);g.connect(seGain);osc.type='square';
     osc.frequency.setValueAtTime(300,t);osc.frequency.linearRampToValueAtTime(120,t+0.2);
     g.gain.setValueAtTime(0.30,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.2);
     osc.start(t);osc.stop(t+0.2);
   } else if (type==='start') tone([400,800],0.15,0.20,'square',0.15);
-  else if (type==='gameover'){
+  else if (type==='gameover') {
     [523.25,392.00,261.63].forEach((freq,i)=>{
       const nt=t+i*0.13,osc=audioCtx.createOscillator(),g=audioCtx.createGain();
       osc.connect(g);g.connect(seGain);osc.type='square';osc.frequency.value=freq;
       g.gain.setValueAtTime(0.25,nt);g.gain.exponentialRampToValueAtTime(0.001,nt+0.11);
       osc.start(nt);osc.stop(nt+0.12);
+    });
+  } else if (type==='fullcomplete') {
+    // 上昇アルペジオ（長め）
+    [261.63,329.63,392.00,523.25,659.25,783.99,1046.50,1318.51].forEach((freq,i)=>{
+      const nt=t+i*0.11, osc=audioCtx.createOscillator(), g=audioCtx.createGain();
+      osc.connect(g);g.connect(seGain);osc.type='triangle';osc.frequency.value=freq;
+      g.gain.setValueAtTime(0.28,nt);g.gain.exponentialRampToValueAtTime(0.001,nt+0.45);
+      osc.start(nt);osc.stop(nt+0.46);
     });
   }
 }
@@ -271,12 +302,14 @@ function playSE(type) {
 let gameState='title', score=0, timeLeft=GAME_DURATION;
 let highScore=Number(localStorage.getItem(LS_KEY)||0);
 let lastTime=0, spawnTimer=0, timerBlinkTimer=0, timerBlinkVisible=true;
-let crownSpawnTime=0, crownSpawned=false, crownCollected=false;
-let crownFlashTimer=0, crownGetTimer=0;
 let screenFlashTimer=0, screenFlashColor='#FFFFFF';
 let specialPopupText='', specialPopupTimer=0;
-let sessionHats=[], sessionHeld=[], sessionCrown=false;
-let collectionTab='hats';
+let sessionHats=[], sessionHeld=[];
+let collectionTab='hats', collectionPage=0;
+
+// フルコンプリート演出
+let fullCompleteTimer=0, fullCompleteIsFirst=false, fullCompleteParticles=[];
+let fullCompleteRainbowTimer=0;
 
 /** @type {Array} */ let items=[];
 /** @type {Array} */ let popups=[];
@@ -289,7 +322,7 @@ const player={
   x:CANVAS_W/2, y:GROUND_Y,
   stunTimer:0, blinkTimer:0, blinkVisible:true,
   legAngle:0, legSwingDir:1, isMoving:false,
-  hasCrown:false, hatType:null, heldType:null,
+  hasCrown:false, hatBase:null, hatColorId:null, heldBase:null, heldColorId:null,
 };
 
 // ================================================================
@@ -322,13 +355,13 @@ function resetGame(){
   score=0; timeLeft=GAME_DURATION; items=[]; popups=[]; newPopups=[];
   spawnTimer=1/rand(SPAWN_RATE_MIN,SPAWN_RATE_MAX); lastTime=0;
   timerBlinkTimer=0; timerBlinkVisible=true;
-  crownSpawnTime=rand(CROWN_SPAWN_MIN_SEC,CROWN_SPAWN_MAX_SEC);
-  crownSpawned=false; crownCollected=false; crownFlashTimer=0; crownGetTimer=0;
   screenFlashTimer=0; specialPopupText=''; specialPopupTimer=0;
-  sessionHats=[]; sessionHeld=[]; sessionCrown=false;
+  fullCompleteTimer=0; fullCompleteParticles=[];
+  sessionHats=[]; sessionHeld=[];
   player.x=CANVAS_W/2; player.stunTimer=0; player.blinkTimer=0; player.blinkVisible=true;
   player.legAngle=0; player.legSwingDir=1; player.isMoving=false;
-  player.hasCrown=false; player.hatType=null; player.heldType=null;
+  player.hasCrown=false; player.hatBase=null; player.hatColorId=null;
+  player.heldBase=null; player.heldColorId=null;
   collection.meta.plays=(collection.meta.plays||0)+1; saveCollection();
   gameState='playing'; playSE('start'); playBGM();
 }
@@ -341,22 +374,25 @@ function tryStart(){
 // ================================================================
 function spawnItem(){
   const r=Math.random();
-  let type,subType=null,variant='normal';
-  if(r<SPAWN_RATIO_BROWN) type='brown_choco';
-  else if(r<SPAWN_RATIO_BROWN+SPAWN_RATIO_PURPLE) type='purple_choco';
-  else if(r<SPAWN_RATIO_BROWN+SPAWN_RATIO_PURPLE+SPAWN_RATIO_DUMBBELL) type='dumbbell';
-  else if(r<SPAWN_RATIO_BROWN+SPAWN_RATIO_PURPLE+SPAWN_RATIO_DUMBBELL+SPAWN_RATIO_HAT){
-    type='hat'; subType=HAT_TYPES[Math.floor(Math.random()*HAT_TYPES.length)];
-    variant=Math.random()<RARE_CHANCE?'rare':'normal';
+  if(r<SPAWN_RATIO_BROWN){
+    items.push({cat:'choco_brown',x:rand(60,CANVAS_W-60),y:-40,speed:rand(FALL_SPEED_MIN,FALL_SPEED_MAX)});
+  } else if(r<SPAWN_RATIO_BROWN+SPAWN_RATIO_PURPLE){
+    items.push({cat:'choco_purple',x:rand(60,CANVAS_W-60),y:-40,speed:rand(FALL_SPEED_MIN,FALL_SPEED_MAX)});
+  } else if(r<SPAWN_RATIO_BROWN+SPAWN_RATIO_PURPLE+SPAWN_RATIO_DUMBBELL){
+    items.push({cat:'dumbbell',x:rand(80,CANVAS_W-80),y:-40,speed:rand(FALL_SPEED_MIN,FALL_SPEED_MAX)});
+  } else if(r<SPAWN_RATIO_BROWN+SPAWN_RATIO_PURPLE+SPAWN_RATIO_DUMBBELL+SPAWN_RATIO_HAT){
+    const base=HAT_BASE_TYPES[Math.floor(Math.random()*HAT_BASE_TYPES.length)];
+    const colorId=COLOR_VARIANTS[Math.floor(Math.random()*COLOR_VARIANTS.length)].id;
+    const variant=Math.random()<RARE_CHANCE?'rare':'normal';
+    const id=`${base}_${colorId}`;
+    items.push({cat:'hat',base,colorId,variant,id,x:rand(60,CANVAS_W-60),y:-40,speed:rand(FALL_SPEED_MIN,FALL_SPEED_MAX)});
   } else {
-    type='held'; subType=HELD_TYPES[Math.floor(Math.random()*HELD_TYPES.length)];
-    variant=Math.random()<RARE_CHANCE?'rare':'normal';
+    const base=HELD_BASE_TYPES[Math.floor(Math.random()*HELD_BASE_TYPES.length)];
+    const colorId=COLOR_VARIANTS[Math.floor(Math.random()*COLOR_VARIANTS.length)].id;
+    const variant=Math.random()<RARE_CHANCE?'rare':'normal';
+    const id=`${base}_${colorId}`;
+    items.push({cat:'held',base,colorId,variant,id,x:rand(60,CANVAS_W-60),y:-40,speed:rand(FALL_SPEED_MIN,FALL_SPEED_MAX)});
   }
-  items.push({type,subType,variant,x:rand(60,CANVAS_W-60),y:-40,speed:rand(FALL_SPEED_MIN,FALL_SPEED_MAX)});
-}
-function spawnCrown(){
-  items.push({type:'crown',subType:null,variant:'normal',
-    x:rand(80,CANVAS_W-80),y:-CROWN_H,speed:rand(FALL_SPEED_MIN*0.65,FALL_SPEED_MAX*0.65)});
 }
 
 // ================================================================
@@ -365,25 +401,55 @@ function spawnCrown(){
 function checkCollision(item){
   const hw=PLAYER_W/2, hh=PLAYER_H/2;
   let iHW,iHH;
-  if(item.type==='brown_choco'||item.type==='purple_choco'){iHW=CHOCO_SIZE/2;iHH=CHOCO_SIZE/2;}
-  else if(item.type==='crown'){iHW=CROWN_W/2;iHH=CROWN_H/2;}
-  else if(item.type==='hat'){iHW=HAT_ITEM_W/2;iHH=HAT_ITEM_H/2;}
-  else if(item.type==='held'){iHW=HELD_ITEM_W/2;iHH=HELD_ITEM_H/2;}
+  if(item.cat==='choco_brown'||item.cat==='choco_purple'){iHW=CHOCO_SIZE/2;iHH=CHOCO_SIZE/2;}
+  else if(item.cat==='hat'){iHW=HAT_ITEM_W/2;iHH=HAT_ITEM_H/2;}
+  else if(item.cat==='held'){iHW=HELD_ITEM_W/2;iHH=HELD_ITEM_H/2;}
   else{iHW=DUMBBELL_BAR_W/2+DUMBBELL_BALL_R;iHH=DUMBBELL_BALL_R;}
   return Math.abs(player.x-item.x)<hw+iHW && Math.abs(player.y-item.y)<hh+iHH;
 }
 
 // ================================================================
-//  図鑑更新ヘルパー
+//  図鑑更新・フルコンプリート
 // ================================================================
-function collectHatHeld(category, key, variant, ix, iy){
-  const tbl=(category==='hats')?collection.hats:collection.held;
-  const entry=tbl[key];
+function collectItem(cat, id, variant, ix, iy){
+  const tbl=(cat==='hat')?collection.hats:collection.held;
+  if(!tbl[id]) tbl[id]={normal:0,rare:0};
+  const entry=tbl[id];
   const isNew=(entry.normal+entry.rare)===0;
   entry[variant]=(entry[variant]||0)+1;
   saveCollection();
   if(isNew) newPopups.push({x:ix,y:iy-30,timer:NEW_POPUP_DURATION});
+  checkFullComplete(isNew);
   return isNew;
+}
+function checkFullComplete(isNew){
+  if(!isNew) return;
+  const hatsDone=ALL_HAT_IDS.every(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0);
+  const heldDone=ALL_HELD_IDS.every(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0);
+  if(hatsDone&&heldDone){
+    fullCompleteIsFirst=!collection.meta.fullCompleteOnce;
+    if(!collection.meta.fullCompleteOnce){
+      collection.meta.fullCompleteOnce=true; saveCollection();
+    }
+    triggerFullComplete();
+  }
+}
+function triggerFullComplete(){
+  fullCompleteTimer=fullCompleteIsFirst?2.5:0.8;
+  fullCompleteRainbowTimer=0;
+  fullCompleteParticles=[];
+  if(fullCompleteIsFirst){
+    playSE('fullcomplete');
+    for(let i=0;i<40;i++){
+      const angle=(i/40)*Math.PI*2;
+      fullCompleteParticles.push({
+        x:CANVAS_W/2, y:CANVAS_H/2,
+        vx:Math.cos(angle)*rand(80,260), vy:Math.sin(angle)*rand(80,260),
+        color:['#FF0000','#FF8800','#FFFF00','#00FF88','#0088FF','#8800FF','#FF00FF'][i%7],
+        r:rand(5,11), life:rand(1.4,2.4),
+      });
+    }
+  }
 }
 function applySpecialEffect(isLucky,isRare){
   if(isLucky&&isRare){
@@ -405,7 +471,6 @@ function update(timestamp){
   if(lastTime===0){lastTime=timestamp;return;}
   const dt=Math.min((timestamp-lastTime)/1000,0.05); lastTime=timestamp;
 
-  // タイマー
   timeLeft-=dt;
   if(timeLeft<=0){
     timeLeft=0;
@@ -414,15 +479,21 @@ function update(timestamp){
     gameState='gameover'; stopBGM(); playSE('gameover'); return;
   }
 
-  // 点滅・演出タイマー
   if(timeLeft<=LAST_SECONDS){
     timerBlinkTimer+=dt;
     if(timerBlinkTimer>=0.25){timerBlinkTimer=0;timerBlinkVisible=!timerBlinkVisible;}
   } else {timerBlinkTimer=0;timerBlinkVisible=true;}
-  if(crownFlashTimer>0) crownFlashTimer=Math.max(0,crownFlashTimer-dt);
-  if(crownGetTimer>0)   crownGetTimer  =Math.max(0,crownGetTimer  -dt);
   if(screenFlashTimer>0) screenFlashTimer=Math.max(0,screenFlashTimer-dt);
   if(specialPopupTimer>0) specialPopupTimer=Math.max(0,specialPopupTimer-dt);
+  if(fullCompleteTimer>0){
+    fullCompleteTimer=Math.max(0,fullCompleteTimer-dt);
+    fullCompleteRainbowTimer+=dt;
+    for(const p of fullCompleteParticles){
+      p.x+=p.vx*dt; p.y+=p.vy*dt;
+      p.vy+=200*dt; // gravity
+      p.life=Math.max(0,p.life-dt);
+    }
+  }
 
   // スタン
   if(player.stunTimer>0){
@@ -450,8 +521,6 @@ function update(timestamp){
   // スポーン
   spawnTimer-=dt;
   if(spawnTimer<=0){spawnTimer=1/rand(SPAWN_RATE_MIN,SPAWN_RATE_MAX);spawnItem();}
-  const elapsed=GAME_DURATION-timeLeft;
-  if(!crownSpawned&&elapsed>=crownSpawnTime){crownSpawned=true;spawnCrown();}
 
   // アイテム更新
   for(let i=items.length-1;i>=0;i--){
@@ -460,51 +529,45 @@ function update(timestamp){
     if(item.y>CANVAS_H+40){items.splice(i,1);continue;}
     if(!checkCollision(item)) continue;
 
-    if(item.type==='brown_choco'){
+    if(item.cat==='choco_brown'){
       score+=BROWN_CHOCO_SCORE;
       popups.push({x:item.x,y:item.y,timer:POPUP_DURATION,text:'+1',color:'#FF8800'});
       playSE('chocolate');
 
-    } else if(item.type==='purple_choco'){
+    } else if(item.cat==='choco_purple'){
       score+=PURPLE_CHOCO_SCORE;
       popups.push({x:item.x,y:item.y,timer:POPUP_DURATION,text:'+2',color:'#CC88FF'});
       playSE('purple_choco');
 
-    } else if(item.type==='crown'){
-      score+=CROWN_SCORE;
-      crownCollected=true; player.hasCrown=true;
-      crownFlashTimer=0.2; crownGetTimer=0.8; sessionCrown=true;
-      popups.push({x:item.x,y:item.y,timer:POPUP_DURATION,text:'+5',color:'#FFD700'});
-      const crownNew=(collection.hats['crown'].normal+collection.hats['crown'].rare)===0;
-      collection.hats['crown'].normal+=1; saveCollection();
-      if(crownNew) newPopups.push({x:item.x,y:item.y-40,timer:NEW_POPUP_DURATION});
-      playSE('crown');
-
-    } else if(item.type==='hat'){
-      const gain=calculateScore('hat',item.subType,item.variant);
+    } else if(item.cat==='hat'){
+      const gain=calculateScore('hat',item.id,item.variant);
       score+=gain;
-      player.hatType=item.subType; sessionHats.push(item.subType);
-      const isLucky=item.subType===luckyItem, isRare=item.variant==='rare';
+      player.hatBase=item.base; player.hatColorId=item.colorId;
+      player.hasCrown=item.base.startsWith('crown');
+      if(player.hasCrown) playSE('crown');
+      sessionHats.push(item.id);
+      const isLucky=item.id===luckyItem, isRare=item.variant==='rare';
       const pColor=isRare?'#FFD700':(isLucky?'#FFFF44':'#88FF88');
       popups.push({x:item.x,y:item.y,timer:POPUP_DURATION,text:'+'+gain,color:pColor});
-      const isNew=collectHatHeld('hats',item.subType,item.variant,item.x,item.y);
+      const isNew=collectItem('hat',item.id,item.variant,item.x,item.y);
       if(isLucky||isRare) applySpecialEffect(isLucky,isRare);
       else if(isNew) playSE('new_item');
-      else playSE('hat');
+      else if(!player.hasCrown) playSE('hat');
 
-    } else if(item.type==='held'){
-      const gain=calculateScore('held',item.subType,item.variant);
+    } else if(item.cat==='held'){
+      const gain=calculateScore('held',item.id,item.variant);
       score+=gain;
-      player.heldType=item.subType; sessionHeld.push(item.subType);
-      const isLucky=item.subType===luckyItem, isRare=item.variant==='rare';
+      player.heldBase=item.base; player.heldColorId=item.colorId;
+      sessionHeld.push(item.id);
+      const isLucky=item.id===luckyItem, isRare=item.variant==='rare';
       const pColor=isRare?'#FFD700':(isLucky?'#FFFF44':'#AADDFF');
       popups.push({x:item.x,y:item.y,timer:POPUP_DURATION,text:'+'+gain,color:pColor});
-      const isNew=collectHatHeld('held',item.subType,item.variant,item.x,item.y);
+      const isNew=collectItem('held',item.id,item.variant,item.x,item.y);
       if(isLucky||isRare) applySpecialEffect(isLucky,isRare);
       else if(isNew) playSE('new_item');
       else playSE('held');
 
-    } else if(item.type==='dumbbell'&&player.stunTimer<=0){
+    } else if(item.cat==='dumbbell'&&player.stunTimer<=0){
       player.stunTimer=STUN_DURATION; player.blinkTimer=0; player.blinkVisible=true;
       playSE('dumbbell');
     }
@@ -534,11 +597,10 @@ function draw(){
     drawCollection();
   } else {
     for(const item of items){
-      if(item.type==='brown_choco') drawChocolate(item,false);
-      else if(item.type==='purple_choco') drawChocolate(item,true);
-      else if(item.type==='crown') drawCrownItem(item);
-      else if(item.type==='hat') drawFallingHat(item);
-      else if(item.type==='held') drawFallingHeld(item);
+      if(item.cat==='choco_brown') drawChocolate(item,false);
+      else if(item.cat==='choco_purple') drawChocolate(item,true);
+      else if(item.cat==='hat') drawFallingHat(item);
+      else if(item.cat==='held') drawFallingHeld(item);
       else drawDumbbell(item);
     }
     drawPlayer();
@@ -546,21 +608,11 @@ function draw(){
     drawPopups();
     drawNewPopups();
     drawSpecialPopup();
-    if(crownFlashTimer>0){
-      ctx.save();ctx.globalAlpha=(crownFlashTimer/0.2)*0.65;
-      ctx.fillStyle='#FFFFFF';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);ctx.restore();
-    }
     if(screenFlashTimer>0){
       ctx.save();ctx.globalAlpha=(screenFlashTimer/0.22)*0.40;
       ctx.fillStyle=screenFlashColor;ctx.fillRect(0,0,CANVAS_W,CANVAS_H);ctx.restore();
     }
-    if(crownGetTimer>0){
-      ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.globalAlpha=Math.min(1,crownGetTimer/0.25);
-      ctx.font='bold 54px sans-serif';ctx.shadowColor='#FF8800';ctx.shadowBlur=22;
-      ctx.fillStyle='#FFD700';ctx.fillText('👑 CROWN GET!',CANVAS_W/2,CANVAS_H/2);
-      ctx.shadowBlur=0;ctx.restore();
-    }
+    drawFullCompleteAnim();
     if(gameState==='gameover') drawGameOver();
   }
   drawSoundButton();
@@ -584,197 +636,281 @@ function drawBackground(){
 }
 
 // ────────────────────────────────────────────────────────────────
-//  帽子アイコン（(0,0)中心）
+//  帽子アイコン（原点中心）18種、col=メインカラー
 // ────────────────────────────────────────────────────────────────
-function drawHatIcon(type){
+function drawHatIcon(base, col){
   ctx.save();
-  switch(type){
+  const c=col||'#888888';
+  const d=shadeColor(c,-30); // darker
+  const l=shadeColor(c,35);  // lighter
+  switch(base){
     case 'cap':
-      ctx.fillStyle='#CC3300';
-      ctx.beginPath();ctx.ellipse(0,-2,18,11,0,Math.PI,0);ctx.fill();
-      ctx.fillStyle='#AA2200';
-      ctx.beginPath();ctx.ellipse(11,6,12,4,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#EE4400';ctx.fillRect(-18,4,18,4);
+      ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,-2,18,11,0,Math.PI,0);ctx.fill();
+      ctx.fillStyle=d;ctx.beginPath();ctx.ellipse(11,6,12,4,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=l;ctx.fillRect(-18,4,18,4);
       break;
     case 'beanie':
-      ctx.fillStyle='#4444CC';
-      ctx.beginPath();ctx.ellipse(0,0,19,13,0,Math.PI,0);ctx.fill();
-      ctx.fillStyle='#333399';ctx.fillRect(-19,-1,38,7);
-      ctx.strokeStyle='#6666FF';ctx.lineWidth=2.5;
+      ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,0,19,13,0,Math.PI,0);ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-19,-1,38,7);
+      ctx.strokeStyle='#FFFFFF66';ctx.lineWidth=2.5;
       for(let i=-12;i<=12;i+=6){ctx.beginPath();ctx.moveTo(i,0);ctx.lineTo(i,-10);ctx.stroke();}
       ctx.fillStyle='#FFAAAA';ctx.beginPath();ctx.arc(0,-16,5,0,Math.PI*2);ctx.fill();
       break;
     case 'top_hat':
-      ctx.fillStyle='#222222';ctx.fillRect(-13,-22,26,22);
-      ctx.fillStyle='#111111';ctx.fillRect(-13,-22,26,4);
-      ctx.fillStyle='#333333';ctx.fillRect(-20,0,40,6);
-      ctx.fillStyle='#444444';ctx.fillRect(-11,-20,4,18);
+      ctx.fillStyle=c;ctx.fillRect(-13,-22,26,22);
+      ctx.fillStyle=d;ctx.fillRect(-13,-22,26,4);
+      ctx.fillStyle=l;ctx.fillRect(-20,0,40,6);
+      ctx.fillStyle=d;ctx.fillRect(-11,-20,4,18);
       break;
     case 'wizard':
-      ctx.fillStyle='#6600AA';
-      ctx.beginPath();ctx.moveTo(0,-26);ctx.lineTo(-18,6);ctx.lineTo(18,6);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#8800CC';ctx.beginPath();ctx.ellipse(0,6,22,6,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#FFFF00';ctx.font='bold 11px sans-serif';
-      ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',0,-8);
+      ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-26);ctx.lineTo(-18,6);ctx.lineTo(18,6);ctx.closePath();ctx.fill();
+      ctx.fillStyle=d;ctx.beginPath();ctx.ellipse(0,6,22,6,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#FFFF00';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('★',0,-8);
       break;
     case 'helmet':
-      ctx.fillStyle='#FF8800';ctx.beginPath();ctx.ellipse(0,-2,21,15,0,Math.PI,0);ctx.fill();
-      ctx.fillStyle='#FFCC66';ctx.fillRect(-21,8,42,6);
-      ctx.fillStyle='#FFB300';ctx.fillRect(-3,-15,6,20);
+      ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,-2,21,15,0,Math.PI,0);ctx.fill();
+      ctx.fillStyle=l;ctx.fillRect(-21,8,42,6);
+      ctx.fillStyle=d;ctx.fillRect(-3,-15,6,20);
+      break;
+    case 'crown': {
+      // 王冠（カラー対応版）
+      const hw=20,bandH=11,spikeH=15,bTop=-5;
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.moveTo(-hw,bTop);ctx.lineTo(-hw+13,bTop);ctx.lineTo(-hw+7,bTop-spikeH);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(-7,bTop);ctx.lineTo(7,bTop);ctx.lineTo(0,bTop-spikeH*1.3);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(hw-13,bTop);ctx.lineTo(hw,bTop);ctx.lineTo(hw-7,bTop-spikeH);ctx.closePath();ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-hw,bTop,hw*2,bandH);
+      ctx.fillStyle=c;ctx.fillRect(-hw+1,bTop+1,hw*2-2,bandH-2);
+      ctx.strokeStyle='#00000033';ctx.lineWidth=1;ctx.strokeRect(-hw,bTop,hw*2,bandH);
+      ctx.fillStyle='#CC0000';ctx.beginPath();ctx.arc(0,bTop+bandH/2,3.5,0,Math.PI*2);ctx.fill();
+      break;
+    }
+    case 'crown_prince':
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.moveTo(-16,0);ctx.lineTo(-16,-8);ctx.lineTo(-6,-18);ctx.lineTo(0,-24);ctx.lineTo(6,-18);ctx.lineTo(16,-8);ctx.lineTo(16,0);ctx.closePath();ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-17,0,34,7);
+      ctx.fillStyle='#6644FF';ctx.beginPath();ctx.arc(-8,-4,3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#6644FF';ctx.beginPath();ctx.arc(8,-4,3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#FF4488';ctx.beginPath();ctx.arc(0,-6,3,0,Math.PI*2);ctx.fill();
+      break;
+    case 'crown_queen':
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.moveTo(-22,2);ctx.lineTo(-22,-6);ctx.lineTo(-14,-14);ctx.lineTo(-7,-6);ctx.lineTo(0,-14);ctx.lineTo(7,-6);ctx.lineTo(14,-14);ctx.lineTo(22,-6);ctx.lineTo(22,2);ctx.closePath();ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-22,2,44,6);
+      [[-14,-10,'#FF4466'],[-7,-4,'#4466FF'],[0,-10,'#FF44FF'],[7,-4,'#FF4466'],[14,-10,'#4466FF']].forEach(([gx,gy,gc])=>{
+        ctx.fillStyle=gc;ctx.beginPath();ctx.arc(gx,gy,2.5,0,Math.PI*2);ctx.fill();
+      });
+      break;
+    case 'beret':
+      ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(2,-5,20,8,0.3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=d;ctx.beginPath();ctx.ellipse(0,0,12,4,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=l;ctx.beginPath();ctx.arc(14,-10,3,0,Math.PI*2);ctx.fill();
+      break;
+    case 'cowboy':
+      ctx.fillStyle=c;ctx.fillRect(-12,-20,24,20);
+      ctx.fillStyle=d;ctx.fillRect(-12,-20,24,4);
+      ctx.fillStyle=l;ctx.fillRect(-24,0,48,5);
+      ctx.strokeStyle='#FFDD88';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(-12,-12);ctx.lineTo(12,-12);ctx.stroke();
+      break;
+    case 'ninja':
+      ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,-8,18,12,0,Math.PI,0);ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-18,-8,36,8);
+      ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(-14,-7,12,4);
+      ctx.fillStyle='#FFCCAA';ctx.fillRect(-12,-6,8,2);
+      break;
+    case 'pirate':
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.moveTo(-22,4);ctx.lineTo(-12,-18);ctx.lineTo(12,-18);ctx.lineTo(22,4);ctx.closePath();ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-22,2,44,5);
+      ctx.fillStyle='#FFFFFF';ctx.beginPath();ctx.arc(0,-8,7,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(-2,-8,1.5,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(3,-8,1.5,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=c;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(-4,-3);ctx.lineTo(4,-3);ctx.moveTo(-2,-3);ctx.lineTo(-2,-1);ctx.moveTo(2,-3);ctx.lineTo(2,-1);ctx.stroke();
+      break;
+    case 'chef':
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-12,14,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(-8,-10,9,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(8,-10,9,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-13,0,26,6);
+      ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=1;
+      for(let i=-10;i<=10;i+=5){ctx.beginPath();ctx.moveTo(i,-22);ctx.lineTo(i,-2);ctx.stroke();}
+      break;
+    case 'santa':
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.moveTo(-16,4);ctx.lineTo(0,-24);ctx.lineTo(16,4);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#FFFFFF';ctx.fillRect(-18,2,36,6);
+      ctx.beginPath();ctx.arc(0,-24,4,0,Math.PI*2);ctx.fill();
+      break;
+    case 'bunny':
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.ellipse(-7,-16,5,12,-0.1,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(7,-16,5,12,0.1,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#FFAACC';
+      ctx.beginPath();ctx.ellipse(-7,-16,2.5,8,-0.1,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.ellipse(7,-16,2.5,8,0.1,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-14,-1,28,5);
+      break;
+    case 'flower':
+      for(let a=0;a<Math.PI*2;a+=Math.PI/4){
+        const fx=Math.cos(a)*11,fy=Math.sin(a)*5-8;
+        ctx.fillStyle=c;ctx.beginPath();ctx.arc(fx,fy,5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#FFFF88';ctx.beginPath();ctx.arc(fx,fy,2,0,Math.PI*2);ctx.fill();
+      }
+      ctx.strokeStyle=d;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-8,11,5,0,0,Math.PI*2);ctx.stroke();
+      break;
+    case 'cat_ears':
+      ctx.fillStyle=d;ctx.fillRect(-18,0,36,5);
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.moveTo(-14,0);ctx.lineTo(-8,-16);ctx.lineTo(-2,0);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(2,0);ctx.lineTo(8,-16);ctx.lineTo(14,0);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#FFAACC';
+      ctx.beginPath();ctx.moveTo(-12,0);ctx.lineTo(-8,-10);ctx.lineTo(-4,0);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(8,-10);ctx.lineTo(12,0);ctx.closePath();ctx.fill();
+      break;
+    case 'headband':
+      ctx.fillStyle=c;
+      ctx.beginPath();ctx.ellipse(0,-3,22,8,0,Math.PI,0);ctx.fill();
+      ctx.fillRect(-22,-3,44,7);
+      ctx.strokeStyle=l;ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(0,-3,22,8,0,Math.PI,0);ctx.stroke();
+      ctx.fillStyle=l;
+      ctx.beginPath();ctx.moveTo(-8,4);ctx.lineTo(-14,10);ctx.lineTo(-8,10);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(8,4);ctx.lineTo(14,10);ctx.lineTo(8,10);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.arc(0,4,3,0,Math.PI*2);ctx.fill();
       break;
   }
   ctx.restore();
 }
 
 // ────────────────────────────────────────────────────────────────
-//  手持ちアイコン（(0,0)中心）全30種
+//  手持ちアイコン（原点中心）18種、col=メインカラー
 // ────────────────────────────────────────────────────────────────
-function drawHeldIcon(type){
+function drawHeldIcon(base, col){
   ctx.save();
-  switch(type){
+  const c=col||'#888888';
+  const d=shadeColor(c,-30);
+  const l=shadeColor(c,35);
+  switch(base){
     case 'controller':
-      ctx.fillStyle='#333333';ctx.beginPath();ctx.ellipse(0,0,15,9,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#555555';ctx.fillRect(-9,-2,7,4);ctx.fillRect(-7,-4,3,8);
+      ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,0,15,9,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=d;ctx.fillRect(-9,-2,7,4);ctx.fillRect(-7,-4,3,8);
       ctx.fillStyle='#FF2222';ctx.beginPath();ctx.arc(6,-2,2.5,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#2222FF';ctx.beginPath();ctx.arc(9,2,2.5,0,Math.PI*2);ctx.fill();
       break;
     case 'tote':
-      ctx.fillStyle='#DDAA55';ctx.fillRect(-12,-8,24,20);
-      ctx.strokeStyle='#AA7700';ctx.lineWidth=1.5;ctx.strokeRect(-12,-8,24,20);
+      ctx.fillStyle=c;ctx.fillRect(-12,-8,24,20);
+      ctx.strokeStyle=d;ctx.lineWidth=1.5;ctx.strokeRect(-12,-8,24,20);
       ctx.beginPath();ctx.arc(0,-8,9,Math.PI,0);ctx.stroke();
       ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(0,12);ctx.stroke();
       break;
     case 'backpack':
-      ctx.fillStyle='#228822';ctx.fillRect(-11,-14,22,26);
-      ctx.fillStyle='#44AA44';ctx.fillRect(-8,-10,16,10);
-      ctx.strokeStyle='#44AA44';ctx.lineWidth=1.5;ctx.strokeRect(-7,4,14,8);
-      ctx.strokeStyle='#1a6619';ctx.lineWidth=2;
+      ctx.fillStyle=c;ctx.fillRect(-11,-14,22,26);
+      ctx.fillStyle=l;ctx.fillRect(-8,-10,16,10);
+      ctx.strokeStyle=d;ctx.lineWidth=1.5;ctx.strokeRect(-7,4,14,8);
+      ctx.strokeStyle=d;ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(-6,-14);ctx.lineTo(-6,12);ctx.moveTo(6,-14);ctx.lineTo(6,12);ctx.stroke();
       break;
     case 'suitcase':
-      ctx.fillStyle='#8855AA';ctx.fillRect(-13,-10,26,22);
-      ctx.strokeStyle='#AA77CC';ctx.lineWidth=1.5;ctx.strokeRect(-13,-10,26,22);
-      ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-10);ctx.lineTo(-7,-16);ctx.lineTo(7,-16);ctx.lineTo(7,-10);ctx.stroke();
-      ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(0,12);ctx.moveTo(-13,1);ctx.lineTo(13,1);ctx.stroke();
+      ctx.fillStyle=c;ctx.fillRect(-13,-10,26,22);
+      ctx.strokeStyle=l;ctx.lineWidth=1.5;ctx.strokeRect(-13,-10,26,22);
+      ctx.strokeStyle=l;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(-7,-10);ctx.lineTo(-7,-16);ctx.lineTo(7,-16);ctx.lineTo(7,-10);ctx.stroke();
+      ctx.strokeStyle=d;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(0,12);ctx.moveTo(-13,1);ctx.lineTo(13,1);ctx.stroke();
       break;
     case 'box':
-      ctx.fillStyle='#AA8833';ctx.fillRect(-13,-12,26,24);
-      ctx.strokeStyle='#CC9933';ctx.lineWidth=1;ctx.strokeRect(-13,-12,26,24);
-      ctx.strokeStyle='#FFDD66';ctx.lineWidth=2.5;
+      ctx.fillStyle=c;ctx.fillRect(-13,-12,26,24);
+      ctx.strokeStyle=l;ctx.lineWidth=1;ctx.strokeRect(-13,-12,26,24);
+      ctx.strokeStyle=d;ctx.lineWidth=2.5;
       ctx.beginPath();ctx.moveTo(-13,-12);ctx.lineTo(13,12);ctx.moveTo(13,-12);ctx.lineTo(-13,12);ctx.stroke();
       break;
     case 'bicycle':
-      ctx.strokeStyle='#228833';ctx.lineWidth=2;
+      ctx.strokeStyle=c;ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(-9,7,8,0,Math.PI*2);ctx.stroke();
       ctx.beginPath();ctx.arc(9,7,8,0,Math.PI*2);ctx.stroke();
       ctx.beginPath();ctx.moveTo(-9,7);ctx.lineTo(0,-2);ctx.lineTo(9,7);ctx.moveTo(-2,7);ctx.lineTo(0,-2);ctx.stroke();
-      ctx.strokeStyle='#442200';ctx.lineWidth=3;
-      ctx.beginPath();ctx.moveTo(-4,-4);ctx.lineTo(4,-4);ctx.stroke();
-      ctx.strokeStyle='#228833';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(6,-4);ctx.lineTo(12,-4);ctx.lineTo(12,-2);ctx.stroke();
+      ctx.strokeStyle='#442200';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-4,-4);ctx.lineTo(4,-4);ctx.stroke();
+      ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(6,-4);ctx.lineTo(12,-4);ctx.lineTo(12,-2);ctx.stroke();
       break;
     case 'bobblehead':
       ctx.fillStyle='#FFCC88';ctx.beginPath();ctx.arc(0,-6,11,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle='#CC9966';ctx.lineWidth=1;ctx.stroke();
-      ctx.fillStyle='#333';ctx.beginPath();ctx.arc(-4,-8,2,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(4,-8,2,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#333';ctx.beginPath();ctx.arc(-4,-8,2,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(4,-8,2,0,Math.PI*2);ctx.fill();
       ctx.strokeStyle='#333';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,-4,3,0.1,Math.PI-0.1);ctx.stroke();
-      ctx.strokeStyle='#888';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(-2,3);ctx.lineTo(2,1);ctx.stroke();
-      ctx.fillStyle='#4466CC';ctx.fillRect(-7,6,14,10);
+      ctx.strokeStyle='#888';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,5);ctx.lineTo(-2,3);ctx.lineTo(2,1);ctx.stroke();
+      ctx.fillStyle=c;ctx.fillRect(-7,6,14,10);
       break;
     case 'icecream':
       ctx.fillStyle='#DEB887';
       ctx.beginPath();ctx.moveTo(-9,3);ctx.lineTo(9,3);ctx.lineTo(0,16);ctx.closePath();ctx.fill();
       ctx.strokeStyle='#CC9966';ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(-4.5,3);ctx.lineTo(-1,14);ctx.moveTo(4.5,3);ctx.lineTo(1,14);ctx.stroke();
-      ctx.fillStyle='#FFB6C1';ctx.beginPath();ctx.arc(0,-4,9,Math.PI,0);ctx.fill();
-      ctx.fillStyle='#90EE90';ctx.beginPath();ctx.arc(-4,-10,6,Math.PI,0);ctx.fill();
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-4,9,Math.PI,0);ctx.fill();
+      ctx.fillStyle=l;ctx.beginPath();ctx.arc(-4,-10,6,Math.PI,0);ctx.fill();
       ctx.fillStyle='#884422';ctx.beginPath();ctx.arc(3,-9,2,0,Math.PI*2);ctx.fill();
       break;
     case 'camera':
-      ctx.fillStyle='#333333';ctx.fillRect(-14,-8,28,18);
-      ctx.fillStyle='#666666';ctx.beginPath();ctx.arc(0,1,7,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=c;ctx.fillRect(-14,-8,28,18);
+      ctx.fillStyle=d;ctx.beginPath();ctx.arc(0,1,7,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#AADDFF';ctx.beginPath();ctx.arc(0,1,5,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#FFFFFF';ctx.beginPath();ctx.arc(-2,-1,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#444444';ctx.fillRect(-5,-12,10,5);
+      ctx.fillStyle=d;ctx.fillRect(-5,-12,10,5);
       ctx.fillStyle='#FFFF88';ctx.fillRect(8,-10,5,5);
       break;
     case 'umbrella':
-      ctx.fillStyle='#4488CC';ctx.beginPath();ctx.arc(0,2,15,Math.PI,0);ctx.fill();
-      ctx.fillStyle='#2266AA';
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,2,15,Math.PI,0);ctx.fill();
+      ctx.fillStyle=d;
       for(let i=-3;i<=3;i++){ctx.beginPath();ctx.arc(i*5,2,3.5,0,Math.PI);ctx.fill();}
       ctx.strokeStyle='#884422';ctx.lineWidth=2.5;
       ctx.beginPath();ctx.moveTo(0,2);ctx.lineTo(0,16);ctx.stroke();
       ctx.beginPath();ctx.arc(-3,16,3,0,Math.PI);ctx.stroke();
       break;
-    case 'sword_toy':
-      ctx.fillStyle='#CCCCCC';ctx.fillRect(-3,-18,6,24);
-      ctx.fillStyle='#AAAAAA';
-      ctx.beginPath();ctx.moveTo(-3,-18);ctx.lineTo(3,-18);ctx.lineTo(0,-24);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#996633';ctx.fillRect(-12,4,24,5);
-      ctx.fillStyle='#CC4422';ctx.fillRect(-4,8,8,12);
-      break;
     case 'book':
-      ctx.fillStyle='#CC4422';ctx.fillRect(-12,-14,24,28);
-      ctx.fillStyle='#AA3311';ctx.fillRect(-12,-14,4,28);
+      ctx.fillStyle=c;ctx.fillRect(-12,-14,24,28);
+      ctx.fillStyle=d;ctx.fillRect(-12,-14,4,28);
       ctx.strokeStyle='#FFEECC';ctx.lineWidth=1;
       for(let i=-8;i<=8;i+=4){ctx.beginPath();ctx.moveTo(-7,i);ctx.lineTo(11,i);ctx.stroke();}
-      ctx.fillStyle='#FFEECC';ctx.fillRect(-8,-12,18,8);
+      ctx.fillStyle=l;ctx.fillRect(-8,-12,18,8);
       break;
     case 'flower':
-      ctx.strokeStyle='#228800';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(0,14);ctx.lineTo(0,4);ctx.stroke();
+      ctx.strokeStyle='#228800';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,14);ctx.lineTo(0,4);ctx.stroke();
       ctx.fillStyle='#33AA00';ctx.beginPath();ctx.ellipse(-5,8,6,3,-0.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#FF6699';
+      ctx.fillStyle=c;
       for(let a=0;a<Math.PI*2;a+=Math.PI/3){
         ctx.beginPath();ctx.ellipse(Math.cos(a)*8,Math.sin(a)*8-2,5,3,a,0,Math.PI*2);ctx.fill();
       }
       ctx.fillStyle='#FFDD00';ctx.beginPath();ctx.arc(0,-2,5,0,Math.PI*2);ctx.fill();
       break;
-    case 'balloon':
-      ctx.fillStyle='#FF4444';ctx.beginPath();ctx.ellipse(0,-6,11,13,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#FF9999';ctx.beginPath();ctx.ellipse(-3,-10,4,5,-0.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#CC2222';ctx.beginPath();ctx.arc(0,7,3,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#CC2222';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(0,10);ctx.quadraticCurveTo(4,14,2,18);ctx.stroke();
-      break;
     case 'smartphone':
-      ctx.fillStyle='#222222';ctx.fillRect(-9,-16,18,32);
+      ctx.fillStyle=c;ctx.fillRect(-9,-16,18,32);
       ctx.fillStyle='#88CCFF';ctx.fillRect(-7,-13,14,24);
-      ctx.fillStyle='#444444';ctx.beginPath();ctx.arc(0,13,2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=d;ctx.beginPath();ctx.arc(0,13,2.5,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(0,-14,1.5,0,Math.PI*2);ctx.fill();
       break;
     case 'flashlight':
-      ctx.fillStyle='#DDCC44';
+      ctx.fillStyle=c;
       ctx.beginPath();ctx.moveTo(-9,-8);ctx.lineTo(9,-8);ctx.lineTo(7,0);ctx.lineTo(-7,0);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#AA9933';ctx.fillRect(-6,0,12,16);
+      ctx.fillStyle=d;ctx.fillRect(-6,0,12,16);
       ctx.fillStyle='#FFFFCC';ctx.beginPath();ctx.arc(0,-5,6,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#FFFFFF';ctx.beginPath();ctx.arc(-2,-7,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#886622';ctx.fillRect(-6,15,12,3);
+      ctx.fillStyle=d;ctx.fillRect(-6,15,12,3);
       break;
     case 'microphone':
-      ctx.fillStyle='#888888';ctx.beginPath();ctx.arc(0,-8,8,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#AAAAAA';ctx.lineWidth=1;
+      ctx.fillStyle=c;ctx.beginPath();ctx.arc(0,-8,8,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle=l;ctx.lineWidth=1;
       for(let i=-5;i<=5;i+=2.5){ctx.beginPath();ctx.moveTo(i,-15);ctx.lineTo(i,-1);ctx.stroke();}
-      ctx.fillStyle='#555555';ctx.fillRect(-4,0,8,18);
-      ctx.fillStyle='#AAAAAA';ctx.fillRect(-5,14,10,3);
-      break;
-    case 'game_console':
-      ctx.fillStyle='#992244';ctx.fillRect(-16,-8,32,18);
-      ctx.fillStyle='#88CCFF';ctx.fillRect(-10,-5,14,10);
-      ctx.fillStyle='#440022';ctx.fillRect(-3,-4,3,8);ctx.fillRect(-5,-2,7,4);
-      ctx.fillStyle='#FFAA00';ctx.beginPath();ctx.arc(7,-2,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#0044FF';ctx.beginPath();ctx.arc(11,0,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#771133';ctx.fillRect(-16,-12,6,5);ctx.fillRect(10,-12,6,5);
+      ctx.fillStyle=d;ctx.fillRect(-4,0,8,18);
+      ctx.fillStyle=l;ctx.fillRect(-5,14,10,3);
       break;
     case 'plush':
-      ctx.fillStyle='#FFAACC';
+      ctx.fillStyle=c;
       ctx.beginPath();ctx.arc(0,5,11,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(0,-7,9,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(-7,-14,5,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(7,-14,5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#FF88AA';
+      ctx.fillStyle=l;
       ctx.beginPath();ctx.arc(-7,-14,3,0,Math.PI*2);ctx.fill();
       ctx.beginPath();ctx.arc(7,-14,3,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#333';
@@ -784,112 +920,17 @@ function drawHeldIcon(type){
       ctx.strokeStyle='#333';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,-3,3,0.1,Math.PI-0.1);ctx.stroke();
       break;
     case 'donut':
-      ctx.strokeStyle='#FFB6C1';ctx.lineWidth=8;
-      ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
-      ctx.strokeStyle='#8B4513';ctx.lineWidth=2;
-      ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle=c;ctx.lineWidth=8;ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle='#8B4513';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.stroke();
       ctx.lineWidth=1;ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.stroke();
       [[-6,-8,0],[9,2,1],[-8,5,2],[5,9,3],[0,-12,4],[-3,10,0]].forEach(([sx,sy,ci])=>{
-        const c=['#FF2222','#2222FF','#22BB22','#FFFF22','#FF88FF'][ci];
-        ctx.fillStyle=c;ctx.save();ctx.translate(sx,sy);ctx.rotate(0.5);ctx.fillRect(-1,-3.5,2,7);ctx.restore();
+        const cc=['#FF2222','#2222FF','#22BB22','#FFFF22','#FF88FF'][ci];
+        ctx.fillStyle=cc;ctx.save();ctx.translate(sx,sy);ctx.rotate(0.5);ctx.fillRect(-1,-3.5,2,7);ctx.restore();
       });
-      break;
-    case 'pizza':
-      ctx.fillStyle='#DD8833';
-      ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(-13,10);ctx.lineTo(13,10);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#FFDD44';
-      ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(-11,9);ctx.lineTo(11,9);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#FFCC88';ctx.beginPath();ctx.arc(0,10,3.5,0,Math.PI);ctx.fill();
-      ctx.fillStyle='#CC2200';
-      ctx.beginPath();ctx.arc(-3,-2,2.5,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(5,3,2.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#228822';ctx.fillRect(-1,-8,2,4);
-      break;
-    case 'cup':
-      ctx.fillStyle='#4488AA';
-      ctx.beginPath();ctx.moveTo(-10,-10);ctx.lineTo(10,-10);ctx.lineTo(8,12);ctx.lineTo(-8,12);ctx.closePath();ctx.fill();
-      ctx.strokeStyle='#336688';ctx.lineWidth=3;
-      ctx.beginPath();ctx.arc(13,1,6,-Math.PI/2,Math.PI/2);ctx.stroke();
-      ctx.fillStyle='#66AACC';ctx.fillRect(-11,-12,22,4);
-      ctx.fillStyle='#664422';ctx.fillRect(-9,-6,18,6);
-      break;
-    case 'paintbrush':
-      ctx.fillStyle='#884422';ctx.fillRect(-3,-16,6,26);
-      ctx.fillStyle='#AAAAAA';ctx.fillRect(-4,8,8,4);
-      ctx.fillStyle='#CC4400';
-      ctx.beginPath();ctx.moveTo(-4,12);ctx.lineTo(4,12);ctx.lineTo(2,20);ctx.lineTo(-2,20);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#FF6600';
-      ctx.beginPath();ctx.moveTo(-2,18);ctx.lineTo(2,18);ctx.lineTo(0,22);ctx.closePath();ctx.fill();
-      break;
-    case 'guitar':
-      ctx.fillStyle='#AA6633';
-      ctx.beginPath();ctx.arc(0,5,10,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(0,-5,7,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#663322';ctx.beginPath();ctx.arc(0,5,4,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#AA8855';ctx.fillRect(-3,-20,6,16);
-      ctx.fillStyle='#CC9966';
-      ctx.fillRect(-6,-20,3,2);ctx.fillRect(3,-20,3,2);
-      ctx.fillRect(-6,-16,3,2);ctx.fillRect(3,-16,3,2);
-      ctx.strokeStyle='#FFDDAA';ctx.lineWidth=0.5;
-      for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i,-20);ctx.lineTo(i,14);ctx.stroke();}
-      break;
-    case 'tennis_racket':
-      ctx.strokeStyle='#44AA44';ctx.lineWidth=3;
-      ctx.beginPath();ctx.ellipse(0,-6,10,13,0,0,Math.PI*2);ctx.stroke();
-      ctx.strokeStyle='#AAFFAA';ctx.lineWidth=1;
-      for(let i=-8;i<=8;i+=4){ctx.beginPath();ctx.moveTo(i,-18);ctx.lineTo(i,6);ctx.stroke();}
-      for(let j=-18;j<=6;j+=4){ctx.beginPath();ctx.moveTo(-9,j);ctx.lineTo(9,j);ctx.stroke();}
-      ctx.strokeStyle='#884422';ctx.lineWidth=4;
-      ctx.beginPath();ctx.moveTo(0,6);ctx.lineTo(0,18);ctx.stroke();
-      break;
-    case 'baseball':
-      ctx.fillStyle='#FFFFFF';ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#EEEEEE';ctx.lineWidth=1;ctx.stroke();
-      ctx.strokeStyle='#CC2222';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.arc(-5,0,7,-Math.PI*0.4,Math.PI*0.4);ctx.stroke();
-      ctx.beginPath();ctx.arc(5,0,7,Math.PI-Math.PI*0.4,Math.PI+Math.PI*0.4);ctx.stroke();
-      ctx.fillStyle='#CC2222';
-      [-2,2].forEach(dy=>{
-        ctx.beginPath();ctx.arc(-8,dy,1.5,0,Math.PI*2);ctx.fill();
-        ctx.beginPath();ctx.arc(8,dy,1.5,0,Math.PI*2);ctx.fill();
-      });
-      break;
-    case 'key':
-      ctx.strokeStyle='#FFCC00';ctx.lineWidth=3;
-      ctx.beginPath();ctx.arc(-6,-6,7,0,Math.PI*2);ctx.stroke();
-      ctx.fillStyle='#0d0d2e';ctx.beginPath();ctx.arc(-6,-6,3,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#FFCC00';ctx.fillRect(-2,0,14,4);
-      ctx.fillRect(2,4,3,5);ctx.fillRect(7,4,3,4);ctx.fillRect(11,4,3,6);
-      break;
-    case 'treasure_map':
-      ctx.fillStyle='#CC9944';ctx.fillRect(-13,-12,26,22);
-      ctx.strokeStyle='#AA7722';ctx.lineWidth=1;ctx.strokeRect(-13,-12,26,22);
-      ctx.fillStyle='#DDAA66';ctx.fillRect(-13,-14,26,4);ctx.fillRect(-13,8,26,4);
-      ctx.strokeStyle='#CC2200';ctx.lineWidth=2.5;
-      ctx.beginPath();ctx.moveTo(-3,-4);ctx.lineTo(3,2);ctx.moveTo(3,-4);ctx.lineTo(-3,2);ctx.stroke();
-      ctx.strokeStyle='#884422';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(-8,-8);ctx.lineTo(-4,-6);ctx.lineTo(0,-8);ctx.lineTo(4,-4);ctx.stroke();
-      break;
-    case 'robot':
-      ctx.fillStyle='#7799BB';ctx.fillRect(-8,-16,16,14);
-      ctx.fillStyle='#6688AA';ctx.fillRect(-10,-2,20,16);
-      ctx.fillStyle='#FFFF00';
-      ctx.beginPath();ctx.arc(-4,-10,3,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(4,-10,3,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#CC6600';
-      ctx.beginPath();ctx.arc(-4,-10,1.5,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(4,-10,1.5,0,Math.PI*2);ctx.fill();
-      ctx.strokeStyle='#7799BB';ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(0,-22);ctx.stroke();
-      ctx.fillStyle='#FFFF00';ctx.beginPath();ctx.arc(0,-22,2.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#334455';ctx.fillRect(-6,-4,12,3);
-      ctx.fillStyle='#FF2222';ctx.beginPath();ctx.arc(-5,5,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#22FF22';ctx.beginPath();ctx.arc(0,5,2,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#2222FF';ctx.beginPath();ctx.arc(5,5,2,0,Math.PI*2);ctx.fill();
       break;
     case 'star_wand':
-      ctx.fillStyle='#CC88FF';ctx.fillRect(-3,2,6,18);
-      ctx.strokeStyle='#FF88FF';ctx.lineWidth=2;
+      ctx.fillStyle=c;ctx.fillRect(-3,2,6,18);
+      ctx.strokeStyle=l;ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(3,6);ctx.quadraticCurveTo(10,4,12,8);ctx.stroke();
       ctx.save();ctx.translate(0,-6);
       ctx.fillStyle='#FFFF00';ctx.beginPath();
@@ -906,53 +947,73 @@ function drawHeldIcon(type){
 }
 
 // ────────────────────────────────────────────────────────────────
-//  落下アイテム描画（帽子・手持ち）
+//  落下アイテム描画
 // ────────────────────────────────────────────────────────────────
 function drawFallingHat(item){
   ctx.save();ctx.translate(item.x,item.y);
-  const isRare=item.variant==='rare', isLucky=item.subType===luckyItem;
-  // グロー
-  ctx.fillStyle=isRare?'rgba(255,200,0,0.30)':'rgba(255,255,100,0.18)';
-  ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);ctx.fill();
-  if(isRare){ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,21,0,Math.PI*2);ctx.stroke();}
+  const isRare=item.variant==='rare', isLucky=item.id===luckyItem;
+  const hex=COLOR_HEX[item.colorId]||'#FFFFFF';
+
+  // カラーリング（colorId）
+  ctx.strokeStyle=hex; ctx.lineWidth=3;
+  ctx.globalAlpha=0.7;ctx.beginPath();ctx.arc(0,0,21,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+
+  // rare 金縁
+  if(isRare){
+    ctx.strokeStyle='#FFD700';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(0,0,25,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(255,200,0,0.18)';ctx.beginPath();ctx.arc(0,0,25,0,Math.PI*2);ctx.fill();
+  }
+  // lucky 点線リング
   if(isLucky){
     ctx.strokeStyle='#FFFF00';ctx.lineWidth=2;ctx.setLineDash([4,3]);
-    ctx.beginPath();ctx.arc(0,0,23,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(0,0,27,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle='#FFFF00';
     [[-17,-6],[17,-6],[0,-22],[13,13],[-13,13]].forEach(([sx,sy])=>{
       ctx.beginPath();ctx.arc(sx,sy,2.5,0,Math.PI*2);ctx.fill();
     });
   }
-  ctx.scale(0.9,0.9);drawHatIcon(item.subType);ctx.scale(1/0.9,1/0.9);
+  ctx.scale(0.9,0.9);drawHatIcon(item.base, hex);ctx.scale(1/0.9,1/0.9);
+
   const sc=isRare?'#FFD700':(isLucky?'#FFFF66':'#AAFFAA');
+  const pts='+'+calculateScore('hat',item.id,item.variant)+(isRare?'★':'');
   ctx.fillStyle=sc;ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('+3'+(isRare?'★':''),0,16);
+  ctx.fillText(pts,0,18);
   ctx.textBaseline='alphabetic';ctx.restore();
 }
 
 function drawFallingHeld(item){
   ctx.save();ctx.translate(item.x,item.y);
-  const isRare=item.variant==='rare', isLucky=item.subType===luckyItem;
-  ctx.fillStyle=isRare?'rgba(255,200,0,0.30)':'rgba(100,255,200,0.18)';
-  ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);ctx.fill();
-  if(isRare){ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,21,0,Math.PI*2);ctx.stroke();}
+  const isRare=item.variant==='rare', isLucky=item.id===luckyItem;
+  const hex=COLOR_HEX[item.colorId]||'#FFFFFF';
+
+  ctx.strokeStyle=hex;ctx.lineWidth=3;
+  ctx.globalAlpha=0.7;ctx.beginPath();ctx.arc(0,0,21,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+
+  if(isRare){
+    ctx.strokeStyle='#FFD700';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(0,0,25,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(255,200,0,0.18)';ctx.beginPath();ctx.arc(0,0,25,0,Math.PI*2);ctx.fill();
+  }
   if(isLucky){
     ctx.strokeStyle='#FFFF00';ctx.lineWidth=2;ctx.setLineDash([4,3]);
-    ctx.beginPath();ctx.arc(0,0,23,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(0,0,27,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle='#FFFF00';
     [[-17,-6],[17,-6],[0,-22],[13,13],[-13,13]].forEach(([sx,sy])=>{
       ctx.beginPath();ctx.arc(sx,sy,2.5,0,Math.PI*2);ctx.fill();
     });
   }
-  ctx.scale(0.85,0.85);drawHeldIcon(item.subType);ctx.scale(1/0.85,1/0.85);
+  ctx.scale(0.85,0.85);drawHeldIcon(item.base, hex);ctx.scale(1/0.85,1/0.85);
+
   const sc=isRare?'#FFD700':(isLucky?'#FFFF66':'#AADDFF');
+  const pts='+'+calculateScore('held',item.id,item.variant)+(isRare?'★':'');
   ctx.fillStyle=sc;ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('+3'+(isRare?'★':''),0,18);
+  ctx.fillText(pts,0,18);
   ctx.textBaseline='alphabetic';ctx.restore();
 }
 
 // ────────────────────────────────────────────────────────────────
-//  チョコ・王冠・ダンベル
+//  チョコ・ダンベル
 // ────────────────────────────────────────────────────────────────
 function drawChocolate(item,isPurple){
   const s=CHOCO_SIZE,hS=s/2;
@@ -965,20 +1026,6 @@ function drawChocolate(item,isPurple){
     ctx.fillStyle='#FFFFFF';ctx.font='bold 13px sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('2',item.x,item.y);ctx.textBaseline='alphabetic';
   }
-}
-function drawCrownItem(item){drawCrownShape(item.x,item.y,CROWN_W,CROWN_H);}
-function drawCrownShape(cx,cy,w,h){
-  const hw=w/2,bandH=h*0.42,spikeH=h*0.62,bandTop=cy-bandH/2;
-  ctx.fillStyle='#FFD700';
-  ctx.beginPath();ctx.moveTo(cx-hw,bandTop);ctx.lineTo(cx-hw+w/3,bandTop);ctx.lineTo(cx-hw+w/6,bandTop-spikeH);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(cx-w/6,bandTop);ctx.lineTo(cx+w/6,bandTop);ctx.lineTo(cx,bandTop-spikeH*1.25);ctx.closePath();ctx.fill();
-  ctx.beginPath();ctx.moveTo(cx+hw-w/3,bandTop);ctx.lineTo(cx+hw,bandTop);ctx.lineTo(cx+hw-w/6,bandTop-spikeH);ctx.closePath();ctx.fill();
-  ctx.fillStyle='#DAA520';ctx.fillRect(cx-hw+1,bandTop+2,w,bandH);
-  ctx.fillStyle='#FFD700';ctx.fillRect(cx-hw,bandTop,w,bandH);
-  ctx.strokeStyle='#B8860B';ctx.lineWidth=1.5;ctx.strokeRect(cx-hw,bandTop,w,bandH);
-  const gr=Math.max(3,h*0.14);
-  ctx.fillStyle='#CC0000';ctx.beginPath();ctx.arc(cx,cy,gr,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#FF6666';ctx.beginPath();ctx.arc(cx-gr*0.3,cy-gr*0.35,gr*0.4,0,Math.PI*2);ctx.fill();
 }
 function drawDumbbell(item){
   const bR=DUMBBELL_BALL_R,bW=DUMBBELL_BAR_W,cx=item.x,cy=item.y;
@@ -997,30 +1044,32 @@ function drawPlayer(){
   const x=player.x,y=player.y,stun=player.stunTimer>0;
   const skin=stun?'#FFE033':'#FFCC88',body=stun?'#FFD000':'#3355EE',leg=stun?'#FFD000':'#1A2A88';
   ctx.save();ctx.translate(x,y);
+
   const lw=9,lh=30,la=player.legAngle;
-  // 足
   ctx.save();ctx.translate(-10,14);ctx.rotate(la);ctx.fillStyle=leg;ctx.fillRect(-lw/2,0,lw,lh);
   ctx.fillStyle='#222222';ctx.fillRect(-lw/2-3,lh-7,lw+8,7);ctx.restore();
   ctx.save();ctx.translate(10,14);ctx.rotate(-la);ctx.fillStyle=leg;ctx.fillRect(-lw/2,0,lw,lh);
   ctx.fillStyle='#222222';ctx.fillRect(-lw/2-3,lh-7,lw+8,7);ctx.restore();
-  // 腕
+
   ctx.save();ctx.translate(-20,-12);ctx.rotate(-0.25-la*0.4);ctx.fillStyle=body;ctx.fillRect(-28,-4,28,8);
   ctx.fillStyle=skin;ctx.beginPath();ctx.arc(-28,0,6,0,Math.PI*2);ctx.fill();ctx.restore();
   ctx.save();ctx.translate(20,-12);ctx.rotate(0.25+la*0.4);ctx.fillStyle=body;ctx.fillRect(0,-4,28,8);
   ctx.fillStyle=skin;ctx.beginPath();ctx.arc(28,0,6,0,Math.PI*2);ctx.fill();ctx.restore();
+
   // 手持ちアイテム
-  if(player.heldType){
-    ctx.save();ctx.translate(46,-10);ctx.scale(0.72,0.72);drawHeldIcon(player.heldType);ctx.restore();
+  if(player.heldBase){
+    const hc=COLOR_HEX[player.heldColorId]||'#888888';
+    ctx.save();ctx.translate(46,-10);ctx.scale(0.72,0.72);drawHeldIcon(player.heldBase,hc);ctx.restore();
   }
-  // 胴体
+
   ctx.fillStyle=body;ctx.fillRect(-18,-30,36,44);
   ctx.strokeStyle=stun?'#AA6600':'#1133AA';ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,14);ctx.stroke();
-  // 首・頭
+
   ctx.fillStyle=skin;ctx.fillRect(-7,-36,14,10);
   const hR=20;ctx.beginPath();ctx.arc(0,-52,hR,0,Math.PI*2);
   ctx.fillStyle=skin;ctx.fill();ctx.strokeStyle=stun?'#CC8800':'#D4A070';ctx.lineWidth=1.5;ctx.stroke();
-  // 顔
+
   if(stun){
     ctx.strokeStyle='#FF3300';ctx.lineWidth=2.5;ctx.beginPath();
     ctx.moveTo(-12,-58);ctx.lineTo(-6,-52);ctx.moveTo(-6,-58);ctx.lineTo(-12,-52);
@@ -1034,11 +1083,14 @@ function drawPlayer(){
     ctx.font='bold 22px sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';
     ctx.fillStyle='#FFE000';ctx.fillText('⚡',0,-74);ctx.textBaseline='alphabetic';
   }
-  // 帽子/王冠
-  if(player.hasCrown){
-    const ch=16,bh=ch*0.42;drawCrownShape(0,-(52+hR)-bh/2+2,30,ch);
-  } else if(player.hatType){
-    ctx.save();ctx.translate(0,-(52+hR)-8);drawHatIcon(player.hatType);ctx.restore();
+
+  // 帽子
+  if(player.hatBase){
+    const hc=COLOR_HEX[player.hatColorId]||'#888888';
+    ctx.save();ctx.translate(0,-(52+hR)-8);
+    if(player.hasCrown) ctx.scale(1.1,1.1); // 王冠系は少し大きく
+    drawHatIcon(player.hatBase,hc);
+    ctx.restore();
   }
   ctx.restore();
 }
@@ -1051,9 +1103,9 @@ function drawHUD(){
   ctx.textBaseline='middle';
   ctx.fillStyle='#FFD700';ctx.font='bold 22px sans-serif';ctx.textAlign='left';
   ctx.fillText('🍫 スコア: '+score,20,25);
-  // Lucky表示（小）
   ctx.fillStyle='#FFFF88';ctx.font='12px sans-serif';
-  ctx.fillText('★ Lucky: '+getLuckyItemName(),20,43);
+  const ln=getItemName(luckyItem);
+  ctx.fillText('★ Lucky: '+ln,20,43);
   if(timeLeft>LAST_SECONDS||timerBlinkVisible){
     const isLast=timeLeft<=LAST_SECONDS;
     ctx.fillStyle=isLast?'#FF2222':(timeLeft<=10?'#FF8844':'#FFFFFF');
@@ -1110,50 +1162,99 @@ function drawSpecialPopup(){
 }
 
 // ────────────────────────────────────────────────────────────────
+//  フルコンプリート演出
+// ────────────────────────────────────────────────────────────────
+function drawFullCompleteAnim(){
+  if(fullCompleteTimer<=0) return;
+  const ratio=fullCompleteTimer/(fullCompleteIsFirst?2.5:0.8);
+
+  // 虹フラッシュ（初回のみ）
+  if(fullCompleteIsFirst){
+    const rh=fullCompleteRainbowTimer*3;
+    const r=Math.sin(rh)*127+128;
+    const g=Math.sin(rh+2)*127+128;
+    const b=Math.sin(rh+4)*127+128;
+    ctx.save();ctx.globalAlpha=0.25;
+    ctx.fillStyle=`rgb(${r|0},${g|0},${b|0})`;
+    ctx.fillRect(0,0,CANVAS_W,CANVAS_H);ctx.restore();
+
+    // パーティクル
+    ctx.save();
+    for(const p of fullCompleteParticles){
+      if(p.life<=0) continue;
+      ctx.globalAlpha=Math.min(1,p.life*1.5);
+      ctx.fillStyle=p.color;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // テキスト
+  ctx.save();
+  const alpha=Math.min(1,ratio*1.5);
+  ctx.globalAlpha=alpha;
+  const pulse=1+Math.sin(fullCompleteRainbowTimer*8)*0.04;
+  ctx.translate(CANVAS_W/2,CANVAS_H/2);ctx.scale(pulse,pulse);
+  if(fullCompleteIsFirst){
+    ctx.fillStyle='rgba(0,0,0,0.7)';fillRoundRect(-230,-55,460,110,20);
+    ctx.fillStyle='#FFD700';ctx.shadowColor='#FF8800';ctx.shadowBlur=30;
+    ctx.font='bold 42px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('👑 FULL COMPLETE! 👑',0,0);
+    ctx.shadowBlur=0;
+    ctx.fillStyle='#FFFFFF';ctx.font='18px sans-serif';
+    ctx.fillText('帽子90種 + 持ち物90種 コンプリート！',0,38);
+  } else {
+    ctx.fillStyle='rgba(0,0,0,0.6)';fillRoundRect(-200,-32,400,64,16);
+    ctx.fillStyle='#FFD700';
+    ctx.font='bold 28px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('✨ FULL COMPLETE! ✨',0,0);
+  }
+  ctx.restore();ctx.textBaseline='alphabetic';
+}
+
+// ────────────────────────────────────────────────────────────────
 //  タイトル画面
 // ────────────────────────────────────────────────────────────────
 function drawTitle(){
   ctx.fillStyle='rgba(0,0,20,0.62)';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.shadowColor='#0088FF';ctx.shadowBlur=24;ctx.fillStyle='#FFFFFF';
-  ctx.font='bold 52px sans-serif';ctx.fillText('🍫 チョコキャッチ！',CANVAS_W/2,88);ctx.shadowBlur=0;
+  ctx.font='bold 52px sans-serif';ctx.fillText('🍫 チョコキャッチ！',CANVAS_W/2,82);ctx.shadowBlur=0;
 
-  ctx.font='16px sans-serif';ctx.fillStyle='#EEEEEE';
-  ctx.fillText('← / → または A / D キーで移動',CANVAS_W/2,145);
-  ctx.fillStyle='#FFCC88';ctx.fillText('茶チョコ +1点',CANVAS_W/2,170);
-  ctx.fillStyle='#CC88FF';ctx.fillText('紫チョコ +2点',CANVAS_W/2,194);
-  ctx.fillStyle='#AAFFAA';ctx.fillText('帽子・持ち物 +3点（rare ★ は2倍！）',CANVAS_W/2,218);
-  ctx.fillStyle='#FFD700';ctx.font='bold 16px sans-serif';
-  ctx.fillText('👑 王冠 +5点！頭にかぶれる！',CANVAS_W/2,244);
-  ctx.fillStyle='#FFAAAA';ctx.font='16px sans-serif';
-  ctx.fillText('⚠ 鉄アレイに当たると '+STUN_DURATION+' 秒スタン！',CANVAS_W/2,270);
-  ctx.fillStyle='#FFDD44';ctx.font='bold 16px sans-serif';
-  ctx.fillText('制限時間 '+GAME_DURATION+' 秒！',CANVAS_W/2,296);
-
-  // Lucky表示
-  ctx.fillStyle='#FFFF88';ctx.font='bold 18px sans-serif';
-  ctx.fillText('★ Today\'s Lucky: '+getLuckyItemName()+' （2倍スコア！）',CANVAS_W/2,326);
-
-  ctx.fillStyle='#88CCFF';ctx.font='18px sans-serif';
-  ctx.fillText('最高スコア: '+highScore+' 個',CANVAS_W/2,354);
+  ctx.font='14px sans-serif';ctx.fillStyle='#EEEEEE';
+  ctx.fillText('← / → または A / D キーで移動',CANVAS_W/2,132);
+  ctx.fillStyle='#FFCC88';ctx.fillText('茶チョコ +1点',CANVAS_W/2,155);
+  ctx.fillStyle='#CC88FF';ctx.fillText('紫チョコ +2点',CANVAS_W/2,175);
+  ctx.fillStyle='#AAFFAA';ctx.fillText('帽子・持ち物 +3点（rare ★ は2倍！）',CANVAS_W/2,195);
+  ctx.fillStyle='#FFAAAA';ctx.font='14px sans-serif';
+  ctx.fillText('⚠ 鉄アレイに当たると '+STUN_DURATION+' 秒スタン！',CANVAS_W/2,215);
+  ctx.fillStyle='#FFDD44';ctx.font='bold 14px sans-serif';
+  ctx.fillText('制限時間 '+GAME_DURATION+' 秒！',CANVAS_W/2,235);
+  ctx.fillStyle='#FFFF88';ctx.font='bold 16px sans-serif';
+  ctx.fillText('★ Today\'s Lucky: '+getItemName(luckyItem)+' （2倍スコア！）',CANVAS_W/2,258);
+  ctx.fillStyle='#88CCFF';ctx.font='16px sans-serif';
+  ctx.fillText('最高スコア: '+highScore+' 点',CANVAS_W/2,280);
 
   // STARTボタン
-  const sBx=CANVAS_W/2-135,sBy=376,sBw=270,sBh=50;
+  const sBx=CANVAS_W/2-135,sBy=302,sBw=270,sBh=48;
   ctx.fillStyle='#FF5500';fillRoundRect(sBx,sBy,sBw,sBh,12);
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 24px sans-serif';
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 22px sans-serif';
   ctx.fillText('▶ スタート  [Space]',CANVAS_W/2,sBy+sBh/2);
 
   // COLLECTIONボタン
-  const cBx=CANVAS_W/2-135,cBy=440,cBw=270,cBh=50;
+  const cBx=CANVAS_W/2-135,cBy=362,cBw=270,cBh=48;
   ctx.fillStyle='#225588';fillRoundRect(cBx,cBy,cBw,cBh,12);
-  ctx.fillStyle='#88CCFF';ctx.font='bold 22px sans-serif';
+  ctx.fillStyle='#88CCFF';ctx.font='bold 20px sans-serif';
   ctx.fillText('📖 図鑑を見る',CANVAS_W/2,cBy+cBh/2);
 
   // 収集率
-  const hg=ALL_HAT_KEYS.filter(k=>collection.hats[k].normal+collection.hats[k].rare>0).length;
-  const hd=HELD_TYPES.filter(k=>collection.held[k].normal+collection.held[k].rare>0).length;
-  ctx.fillStyle='#AAAAAA';ctx.font='14px sans-serif';
-  ctx.fillText('帽子 '+hg+'/'+ALL_HAT_KEYS.length+'  持ち物 '+hd+'/'+HELD_TYPES.length+'  プレイ '+collection.meta.plays+'回',CANVAS_W/2,510);
+  const hg=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0).length;
+  const hdg=ALL_HELD_IDS.filter(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0).length;
+  const isFC=collection.meta.fullCompleteOnce;
+  ctx.fillStyle='#AAAAAA';ctx.font='13px sans-serif';
+  ctx.fillText('帽子 '+hg+'/90  持ち物 '+hdg+'/90  プレイ '+collection.meta.plays+'回'+(isFC?' 👑COMPLETE!':''),CANVAS_W/2,428);
+  ctx.fillStyle='#888888';ctx.font='12px sans-serif';
+  ctx.fillText('v3 - 帽子90種・持ち物90種',CANVAS_W/2,448);
   ctx.textBaseline='alphabetic';
 }
 
@@ -1163,144 +1264,178 @@ function drawTitle(){
 function drawGameOver(){
   ctx.fillStyle='rgba(0,0,20,0.80)';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 46px sans-serif';ctx.fillText('ゲーム終了！',CANVAS_W/2,56);
-  ctx.fillStyle='#FFD700';ctx.font='bold 34px sans-serif';ctx.fillText('スコア: '+score+' 個',CANVAS_W/2,102);
-  ctx.fillStyle='#88CCFF';ctx.font='20px sans-serif';ctx.fillText('最高スコア: '+highScore+' 個',CANVAS_W/2,136);
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 44px sans-serif';ctx.fillText('ゲーム終了！',CANVAS_W/2,52);
+  ctx.fillStyle='#FFD700';ctx.font='bold 32px sans-serif';ctx.fillText('スコア: '+score+' 点',CANVAS_W/2,96);
+  ctx.fillStyle='#88CCFF';ctx.font='18px sans-serif';ctx.fillText('最高スコア: '+highScore+' 点',CANVAS_W/2,128);
   if(score>0&&score>=highScore){
-    ctx.fillStyle='#FF6600';ctx.font='bold 18px sans-serif';ctx.fillText('🎉 新記録！',CANVAS_W/2,162);
+    ctx.fillStyle='#FF6600';ctx.font='bold 16px sans-serif';ctx.fillText('🎉 新記録！',CANVAS_W/2,152);
   }
 
-  // 取得内訳パネル
-  const px=50,py=182,pw=CANVAS_W-100,ph=158;
+  // 取得内訳
+  const px=50,py=170,pw=CANVAS_W-100,ph=148;
   ctx.fillStyle='rgba(255,255,255,0.07)';fillRoundRect(px,py,pw,ph,10);
   ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1;
   ctx.beginPath();ctx.rect(px,py,pw,ph);ctx.stroke();
-  ctx.textAlign='left';ctx.fillStyle='#FFEE88';ctx.font='bold 15px sans-serif';
-  ctx.fillText('今回の収集',px+14,py+20);
-  const uH=[...new Set(sessionHats)],uHd=[...new Set(sessionHeld)];
-  ctx.fillStyle='#AAFFAA';ctx.font='14px sans-serif';
-  ctx.fillText('帽子: '+(uH.length>0?uH.map(h=>HAT_NAMES[h]||h).join('、'):'なし'),px+14,py+48);
-  ctx.fillStyle='#AADDFF';
-  const hStr=uHd.length>0?uHd.map(h=>HELD_NAMES[h]||h).join('、'):'なし';
-  ctx.fillText('持物: '+hStr,px+14,py+74);
-  if(sessionCrown){ctx.fillStyle='#FFD700';ctx.font='bold 14px sans-serif';ctx.fillText('👑 王冠GET！',px+14,py+100);}
 
-  const hatGot=ALL_HAT_KEYS.filter(k=>collection.hats[k].normal+collection.hats[k].rare>0).length;
-  const heldGot=HELD_TYPES.filter(k=>collection.held[k].normal+collection.held[k].rare>0).length;
-  const hatRare=ALL_HAT_KEYS.filter(k=>collection.hats[k].rare>0).length;
-  const heldRare=HELD_TYPES.filter(k=>collection.held[k].rare>0).length;
-  ctx.fillStyle='#DDDDDD';ctx.font='13px sans-serif';
-  ctx.fillText('Hat: '+hatGot+'/'+ALL_HAT_KEYS.length+'  Rare: '+hatRare+'/'+ALL_HAT_KEYS.length,px+14,py+132);
+  ctx.textAlign='left';
+  ctx.fillStyle='#FFEE88';ctx.font='bold 13px sans-serif';ctx.fillText('今回の収集',px+12,py+18);
+
+  const uH=[...new Set(sessionHats)], uHd=[...new Set(sessionHeld)];
+  ctx.fillStyle='#AAFFAA';ctx.font='12px sans-serif';
+  const hStr=uH.length>0?uH.slice(0,8).map(id=>getItemName(id)).join('、')+(uH.length>8?'…':''):'なし';
+  ctx.fillText('帽子: '+hStr,px+12,py+42);
+  ctx.fillStyle='#AADDFF';
+  const hdStr=uHd.length>0?uHd.slice(0,8).map(id=>getItemName(id)).join('、')+(uHd.length>8?'…':''):'なし';
+  ctx.fillText('持物: '+hdStr,px+12,py+66);
+
+  const hatGot=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0).length;
+  const heldGot=ALL_HELD_IDS.filter(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0).length;
+  const hatRare=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.rare||0)>0).length;
+  const heldRare=ALL_HELD_IDS.filter(id=>(collection.held[id]?.rare||0)>0).length;
+  ctx.fillStyle='#DDDDDD';ctx.font='12px sans-serif';
+  ctx.fillText('Hat: '+hatGot+'/90  Rare: '+hatRare+'/90',px+12,py+100);
   ctx.textAlign='right';
-  ctx.fillText('Held: '+heldGot+'/'+HELD_TYPES.length+'  Rare: '+heldRare+'/'+HELD_TYPES.length,px+pw-14,py+132);
+  ctx.fillText('Held: '+heldGot+'/90  Rare: '+heldRare+'/90',px+pw-12,py+100);
+  if(collection.meta.fullCompleteOnce){
+    ctx.textAlign='center';
+    ctx.fillStyle='#FFD700';ctx.font='bold 13px sans-serif';
+    ctx.fillText('👑 FULL COMPLETE達成済み！',px+pw/2,py+126);
+  }
   ctx.textAlign='center';
 
-  // ボタン
-  const bx=CANVAS_W/2-135,by=358,bw=270,bh=46;
+  const bx=CANVAS_W/2-135,by=336,bw=270,bh=44;
   ctx.fillStyle='#FF5500';fillRoundRect(bx,by,bw,bh,12);
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 22px sans-serif';ctx.fillText('もう一度遊ぶ',CANVAS_W/2,by+bh/2);
-  const cbx=CANVAS_W/2-135,cby=416,cbw=270,cbh=46;
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 20px sans-serif';ctx.fillText('もう一度遊ぶ',CANVAS_W/2,by+bh/2);
+  const cbx=CANVAS_W/2-135,cby=392,cbw=270,cbh=44;
   ctx.fillStyle='#225588';fillRoundRect(cbx,cby,cbw,cbh,12);
-  ctx.fillStyle='#88CCFF';ctx.font='bold 20px sans-serif';ctx.fillText('📖 図鑑を見る',CANVAS_W/2,cby+cbh/2);
+  ctx.fillStyle='#88CCFF';ctx.font='bold 18px sans-serif';ctx.fillText('📖 図鑑を見る',CANVAS_W/2,cby+cbh/2);
   ctx.textBaseline='alphabetic';
 }
 
 // ────────────────────────────────────────────────────────────────
-//  図鑑画面（タブ：帽子 / 持ち物）
+//  図鑑画面（ページ切替：30件/ページ、3ページ）
 // ────────────────────────────────────────────────────────────────
+const COLL_COLS = 10;
+const COLL_ROWS = 3;
+const COLL_PAGE_SIZE = COLL_COLS * COLL_ROWS; // 30
+const COLL_CELL_W = 76;
+const COLL_CELL_H = 88;
+const COLL_START_X = (CANVAS_W - COLL_COLS * COLL_CELL_W) / 2; // 20
+const COLL_START_Y = 100;
+
 function drawCollection(){
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 26px sans-serif';
-  ctx.fillText('📖 図鑑',CANVAS_W/2,22);
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 24px sans-serif';
+  ctx.fillText('📖 図鑑',CANVAS_W/2,20);
 
   // 収集率サマリー
-  const hg=ALL_HAT_KEYS.filter(k=>collection.hats[k].normal+collection.hats[k].rare>0).length;
-  const hd=HELD_TYPES.filter(k=>collection.held[k].normal+collection.held[k].rare>0).length;
-  const hr=ALL_HAT_KEYS.filter(k=>collection.hats[k].rare>0).length;
-  const dr=HELD_TYPES.filter(k=>collection.held[k].rare>0).length;
-  ctx.fillStyle='#AAAAAA';ctx.font='13px sans-serif';
-  ctx.fillText('帽子 '+hg+'/'+ALL_HAT_KEYS.length+' (Rare '+hr+')  持ち物 '+hd+'/'+HELD_TYPES.length+' (Rare '+dr+')',CANVAS_W/2,44);
+  const hg=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0).length;
+  const hd=ALL_HELD_IDS.filter(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0).length;
+  const hr=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.rare||0)>0).length;
+  const dr=ALL_HELD_IDS.filter(id=>(collection.held[id]?.rare||0)>0).length;
+  ctx.fillStyle='#AAAAAA';ctx.font='12px sans-serif';
+  ctx.fillText('帽子 '+hg+'/90 (★'+hr+')  持ち物 '+hd+'/90 (★'+dr+')',CANVAS_W/2,40);
 
   // タブボタン
-  const t1x=55,t1y=56,t1w=340,th=36;
-  const t2x=405,t2y=56,t2w=340;
-  ctx.fillStyle=collectionTab==='hats'?'#446688':'#223344';fillRoundRect(t1x,t1y,t1w,th,8);
-  ctx.fillStyle=collectionTab==='hats'?'#FFFFFF':'#888888';ctx.font='bold 16px sans-serif';
-  ctx.fillText('🎩 帽子（'+ALL_HAT_KEYS.length+'種）',t1x+t1w/2,t1y+th/2);
-  ctx.fillStyle=collectionTab==='held'?'#446688':'#223344';fillRoundRect(t2x,t2y,t2w,th,8);
+  const t1x=50,ty=55,tw=340,th=34;
+  const t2x=410;
+  ctx.fillStyle=collectionTab==='hats'?'#446688':'#223344';fillRoundRect(t1x,ty,tw,th,8);
+  ctx.fillStyle=collectionTab==='hats'?'#FFFFFF':'#888888';ctx.font='bold 14px sans-serif';
+  ctx.fillText('🎩 帽子（90種）',t1x+tw/2,ty+th/2);
+  ctx.fillStyle=collectionTab==='held'?'#446688':'#223344';fillRoundRect(t2x,ty,tw,th,8);
   ctx.fillStyle=collectionTab==='held'?'#FFFFFF':'#888888';
-  ctx.fillText('🎒 持ち物（'+HELD_TYPES.length+'種）',t2x+t2w/2,t2y+th/2);
+  ctx.fillText('🎒 持ち物（90種）',t2x+tw/2,ty+th/2);
 
-  // グリッド
-  if(collectionTab==='hats'){
-    drawCollectionGrid(ALL_HAT_KEYS,'hats',HAT_NAMES,55,98,3,230,100);
-  } else {
-    drawCollectionGrid(HELD_TYPES,'held',HELD_NAMES,40,98,5,144,74);
-  }
+  // グリッド描画
+  const ids=collectionTab==='hats'?ALL_HAT_IDS:ALL_HELD_IDS;
+  const tbl=collectionTab==='hats'?collection.hats:collection.held;
+  const pageStart=collectionPage*COLL_PAGE_SIZE;
+  const pageIds=ids.slice(pageStart, pageStart+COLL_PAGE_SIZE);
 
-  // ボタン
-  const bBx=55,bBy=552,bBw=150,bBh=40;
-  ctx.fillStyle='#445566';fillRoundRect(bBx,bBy,bBw,bBh,10);
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 18px sans-serif';ctx.textBaseline='middle';
-  ctx.fillText('◀ もどる',bBx+bBw/2,bBy+bBh/2);
-  const rBx=CANVAS_W-205,rBy=552,rBw=150,rBh=40;
-  ctx.fillStyle='#663322';fillRoundRect(rBx,rBy,rBw,rBh,10);
-  ctx.fillStyle='#FFAAAA';ctx.fillText('🗑 リセット',rBx+rBw/2,rBy+rBh/2);
-  ctx.fillStyle='#444444';ctx.font='12px sans-serif';
-  ctx.fillText('ESCキーでもどる',CANVAS_W/2,592);
-  ctx.textBaseline='alphabetic';
-}
-
-function drawCollectionGrid(keys,category,nameMap,startX,startY,cols,cellW,cellH){
-  keys.forEach((key,idx)=>{
-    const col=idx%cols, row=Math.floor(idx/cols);
-    const cx=startX+col*cellW+cellW/2, top=startY+row*cellH;
-    const entry=(category==='hats')?collection.hats[key]:collection.held[key];
+  pageIds.forEach((id,idx)=>{
+    const col=idx%COLL_COLS, row=Math.floor(idx/COLL_COLS);
+    const cx=COLL_START_X+col*COLL_CELL_W+COLL_CELL_W/2;
+    const top=COLL_START_Y+row*COLL_CELL_H;
+    const entry=tbl[id]||{normal:0,rare:0};
     const total=(entry.normal||0)+(entry.rare||0);
     const seen=total>0;
+    const {base,colorId}=parseItemId(id);
+    const hex=COLOR_HEX[colorId]||'#FFFFFF';
+    const isLucky=id===luckyItem;
 
     // セル背景
-    ctx.fillStyle=seen?'rgba(255,255,255,0.10)':'rgba(0,0,0,0.35)';
-    fillRoundRect(cx-cellW/2+3,top+2,cellW-6,cellH-4,7);
+    ctx.fillStyle=seen?'rgba(255,255,255,0.09)':'rgba(0,0,0,0.40)';
+    fillRoundRect(cx-COLL_CELL_W/2+2,top+2,COLL_CELL_W-4,COLL_CELL_H-4,6);
+
+    // カラーリング
+    if(seen){
+      ctx.strokeStyle=hex;ctx.lineWidth=2;ctx.globalAlpha=0.7;
+      ctx.beginPath();ctx.arc(cx,top+32,18,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
+    }
 
     // アイコン
-    ctx.save();ctx.translate(cx,top+Math.floor(cellH*0.38));
-    if(!seen) ctx.globalAlpha=0.25;
-    if(category==='hats'){
-      if(key==='crown') drawCrownShape(0,4,32,22);
-      else drawHatIcon(key);
+    ctx.save();ctx.translate(cx,top+32);
+    if(!seen) ctx.globalAlpha=0.20;
+    if(collectionTab==='hats'){
+      ctx.scale(0.58,0.58);drawHatIcon(base, seen?hex:'#888888');
     } else {
-      const sc=cols>=5?0.75:1.0;ctx.scale(sc,sc);drawHeldIcon(key);ctx.scale(1/sc,1/sc);
+      ctx.scale(0.55,0.55);drawHeldIcon(base, seen?hex:'#888888');
     }
     ctx.globalAlpha=1;ctx.restore();
 
     // テキスト
-    const nameY=top+Math.floor(cellH*0.76);
-    const countY=top+Math.floor(cellH*0.92);
     ctx.textAlign='center';ctx.textBaseline='middle';
     if(seen){
-      ctx.fillStyle='#DDDDDD';ctx.font=(cols>=5?'11px':'12px')+' sans-serif';
-      // 名前が長い場合は小さくする
-      const name=nameMap[key]||key;
-      ctx.font=(name.length>6&&cols>=5?'9px':'11px')+' sans-serif';
-      ctx.fillText(name,cx,nameY);
-      ctx.fillStyle='#FFCC44';ctx.font='bold '+(cols>=5?'11px':'12px')+' sans-serif';
-      ctx.fillText('N:'+entry.normal+' R:'+(entry.rare||0),cx,countY);
+      const bn=HAT_BASE_NAMES[base]||HELD_BASE_NAMES[base]||base;
+      const cname=COLOR_NAME[colorId]||'';
+      ctx.fillStyle=hex;ctx.font='8px sans-serif';
+      ctx.fillText(cname,cx,top+56);
+      ctx.fillStyle='#DDDDDD';ctx.font='9px sans-serif';
+      const nameStr=bn.length>5?bn.slice(0,5)+'…':bn;
+      ctx.fillText(nameStr,cx,top+67);
+      ctx.fillStyle='#FFCC44';ctx.font='bold 9px sans-serif';
+      ctx.fillText('N:'+entry.normal+' R:'+(entry.rare||0),cx,top+79);
     } else {
-      ctx.fillStyle='#555555';ctx.font=(cols>=5?'12px':'13px')+' sans-serif';
-      ctx.fillText('???',cx,nameY);
+      ctx.fillStyle='#444444';ctx.font='14px sans-serif';
+      ctx.fillText('???',cx,top+66);
     }
     // Rare済みバッジ
-    if(entry.rare>0){
-      ctx.fillStyle='#FFD700';ctx.font='bold 10px sans-serif';
-      ctx.fillText('★',cx+cellW/2-10,top+10);
+    if((entry.rare||0)>0){
+      ctx.fillStyle='#FFD700';ctx.font='bold 9px sans-serif';
+      ctx.fillText('★',cx+COLL_CELL_W/2-9,top+10);
     }
     // Lucky表示
-    if(key===luckyItem){
-      ctx.fillStyle='#FFFF44';ctx.font='bold 9px sans-serif';
-      ctx.fillText('Lucky!',cx-cellW/2+14,top+10);
+    if(isLucky){
+      ctx.fillStyle='#FFFF44';ctx.font='bold 8px sans-serif';
+      ctx.fillText('L',cx-COLL_CELL_W/2+8,top+10);
     }
   });
+
+  // ページ情報・Prev/Next
+  const totalPages=3;
+  const piY=COLL_START_Y+COLL_ROWS*COLL_CELL_H+10; // y≈374
+  ctx.fillStyle='#AAAAAA';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(`ページ ${collectionPage+1} / ${totalPages}`,CANVAS_W/2,piY+10);
+
+  const prevBx=CANVAS_W/2-130,nextBx=CANVAS_W/2+30,navBy=piY+24,navBw=100,navBh=32;
+  ctx.fillStyle=collectionPage>0?'#336699':'#222244';fillRoundRect(prevBx,navBy,navBw,navBh,8);
+  ctx.fillStyle=collectionPage>0?'#FFFFFF':'#555555';ctx.font='bold 14px sans-serif';
+  ctx.fillText('◀ Prev',prevBx+navBw/2,navBy+navBh/2);
+  ctx.fillStyle=collectionPage<totalPages-1?'#336699':'#222244';fillRoundRect(nextBx,navBy,navBw,navBh,8);
+  ctx.fillStyle=collectionPage<totalPages-1?'#FFFFFF':'#555555';
+  ctx.fillText('Next ▶',nextBx+navBw/2,navBy+navBh/2);
+
+  // Backボタン・Resetボタン
+  const bBx=40,bBy=piY+65,bBw=130,bBh=36;
+  ctx.fillStyle='#445566';fillRoundRect(bBx,bBy,bBw,bBh,8);
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 16px sans-serif';
+  ctx.fillText('◀ もどる',bBx+bBw/2,bBy+bBh/2);
+  const rBx=CANVAS_W-170,rBy=piY+65,rBw=130,rBh=36;
+  ctx.fillStyle='#663322';fillRoundRect(rBx,rBy,rBw,rBh,8);
+  ctx.fillStyle='#FFAAAA';ctx.fillText('🗑 リセット',rBx+rBw/2,rBy+rBh/2);
+
+  ctx.fillStyle='#444444';ctx.font='11px sans-serif';
+  ctx.fillText('ESCキーでもどる',CANVAS_W/2,piY+116);
   ctx.textBaseline='alphabetic';
 }
 
@@ -1309,7 +1444,7 @@ function drawCollectionGrid(keys,category,nameMap,startX,startY,cols,cellW,cellH
 // ================================================================
 canvas.addEventListener('click',e=>{
   const rect=canvas.getBoundingClientRect();
-  const sx=CANVAS_W/rect.width,sy=CANVAS_H/rect.height;
+  const sx=CANVAS_W/rect.width, sy=CANVAS_H/rect.height;
   const mx=(e.clientX-rect.left)*sx, my=(e.clientY-rect.top)*sy;
 
   // サウンドボタン
@@ -1320,22 +1455,31 @@ canvas.addEventListener('click',e=>{
   }
 
   if(gameState==='title'){
-    if(inRect(mx,my,CANVAS_W/2-135,440,270,50)){initAudio();gameState='collection';return;}
+    if(inRect(mx,my,CANVAS_W/2-135,362,270,48)){initAudio();collectionPage=0;gameState='collection';return;}
     tryStart(); return;
   }
   if(gameState==='gameover'){
-    if(inRect(mx,my,CANVAS_W/2-135,358,270,46)){tryStart();return;}
-    if(inRect(mx,my,CANVAS_W/2-135,416,270,46)){gameState='collection';return;}
+    if(inRect(mx,my,CANVAS_W/2-135,336,270,44)){tryStart();return;}
+    if(inRect(mx,my,CANVAS_W/2-135,392,270,44)){collectionPage=0;gameState='collection';return;}
     return;
   }
   if(gameState==='collection'){
     // タブ
-    if(inRect(mx,my,55,56,340,36)){collectionTab='hats';return;}
-    if(inRect(mx,my,405,56,340,36)){collectionTab='held';return;}
-    // BACK
-    if(inRect(mx,my,55,552,150,40)){gameState='title';return;}
-    // RESET
-    if(inRect(mx,my,CANVAS_W-205,552,150,40)){
+    if(inRect(mx,my,50,55,340,34)){collectionTab='hats';collectionPage=0;return;}
+    if(inRect(mx,my,410,55,340,34)){collectionTab='held';collectionPage=0;return;}
+
+    // Prev/Next ページ
+    const piY=COLL_START_Y+COLL_ROWS*COLL_CELL_H+10;
+    const navBy=piY+24,navBw=100,navBh=32;
+    const prevBx=CANVAS_W/2-130, nextBx=CANVAS_W/2+30;
+    if(inRect(mx,my,prevBx,navBy,navBw,navBh)){if(collectionPage>0){collectionPage--;} return;}
+    if(inRect(mx,my,nextBx,navBy,navBw,navBh)){if(collectionPage<2){collectionPage++;} return;}
+
+    // Back
+    const bBy=piY+65;
+    if(inRect(mx,my,40,bBy,130,36)){gameState='title';return;}
+    // Reset
+    if(inRect(mx,my,CANVAS_W-170,bBy,130,36)){
       if(confirm('図鑑データをリセットしますか？\n（ベストスコアは保持されます）')){
         const best=collection.meta.bestScore||0;
         collection=makeEmptyCollection(); collection.meta.bestScore=best; saveCollection();
@@ -1353,4 +1497,3 @@ requestAnimationFrame(gameLoop);
 </script>
 </body>
 </html>
-
