@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>かんじバトル しょきゅうへん</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== タイトル画面 ===================== -->
+<div id="screen-title" class="screen active">
+  <div class="title-stars">★ ★ ★ ★ ★</div>
+
+  <div class="title-monster" id="title-monster-svg"></div>
+
+  <div class="title-main">かんじバトル<br>しょきゅうへん</div>
+  <div class="title-sub">もじモンスターを たおせ！</div>
+
+  <div class="title-buttons">
+    <button class="btn-title" id="btn-start">▶ スタート</button>
+    <button class="btn-title" id="btn-practice">✏ れんしゅう</button>
+    <button class="btn-title" id="btn-zukan">📖 ずかん</button>
+  </div>
+
+  <div class="title-footer">
+    小学1年生の かんじ 80もじ しゅうろく
+  </div>
+</div>
+
+<!-- ===================== バトル画面 ===================== -->
+<div id="screen-battle" class="screen">
+
+  <!-- ヘッダー -->
+  <div class="battle-header">
+    <button class="btn-back-small" id="btn-battle-title">◀ タイトル</button>
+    <span class="battle-progress" id="progress-text">画数クイズ</span>
+  </div>
+
+  <!-- きょうのぼうけんバー -->
+  <div class="session-prog-section">
+    <span class="session-prog-label">きょうのぼうけん</span>
+    <div class="session-prog-bar"><div class="session-prog-fill" id="session-prog-fill" style="width:0%"></div></div>
+    <span class="session-prog-count" id="session-prog-count">0 / 5</span>
+  </div>
+
+  <!-- 戦闘フィールド -->
+  <div class="battle-field">
+    <!-- 敵 -->
+    <div class="enemy-section">
+      <div class="enemy-name" id="enemy-name">もじモンスター</div>
+      <div id="enemy-monster"></div>
+      <div class="hp-bar-wrap">
+        <div class="hp-fill" id="enemy-hp-bar" style="width:100%"></div>
+      </div>
+      <div id="enemy-hp-label">HP: 5 / 5</div>
+    </div>
+
+    <!-- プレイヤー -->
+    <div class="player-section">
+      <div class="player-name">あなた</div>
+      <svg class="player-avatar" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- 帽子 -->
+        <ellipse cx="50" cy="28" rx="28" ry="8" fill="#2c3e91"/>
+        <rect x="28" y="18" width="44" height="14" rx="6" fill="#2c3e91"/>
+        <!-- 顔 -->
+        <circle cx="50" cy="48" r="22" fill="#fad4a0"/>
+        <!-- 目 -->
+        <circle cx="42" cy="44" r="4" fill="#222"/>
+        <circle cx="58" cy="44" r="4" fill="#222"/>
+        <circle cx="44" cy="43" r="1.5" fill="white"/>
+        <circle cx="60" cy="43" r="1.5" fill="white"/>
+        <!-- 口 (笑顔) -->
+        <path d="M 42,54 Q 50,62 58,54" stroke="#a0603a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- 頬 -->
+        <circle cx="38" cy="52" r="5" fill="#ffb3aa" opacity="0.6"/>
+        <circle cx="62" cy="52" r="5" fill="#ffb3aa" opacity="0.6"/>
+        <!-- 体 -->
+        <rect x="32" y="68" width="36" height="28" rx="8" fill="#3a6ee8"/>
+        <!-- 腕 -->
+        <ellipse cx="22" cy="78" rx="8" ry="14" fill="#3a6ee8"/>
+        <ellipse cx="78" cy="78" rx="8" ry="14" fill="#3a6ee8"/>
+      </svg>
+      <div class="player-lv-row">
+        <span id="player-lv-text">LV 1</span>
+        <div class="player-xp-bar"><div class="player-xp-fill" id="player-xp-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 漢字表示 -->
+  <div class="battle-kanji-area">
+    <div id="battle-kanji">木</div>
+    <svg id="battle-kanji-svg" viewBox="0 0 109 109" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <!-- ログ -->
+  <div class="battle-log-area">
+    <div id="battle-log">
+      <span class="log-main">もじモンスターが あらわれた！</span>
+    </div>
+  </div>
+
+  <!-- クイズエリア -->
+  <div class="battle-quiz-area">
+    <div id="choices-area"></div>
+  </div>
+</div>
+
+<!-- ===================== れんしゅう選択画面 ===================== -->
+<div id="screen-practice-select" class="screen">
+  <div class="screen-header">
+    <button class="btn-back-small" id="btn-practice-select-back">◀ もどる</button>
+    <h2>れんしゅう — かんじを えらぼう</h2>
+  </div>
+  <div id="practice-select-grid"></div>
+</div>
+
+<!-- ===================== れんしゅうモード画面 ===================== -->
+<div id="screen-practice" class="screen">
+  <div class="screen-header">
+    <button class="btn-back-small" id="btn-practice-back">◀ もどる</button>
+    <h2>れんしゅうモード</h2>
+  </div>
+
+  <div class="practice-body">
+    <div class="practice-kanji-display">
+      <div id="practice-kanji-char">木</div>
+      <div id="practice-kanji-reading">き</div>
+      <div id="practice-stroke-info">4 かく</div>
+    </div>
+
+    <svg id="practice-kanji-svg" viewBox="0 0 109 109" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <div id="practice-step-label">1 / 4 かく め</div>
+
+    <div class="practice-controls">
+      <button class="btn-practice" id="btn-practice-play">▶ ぜんぶ みる</button>
+      <button class="btn-practice" id="btn-practice-step">▶| 1かく ずつ</button>
+      <button class="btn-practice" id="btn-practice-reset">↺ リセット</button>
+      <button class="btn-practice" id="btn-practice-quiz">⚔ クイズに ちょうせん！</button>
+      <button class="btn-practice" id="btn-practice-back">もどる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ずかん画面 ===================== -->
+<div id="screen-zukan" class="screen">
+  <div class="screen-header">
+    <button class="btn-back-small" id="btn-zukan-back">◀ もどる</button>
+    <h2>ずかん</h2>
+  </div>
+  <div id="zukan-grid"></div>
+</div>
+
+<!-- ===================== 結果画面 ===================== -->
+<div id="screen-result" class="screen">
+  <div class="result-title">やったー！<br>クリア！</div>
+  <div class="result-sparkle">🏆</div>
+
+  <div id="result-list"></div>
+  <div id="result-summary"></div>
+
+  <div class="result-buttons">
+    <button class="btn-result" id="btn-result-retry">▶ もういちど</button>
+    <button class="btn-result" id="btn-result-title">◀ タイトルへ</button>
+  </div>
+</div>
+
+<!-- ===================== パーティクルレイヤー ===================== -->
+<div id="particle-layer"></div>
+
+<!-- スクリプト読み込み -->
+<script src="js/data/grade1.js"></script>
+<script src="js/strokeData/kanjivg_data.js"></script>
+<script src="js/data.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/validator.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/evolutions.js"></script>
+<script src="js/render.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+
+<!-- タイトル画面のモンスターを動的生成 -->
+<script>
+  document.getElementById('title-monster-svg').innerHTML =
+    buildMonsterSVG(4, '#e94560', 1);
+  validateKanjiData();
+</script>
+</body>
+</html>
