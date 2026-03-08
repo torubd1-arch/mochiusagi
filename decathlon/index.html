@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decathlon ダイスゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header id="header">
+      <div id="event-name">Decathlon</div>
+      <div id="progress">1/10</div>
+      <div id="total-score">合計: 0点</div>
+      <div id="audio-controls">
+        <button id="btn-mute" class="btn-icon" title="音のON/OFF">🔊</button>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.4" title="音量">
+      </div>
+    </header>
+
+    <!-- Score Table (left) -->
+    <aside id="score-table" class="hidden">
+      <h3>📊 スコア表</h3>
+      <div id="score-table-content"></div>
+    </aside>
+
+    <!-- Main -->
+    <main id="main">
+
+      <!-- Start Screen -->
+      <div id="start-screen">
+        <div id="start-card">
+          <div class="start-title">🏆</div>
+          <h1>Decathlon</h1>
+          <p class="start-subtitle">ダイスで遊ぶ10種目競技！</p>
+
+          <div class="form-group">
+            <label for="p1-name">👤 プレイヤー1のなまえ</label>
+            <input type="text" id="p1-name" placeholder="プレイヤー1" maxlength="12">
+          </div>
+
+          <div class="form-group">
+            <label>🎮 あそびかた</label>
+            <div id="mode-select" class="button-group">
+              <button class="btn btn-mode active" data-mode="solo">1人でプレイ</button>
+              <button class="btn btn-mode" data-mode="2p">2人で対戦</button>
+              <button class="btn btn-mode" data-mode="cpu">CPUと対戦</button>
+            </div>
+          </div>
+
+          <div class="form-group hidden" id="p2-name-group">
+            <label for="p2-name">👤 プレイヤー2のなまえ</label>
+            <input type="text" id="p2-name" placeholder="プレイヤー2" maxlength="12">
+          </div>
+
+          <div class="form-group hidden" id="cpu-difficulty-group">
+            <label>🤖 CPUの強さ</label>
+            <div id="cpu-select" class="button-group">
+              <button class="btn btn-mode" data-diff="easy">弱い</button>
+              <button class="btn btn-mode active" data-diff="normal">普通</button>
+              <button class="btn btn-mode" data-diff="hard">強い</button>
+            </div>
+          </div>
+
+          <div class="start-buttons">
+            <button class="btn btn-success btn-large" id="btn-start">🚀 ゲームスタート！</button>
+            <button class="btn btn-secondary" id="btn-ranking">🏅 ランキングを見る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Over Screen -->
+      <div id="game-over" class="hidden">
+        <h2>🏆 競技終了！</h2>
+        <div id="final-scores"></div>
+        <div id="ranking-notice"></div>
+        <button class="btn btn-success" id="btn-restart">もう一度プレイ</button>
+      </div>
+
+      <!-- Event Result Screen -->
+      <div id="event-result" class="hidden">
+        <div id="result-event-icon" class="result-icon"></div>
+        <h2 id="result-event-name"></h2>
+        <div id="result-player-name" class="result-player"></div>
+        <div id="result-points"></div>
+        <div id="result-details"></div>
+        <div id="total-score-result"></div>
+        <button class="btn btn-success" id="btn-next-event">次の種目へ</button>
+      </div>
+
+      <!-- Playing Area -->
+      <div id="playing-area" class="hidden">
+
+        <!-- Player Indicator (2P) -->
+        <div id="player-indicator" class="hidden"></div>
+
+        <!-- Event Info -->
+        <div id="event-info">
+          <div id="event-icon-display"></div>
+          <div id="event-info-content">
+            <ul id="event-description"></ul>
+            <div id="event-status"></div>
+          </div>
+        </div>
+
+        <!-- Dice -->
+        <div id="dice-area">
+          <div id="dice-container"></div>
+        </div>
+
+        <!-- Actions -->
+        <div id="action-area">
+          <div id="action-buttons"></div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Log Sidebar -->
+    <aside id="log-area" class="hidden">
+      <h3>📋 ログ</h3>
+      <div id="log-content"></div>
+    </aside>
+  </div>
+
+  <!-- Ranking Modal -->
+  <div id="ranking-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>🏅 歴代ランキング トップ10</h2>
+      <div id="ranking-content"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-danger" id="btn-clear-ranking">🗑️ リセット</button>
+        <button class="btn btn-secondary" id="btn-close-ranking">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Scripts -->
+  <script src="events/event100m.js"></script>
+  <script src="events/eventLongJump.js"></script>
+  <script src="events/eventShotPut.js"></script>
+  <script src="events/eventHighJump.js"></script>
+  <script src="events/eventJavelin.js"></script>
+  <script src="events/event1500m.js"></script>
+  <script src="events/eventPoleVault.js"></script>
+  <script src="events/eventHurdles.js"></script>
+  <script src="events/eventDiscus.js"></script>
+  <script src="events/event400m.js"></script>
+
+  <!-- Audio -->
+  <script src="audio.js"></script>
+
+  <!-- Main -->
+  <script src="main.js"></script>
+</body>
+</html>

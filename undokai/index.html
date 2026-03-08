@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>うんどうかいダイスゲーム</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== Header ===== -->
+    <header id="header">
+      <div id="event-name">うんどうかい</div>
+      <div id="progress">1/6</div>
+      <div id="total-score">合計: 0点</div>
+      <button id="btn-mute" class="btn-icon" title="音のON/OFF">🔊</button>
+    </header>
+
+    <!-- ===== Score Table (left sidebar) ===== -->
+    <aside id="score-table" class="hidden">
+      <h3>📊 スコア表</h3>
+      <div id="score-table-content"></div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main id="main">
+
+      <!-- スタート画面 -->
+      <div id="start-screen">
+        <div id="start-card">
+          <div class="start-title">🎽</div>
+          <h1>うんどうかい<br>ダイスゲーム</h1>
+          <p class="start-subtitle">ダイスで遊ぶ6種目の運動会！</p>
+
+          <!-- 人数選択 -->
+          <div class="form-group">
+            <label>👥 何人で遊ぶ？</label>
+            <div class="button-group">
+              <button class="btn btn-numplayer active" data-num="1">1人</button>
+              <button class="btn btn-numplayer" data-num="2">2人</button>
+              <button class="btn btn-numplayer" data-num="3">3人</button>
+            </div>
+          </div>
+
+          <!-- プレイヤー名 -->
+          <div class="player-names-group">
+            <div class="form-group">
+              <label for="p1-name">👤 1P のなまえ</label>
+              <input type="text" id="p1-name" placeholder="1P" maxlength="8">
+            </div>
+            <div class="form-group hidden" id="p2-name-group">
+              <label for="p2-name">👤 2P のなまえ</label>
+              <input type="text" id="p2-name" placeholder="2P" maxlength="8">
+            </div>
+            <div class="form-group hidden" id="p3-name-group">
+              <label for="p3-name">👤 3P のなまえ</label>
+              <input type="text" id="p3-name" placeholder="3P" maxlength="8">
+            </div>
+          </div>
+
+          <!-- 種目プレビュー -->
+          <div class="event-list-preview">
+            <p class="preview-title">🏅 今日の種目</p>
+            <ol>
+              <li>🏃 かけっこ</li>
+              <li>🏀 玉入れ</li>
+              <li>🚧 障害物競走</li>
+              <li>⚾ ソフトボール投げ</li>
+              <li>🦘 走り幅跳び</li>
+              <li>🏁 リレー</li>
+            </ol>
+          </div>
+
+          <div class="start-buttons">
+            <button class="btn btn-success btn-large" id="btn-start">🚀 ゲームスタート！</button>
+            <button class="btn btn-secondary" id="btn-ranking">🏅 ランキングを見る</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ゲームオーバー画面 -->
+      <div id="game-over" class="hidden">
+        <h2>🏆 競技終了！おつかれさま！</h2>
+        <div id="final-ranking"></div>
+        <div id="final-scores"></div>
+        <div id="ranking-notice"></div>
+        <button class="btn btn-success" id="btn-restart">もう一度プレイ</button>
+      </div>
+
+      <!-- 競技結果画面 -->
+      <div id="event-result" class="hidden">
+        <div id="result-event-icon" class="result-icon"></div>
+        <h2 id="result-event-name"></h2>
+        <div id="result-player-name" class="result-player-name"></div>
+        <div id="result-points"></div>
+        <div id="result-details"></div>
+        <div id="total-score-result"></div>
+        <button class="btn btn-success" id="btn-next-event">次の種目へ</button>
+      </div>
+
+      <!-- プレイ中画面 -->
+      <div id="playing-area" class="hidden">
+
+        <!-- 現在プレイヤー表示（複数時） -->
+        <div id="player-indicator" class="hidden"></div>
+
+        <!-- 競技情報 -->
+        <div id="event-info">
+          <div id="event-icon-display"></div>
+          <div id="event-info-content">
+            <ul id="event-description"></ul>
+            <div id="event-status"></div>
+          </div>
+        </div>
+
+        <!-- ダイス -->
+        <div id="dice-area">
+          <div id="dice-container"></div>
+        </div>
+
+        <!-- メインログ -->
+        <div id="main-log"></div>
+
+        <!-- アクションボタン -->
+        <div id="action-area">
+          <div id="action-buttons"></div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ===== Log Sidebar ===== -->
+    <aside id="log-area" class="hidden">
+      <h3>📋 ログ</h3>
+      <div id="log-content"></div>
+    </aside>
+
+  </div><!-- #app -->
+
+  <!-- ランキングモーダル -->
+  <div id="ranking-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>🏅 歴代ランキング トップ10</h2>
+      <div id="ranking-content"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-danger" id="btn-clear-ranking">🗑️ リセット</button>
+        <button class="btn btn-secondary" id="btn-close-ranking">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Scripts -->
+  <script src="events/eventKakekko.js"></script>
+  <script src="events/eventTamairi.js"></script>
+  <script src="events/eventShouhajou.js"></script>
+  <script src="events/eventSoftball.js"></script>
+  <script src="events/eventHabatobi.js"></script>
+  <script src="events/eventRelay.js"></script>
+
+  <!-- Sound -->
+  <script src="sound.js"></script>
+
+  <!-- Main -->
+  <script src="main.js"></script>
+</body>
+</html>

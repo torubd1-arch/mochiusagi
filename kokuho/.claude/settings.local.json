@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/python.exe:*)",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe:*)",
+      "Bash(.venv/Scripts/pip install:*)",
+      "WebFetch(domain:kunishitei.bunka.go.jp)",
+      "WebSearch",
+      "Bash(python:*)"
+    ]
+  }
+}
