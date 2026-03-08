@@ -1,0 +1,3345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🇯🇵 国宝チェックリスト レポート</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  body { background: #f5f5f0; font-family: "Helvetica Neue", Arial, "Hiragino Sans", sans-serif; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #fff; padding: 2.5rem 0 2rem; }
+  .hero h1 { font-size: 2rem; font-weight: 700; letter-spacing: .05em; }
+  .hero .subtitle { color: #aaa; font-size: 0.9rem; }
+  .stat-card { background: #fff; border-radius: 12px; padding: 1.4rem 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,.08); text-align: center; }
+  .stat-card .num { font-size: 2.2rem; font-weight: 700; color: #1a237e; }
+  .stat-card .label { font-size: 0.8rem; color: #666; margin-top: 4px; }
+  .section-title { font-size: 1.15rem; font-weight: 700; border-left: 4px solid #e53935; padding-left: .7rem; margin-bottom: 1rem; margin-top: .5rem; }
+  .card-block { background: #fff; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 1.5rem; }
+  .rate-bar-wrap { width: 100px; display: inline-block; }
+  .rate-bar { height: 8px; border-radius: 4px; background: #e0e0e0; }
+  .rate-bar-fill { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #43a047, #1e88e5); }
+  .badge-art  { background: #1565c0; color: #fff; font-size: .7rem; padding: 2px 7px; border-radius: 10px; }
+  .badge-arch { background: #6a1b9a; color: #fff; font-size: .7rem; padding: 2px 7px; border-radius: 10px; }
+  .table-sm td, .table-sm th { padding: .35rem .6rem; vertical-align: middle; }
+  #filter-section input, #filter-section select { border-radius: 8px; }
+  .no-treasure { color: #bbb; font-style: italic; }
+  .pref-zero { color: #bbb; }
+  .progress-ring { font-size: 2.8rem; font-weight: 800; color: #e53935; }
+  .progress-sub { font-size: 1rem; color: #555; }
+  footer { color: #999; font-size: .8rem; padding: 1.5rem 0; }
+</style>
+</head>
+<body>
+
+<!-- ヒーロー -->
+<div class="hero">
+  <div class="container">
+    <h1>🇯🇵 国宝チェックリスト レポート</h1>
+    <div class="subtitle">生成日時: 2026-02-27 22:08　文化資産の攻略台帳</div>
+  </div>
+</div>
+
+<div class="container my-4">
+
+  <!-- ① 全体達成率 -->
+  <div class="card-block">
+    <div class="section-title">① 全体達成率</div>
+    <div class="row g-3">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="num">138</div>
+          <div class="label">国宝総数</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="num" style="color:#43a047">0</div>
+          <div class="label">観覧済み</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="num" style="color:#e53935">138</div>
+          <div class="label">未達</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="progress-ring">0.0%</div>
+          <div class="progress-sub">達成率</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 都道府県別達成率 棒グラフ -->
+  <div class="card-block">
+    <div class="section-title">② 都道府県別達成率（所在県基準）</div>
+    <div id="chart-pref"></div>
+
+    <!-- テーブル -->
+    <div class="mt-3">
+      <table class="table table-sm table-hover" id="pref-table">
+        <thead class="table-dark">
+          <tr>
+            <th>順位</th><th>都道府県</th><th class="text-end">総数</th>
+            <th class="text-end">見た数</th><th class="text-end">未達数</th>
+            <th>達成率</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          
+          <tr class="">
+            <td>
+              
+                1
+              
+            </td>
+            <td><strong>京都府</strong></td>
+            <td class="text-end">37</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">37</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                2
+              
+            </td>
+            <td><strong>奈良県</strong></td>
+            <td class="text-end">34</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">34</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                3
+              
+            </td>
+            <td><strong>東京都</strong></td>
+            <td class="text-end">19</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">19</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                4
+              
+            </td>
+            <td><strong>滋賀県</strong></td>
+            <td class="text-end">6</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">6</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                5
+              
+            </td>
+            <td><strong>栃木県</strong></td>
+            <td class="text-end">4</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">4</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                6
+              
+            </td>
+            <td><strong>愛知県</strong></td>
+            <td class="text-end">4</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">4</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                7
+              
+            </td>
+            <td><strong>大阪府</strong></td>
+            <td class="text-end">4</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">4</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                8
+              
+            </td>
+            <td><strong>兵庫県</strong></td>
+            <td class="text-end">4</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">4</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                9
+              
+            </td>
+            <td><strong>長野県</strong></td>
+            <td class="text-end">3</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">3</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                10
+              
+            </td>
+            <td><strong>広島県</strong></td>
+            <td class="text-end">3</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">3</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                11
+              
+            </td>
+            <td><strong>岩手県</strong></td>
+            <td class="text-end">2</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">2</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                12
+              
+            </td>
+            <td><strong>神奈川県</strong></td>
+            <td class="text-end">2</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">2</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                13
+              
+            </td>
+            <td><strong>和歌山県</strong></td>
+            <td class="text-end">2</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">2</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                14
+              
+            </td>
+            <td><strong>福岡県</strong></td>
+            <td class="text-end">2</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">2</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                15
+              
+            </td>
+            <td><strong>長崎県</strong></td>
+            <td class="text-end">2</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">2</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                16
+              
+            </td>
+            <td><strong>青森県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                17
+              
+            </td>
+            <td><strong>宮城県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                18
+              
+            </td>
+            <td><strong>山形県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                19
+              
+            </td>
+            <td><strong>新潟県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                20
+              
+            </td>
+            <td><strong>福井県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                21
+              
+            </td>
+            <td><strong>静岡県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                22
+              
+            </td>
+            <td><strong>島根県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                23
+              
+            </td>
+            <td><strong>岡山県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                24
+              
+            </td>
+            <td><strong>山口県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="">
+            <td>
+              
+                25
+              
+            </td>
+            <td><strong>大分県</strong></td>
+            <td class="text-end">1</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">1</td>
+            <td>
+              
+              <div class="d-flex align-items-center gap-2">
+                <div class="rate-bar-wrap">
+                  <div class="rate-bar">
+                    <div class="rate-bar-fill" style="width:0.0%"></div>
+                  </div>
+                </div>
+                <span style="font-size:.85rem">0.0%</span>
+              </div>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>北海道</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>秋田県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>福島県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>茨城県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>群馬県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>埼玉県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>千葉県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>富山県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>石川県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>山梨県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>岐阜県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>三重県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>鳥取県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>徳島県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>香川県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>愛媛県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>高知県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>佐賀県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>熊本県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>宮崎県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>鹿児島県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+          <tr class="pref-zero">
+            <td>
+              ─
+            </td>
+            <td><strong>沖縄県</strong></td>
+            <td class="text-end">0</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end" style="color:#e53935">0</td>
+            <td>
+              
+              <span class="pref-zero">国宝なし</span>
+              
+            </td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ③ カテゴリ別 / ④ 種別別 -->
+  <div class="row g-3 mb-3">
+    <div class="col-md-5">
+      <div class="card-block h-100">
+        <div class="section-title">③ カテゴリ別達成率</div>
+        <div id="chart-cat"></div>
+        <table class="table table-sm mt-2">
+          <thead><tr><th>カテゴリ</th><th class="text-end">総数</th><th class="text-end">見た</th><th class="text-end">達成率</th></tr></thead>
+          <tbody>
+          
+          <tr>
+            <td>
+              <span class="badge-arch">建造物</span>
+            </td>
+            <td class="text-end">77</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end"><strong>0.0%</strong></td>
+          </tr>
+          
+          <tr>
+            <td>
+              <span class="badge-art">美術工芸品</span>
+              
+            </td>
+            <td class="text-end">61</td>
+            <td class="text-end" style="color:#43a047">0</td>
+            <td class="text-end"><strong>0.0%</strong></td>
+          </tr>
+          
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="card-block h-100">
+        <div class="section-title">④ 種別別達成率</div>
+        <div id="chart-type"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 未達一覧 -->
+  <div class="card-block">
+    <div class="section-title">⑤ 未達一覧</div>
+
+    <!-- フィルタ -->
+    <div id="filter-section" class="row g-2 mb-3">
+      <div class="col-sm-4">
+        <select class="form-select form-select-sm" id="filter-pref">
+          <option value="">── 都道府県（全て）──</option>
+          
+          <option value="京都府">京都府</option>
+          
+          <option value="兵庫県">兵庫県</option>
+          
+          <option value="和歌山県">和歌山県</option>
+          
+          <option value="大分県">大分県</option>
+          
+          <option value="大阪府">大阪府</option>
+          
+          <option value="奈良県">奈良県</option>
+          
+          <option value="宮城県">宮城県</option>
+          
+          <option value="山口県">山口県</option>
+          
+          <option value="山形県">山形県</option>
+          
+          <option value="岡山県">岡山県</option>
+          
+          <option value="岩手県">岩手県</option>
+          
+          <option value="島根県">島根県</option>
+          
+          <option value="広島県">広島県</option>
+          
+          <option value="愛知県">愛知県</option>
+          
+          <option value="新潟県">新潟県</option>
+          
+          <option value="東京都">東京都</option>
+          
+          <option value="栃木県">栃木県</option>
+          
+          <option value="滋賀県">滋賀県</option>
+          
+          <option value="神奈川県">神奈川県</option>
+          
+          <option value="福井県">福井県</option>
+          
+          <option value="福岡県">福岡県</option>
+          
+          <option value="長崎県">長崎県</option>
+          
+          <option value="長野県">長野県</option>
+          
+          <option value="青森県">青森県</option>
+          
+          <option value="静岡県">静岡県</option>
+          
+        </select>
+      </div>
+      <div class="col-sm-3">
+        <select class="form-select form-select-sm" id="filter-cat">
+          <option value="">── カテゴリ（全て）──</option>
+          <option value="art">美術工芸品</option>
+          <option value="architecture">建造物</option>
+        </select>
+      </div>
+      <div class="col-sm-5">
+        <input type="text" class="form-control form-control-sm" id="filter-kw" placeholder="🔍 キーワード検索（名称・種別・所蔵者）">
+      </div>
+    </div>
+    <div class="mb-2" id="filter-count" style="font-size:.85rem; color:#666;"></div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover" id="not-viewed-table">
+        <thead class="table-secondary">
+          <tr>
+            <th>都道府県</th><th>カテゴリ</th><th>種別</th>
+            <th>名称</th><th>所蔵者</th><th>施設</th>
+          </tr>
+        </thead>
+        <tbody id="not-viewed-body">
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="上賀茂神社 本殿・権殿 神社 賀茂別雷神社 上賀茂神社"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>上賀茂神社 本殿・権殿</strong></td>
+            <td style="font-size:.82rem">賀茂別雷神社</td>
+            <td style="font-size:.82rem">上賀茂神社</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="下鴨神社 本殿（東西） 神社 賀茂御祖神社 下鴨神社"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>下鴨神社 本殿（東西）</strong></td>
+            <td style="font-size:.82rem">賀茂御祖神社</td>
+            <td style="font-size:.82rem">下鴨神社</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="二条城 二の丸御殿 城郭 京都市 二条城"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">城郭</td>
+            <td><strong>二条城 二の丸御殿</strong></td>
+            <td style="font-size:.82rem">京都市</td>
+            <td style="font-size:.82rem">二条城</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="仁和寺 御影堂 寺院 仁和寺 仁和寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>仁和寺 御影堂</strong></td>
+            <td style="font-size:.82rem">仁和寺</td>
+            <td style="font-size:.82rem">仁和寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="仁和寺 金堂 寺院 仁和寺 仁和寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>仁和寺 金堂</strong></td>
+            <td style="font-size:.82rem">仁和寺</td>
+            <td style="font-size:.82rem">仁和寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="八坂神社 本殿 神社 八坂神社 八坂神社"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>八坂神社 本殿</strong></td>
+            <td style="font-size:.82rem">八坂神社</td>
+            <td style="font-size:.82rem">八坂神社</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="南禅寺 方丈 寺院 南禅寺 南禅寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>南禅寺 方丈</strong></td>
+            <td style="font-size:.82rem">南禅寺</td>
+            <td style="font-size:.82rem">南禅寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="大徳寺 唐門 寺院 大徳寺 大徳寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>大徳寺 唐門</strong></td>
+            <td style="font-size:.82rem">大徳寺</td>
+            <td style="font-size:.82rem">大徳寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="大徳寺 方丈 寺院 大徳寺 大徳寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>大徳寺 方丈</strong></td>
+            <td style="font-size:.82rem">大徳寺</td>
+            <td style="font-size:.82rem">大徳寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="妙喜庵 茶室（待庵） 茶室 妙喜庵 妙喜庵（非公開）"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">茶室</td>
+            <td><strong>妙喜庵 茶室（待庵）</strong></td>
+            <td style="font-size:.82rem">妙喜庵</td>
+            <td style="font-size:.82rem">妙喜庵（非公開）</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="宇治上神社 本殿 神社 宇治上神社 宇治上神社"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>宇治上神社 本殿</strong></td>
+            <td style="font-size:.82rem">宇治上神社</td>
+            <td style="font-size:.82rem">宇治上神社</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="平等院 鳳凰堂 寺院 平等院 平等院"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>平等院 鳳凰堂</strong></td>
+            <td style="font-size:.82rem">平等院</td>
+            <td style="font-size:.82rem">平等院</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="慈照寺 東求堂 寺院 慈照寺 慈照寺（銀閣寺）"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>慈照寺 東求堂</strong></td>
+            <td style="font-size:.82rem">慈照寺</td>
+            <td style="font-size:.82rem">慈照寺（銀閣寺）</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="東寺 五重塔 寺院 東寺（教王護国寺） 東寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>東寺 五重塔</strong></td>
+            <td style="font-size:.82rem">東寺（教王護国寺）</td>
+            <td style="font-size:.82rem">東寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="東寺 金堂 寺院 東寺（教王護国寺） 東寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>東寺 金堂</strong></td>
+            <td style="font-size:.82rem">東寺（教王護国寺）</td>
+            <td style="font-size:.82rem">東寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="浄瑠璃寺 三重塔 寺院 浄瑠璃寺 浄瑠璃寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>浄瑠璃寺 三重塔</strong></td>
+            <td style="font-size:.82rem">浄瑠璃寺</td>
+            <td style="font-size:.82rem">浄瑠璃寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="浄瑠璃寺 本堂（九体阿弥陀堂） 寺院 浄瑠璃寺 浄瑠璃寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>浄瑠璃寺 本堂（九体阿弥陀堂）</strong></td>
+            <td style="font-size:.82rem">浄瑠璃寺</td>
+            <td style="font-size:.82rem">浄瑠璃寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="知恩院 三門 寺院 知恩院 知恩院"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>知恩院 三門</strong></td>
+            <td style="font-size:.82rem">知恩院</td>
+            <td style="font-size:.82rem">知恩院</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="西本願寺 唐門 寺院 本願寺（西本願寺） 西本願寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>西本願寺 唐門</strong></td>
+            <td style="font-size:.82rem">本願寺（西本願寺）</td>
+            <td style="font-size:.82rem">西本願寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="西本願寺 御影堂 寺院 本願寺（西本願寺） 西本願寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>西本願寺 御影堂</strong></td>
+            <td style="font-size:.82rem">本願寺（西本願寺）</td>
+            <td style="font-size:.82rem">西本願寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="西本願寺 阿弥陀堂 寺院 本願寺（西本願寺） 西本願寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>西本願寺 阿弥陀堂</strong></td>
+            <td style="font-size:.82rem">本願寺（西本願寺）</td>
+            <td style="font-size:.82rem">西本願寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="西本願寺 飛雲閣（伝） 楼閣 本願寺（西本願寺） 西本願寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">楼閣</td>
+            <td><strong>西本願寺 飛雲閣（伝）</strong></td>
+            <td style="font-size:.82rem">本願寺（西本願寺）</td>
+            <td style="font-size:.82rem">西本願寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="醍醐寺 五重塔 寺院 醍醐寺 醍醐寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>醍醐寺 五重塔</strong></td>
+            <td style="font-size:.82rem">醍醐寺</td>
+            <td style="font-size:.82rem">醍醐寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="醍醐寺 唐門 寺院 醍醐寺 醍醐寺三宝院"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>醍醐寺 唐門</strong></td>
+            <td style="font-size:.82rem">醍醐寺</td>
+            <td style="font-size:.82rem">醍醐寺三宝院</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="architecture"
+            data-kw="醍醐寺 金堂 寺院 醍醐寺 醍醐寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>醍醐寺 金堂</strong></td>
+            <td style="font-size:.82rem">醍醐寺</td>
+            <td style="font-size:.82rem">醍醐寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="天橋立図（伝雪舟） 絵画 京都国立博物館 京都国立博物館"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>天橋立図（伝雪舟）</strong></td>
+            <td style="font-size:.82rem">京都国立博物館</td>
+            <td style="font-size:.82rem">京都国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="弥勒菩薩半跏思惟像（広隆寺） 彫刻 広隆寺 広隆寺霊宝殿"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>弥勒菩薩半跏思惟像（広隆寺）</strong></td>
+            <td style="font-size:.82rem">広隆寺</td>
+            <td style="font-size:.82rem">広隆寺霊宝殿</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="木造不動明王坐像（東寺） 彫刻 東寺（教王護国寺） 東寺宝物館"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造不動明王坐像（東寺）</strong></td>
+            <td style="font-size:.82rem">東寺（教王護国寺）</td>
+            <td style="font-size:.82rem">東寺宝物館</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="木造地蔵菩薩立像（六波羅蜜寺） 彫刻 六波羅蜜寺 六波羅蜜寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造地蔵菩薩立像（六波羅蜜寺）</strong></td>
+            <td style="font-size:.82rem">六波羅蜜寺</td>
+            <td style="font-size:.82rem">六波羅蜜寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="木造毘沙門天立像（鞍馬寺） 彫刻 鞍馬寺 鞍馬寺霊宝殿"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造毘沙門天立像（鞍馬寺）</strong></td>
+            <td style="font-size:.82rem">鞍馬寺</td>
+            <td style="font-size:.82rem">鞍馬寺霊宝殿</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="木造薬師如来坐像（神護寺） 彫刻 神護寺 神護寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造薬師如来坐像（神護寺）</strong></td>
+            <td style="font-size:.82rem">神護寺</td>
+            <td style="font-size:.82rem">神護寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="木造阿弥陀如来坐像（平等院） 彫刻 平等院 平等院鳳翔館"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造阿弥陀如来坐像（平等院）</strong></td>
+            <td style="font-size:.82rem">平等院</td>
+            <td style="font-size:.82rem">平等院鳳翔館</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="木造阿弥陀如来坐像（浄瑠璃寺） 彫刻 浄瑠璃寺 浄瑠璃寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造阿弥陀如来坐像（浄瑠璃寺）</strong></td>
+            <td style="font-size:.82rem">浄瑠璃寺</td>
+            <td style="font-size:.82rem">浄瑠璃寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="銅造薬師如来坐像（神護寺） 彫刻 神護寺 神護寺"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>銅造薬師如来坐像（神護寺）</strong></td>
+            <td style="font-size:.82rem">神護寺</td>
+            <td style="font-size:.82rem">神護寺</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="長谷川等伯・久蔵 智積院障壁画 絵画 智積院 智積院収蔵庫"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>長谷川等伯・久蔵 智積院障壁画</strong></td>
+            <td style="font-size:.82rem">智積院</td>
+            <td style="font-size:.82rem">智積院収蔵庫</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="風神雷神図屏風（俵屋宗達） 絵画 建仁寺 建仁寺（京都国立博物館寄託）"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>風神雷神図屏風（俵屋宗達）</strong></td>
+            <td style="font-size:.82rem">建仁寺</td>
+            <td style="font-size:.82rem">建仁寺（京都国立博物館寄託）</td>
+          </tr>
+          
+          <tr
+            data-pref="京都府"
+            data-cat="art"
+            data-kw="鳥獣人物戯画 甲乙丙丁四巻 絵画 高山寺 高山寺（京都国立博物館等寄託）"
+          >
+            <td>京都府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>鳥獣人物戯画 甲乙丙丁四巻</strong></td>
+            <td style="font-size:.82rem">高山寺</td>
+            <td style="font-size:.82rem">高山寺（京都国立博物館等寄託）</td>
+          </tr>
+          
+          <tr
+            data-pref="兵庫県"
+            data-cat="architecture"
+            data-kw="一乗寺 三重塔 寺院 一乗寺 一乗寺"
+          >
+            <td>兵庫県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>一乗寺 三重塔</strong></td>
+            <td style="font-size:.82rem">一乗寺</td>
+            <td style="font-size:.82rem">一乗寺</td>
+          </tr>
+          
+          <tr
+            data-pref="兵庫県"
+            data-cat="architecture"
+            data-kw="姫路城（大天守・小天守群） 城郭 姫路市 姫路城"
+          >
+            <td>兵庫県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">城郭</td>
+            <td><strong>姫路城（大天守・小天守群）</strong></td>
+            <td style="font-size:.82rem">姫路市</td>
+            <td style="font-size:.82rem">姫路城</td>
+          </tr>
+          
+          <tr
+            data-pref="兵庫県"
+            data-cat="architecture"
+            data-kw="浄土寺 浄土堂（阿弥陀堂） 寺院 浄土寺 浄土寺"
+          >
+            <td>兵庫県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>浄土寺 浄土堂（阿弥陀堂）</strong></td>
+            <td style="font-size:.82rem">浄土寺</td>
+            <td style="font-size:.82rem">浄土寺</td>
+          </tr>
+          
+          <tr
+            data-pref="兵庫県"
+            data-cat="architecture"
+            data-kw="鶴林寺 本堂 寺院 鶴林寺 鶴林寺"
+          >
+            <td>兵庫県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>鶴林寺 本堂</strong></td>
+            <td style="font-size:.82rem">鶴林寺</td>
+            <td style="font-size:.82rem">鶴林寺</td>
+          </tr>
+          
+          <tr
+            data-pref="和歌山県"
+            data-cat="architecture"
+            data-kw="金剛峯寺 不動堂 寺院 金剛峯寺 高野山 金剛峯寺"
+          >
+            <td>和歌山県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>金剛峯寺 不動堂</strong></td>
+            <td style="font-size:.82rem">金剛峯寺</td>
+            <td style="font-size:.82rem">高野山 金剛峯寺</td>
+          </tr>
+          
+          <tr
+            data-pref="和歌山県"
+            data-cat="art"
+            data-kw="粉河寺縁起絵巻 絵画 粉河寺 粉河寺"
+          >
+            <td>和歌山県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>粉河寺縁起絵巻</strong></td>
+            <td style="font-size:.82rem">粉河寺</td>
+            <td style="font-size:.82rem">粉河寺</td>
+          </tr>
+          
+          <tr
+            data-pref="大分県"
+            data-cat="architecture"
+            data-kw="富貴寺 大堂（阿弥陀堂） 寺院 富貴寺 富貴寺"
+          >
+            <td>大分県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>富貴寺 大堂（阿弥陀堂）</strong></td>
+            <td style="font-size:.82rem">富貴寺</td>
+            <td style="font-size:.82rem">富貴寺</td>
+          </tr>
+          
+          <tr
+            data-pref="大阪府"
+            data-cat="architecture"
+            data-kw="四天王寺 石鳥居 寺院 四天王寺 四天王寺"
+          >
+            <td>大阪府</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>四天王寺 石鳥居</strong></td>
+            <td style="font-size:.82rem">四天王寺</td>
+            <td style="font-size:.82rem">四天王寺</td>
+          </tr>
+          
+          <tr
+            data-pref="大阪府"
+            data-cat="art"
+            data-kw="聖徳太子絵伝（四天王寺） 絵画 四天王寺 四天王寺宝物館"
+          >
+            <td>大阪府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>聖徳太子絵伝（四天王寺）</strong></td>
+            <td style="font-size:.82rem">四天王寺</td>
+            <td style="font-size:.82rem">四天王寺宝物館</td>
+          </tr>
+          
+          <tr
+            data-pref="大阪府"
+            data-cat="art"
+            data-kw="青磁下蕪花瓶 工芸品 大阪市立東洋陶磁美術館 大阪市立東洋陶磁美術館"
+          >
+            <td>大阪府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>青磁下蕪花瓶</strong></td>
+            <td style="font-size:.82rem">大阪市立東洋陶磁美術館</td>
+            <td style="font-size:.82rem">大阪市立東洋陶磁美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="大阪府"
+            data-cat="art"
+            data-kw="青磁鳳凰耳花生（朝鮮） 工芸品 大阪市立東洋陶磁美術館 大阪市立東洋陶磁美術館"
+          >
+            <td>大阪府</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>青磁鳳凰耳花生（朝鮮）</strong></td>
+            <td style="font-size:.82rem">大阪市立東洋陶磁美術館</td>
+            <td style="font-size:.82rem">大阪市立東洋陶磁美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="元興寺 極楽坊本堂 寺院 元興寺 元興寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>元興寺 極楽坊本堂</strong></td>
+            <td style="font-size:.82rem">元興寺</td>
+            <td style="font-size:.82rem">元興寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="吉野水分神社 本殿 神社 吉野水分神社 吉野水分神社"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>吉野水分神社 本殿</strong></td>
+            <td style="font-size:.82rem">吉野水分神社</td>
+            <td style="font-size:.82rem">吉野水分神社</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="唐招提寺 講堂 寺院 唐招提寺 唐招提寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>唐招提寺 講堂</strong></td>
+            <td style="font-size:.82rem">唐招提寺</td>
+            <td style="font-size:.82rem">唐招提寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="唐招提寺 金堂 寺院 唐招提寺 唐招提寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>唐招提寺 金堂</strong></td>
+            <td style="font-size:.82rem">唐招提寺</td>
+            <td style="font-size:.82rem">唐招提寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="室生寺 五重塔 寺院 室生寺 室生寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>室生寺 五重塔</strong></td>
+            <td style="font-size:.82rem">室生寺</td>
+            <td style="font-size:.82rem">室生寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="室生寺 金堂 寺院 室生寺 室生寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>室生寺 金堂</strong></td>
+            <td style="font-size:.82rem">室生寺</td>
+            <td style="font-size:.82rem">室生寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="春日大社 本殿 神社 春日大社 春日大社"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>春日大社 本殿</strong></td>
+            <td style="font-size:.82rem">春日大社</td>
+            <td style="font-size:.82rem">春日大社</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="東大寺 南大門 寺院 東大寺 東大寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>東大寺 南大門</strong></td>
+            <td style="font-size:.82rem">東大寺</td>
+            <td style="font-size:.82rem">東大寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="東大寺 大仏殿（金堂） 寺院 東大寺 東大寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>東大寺 大仏殿（金堂）</strong></td>
+            <td style="font-size:.82rem">東大寺</td>
+            <td style="font-size:.82rem">東大寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="東大寺 法華堂（三月堂） 寺院 東大寺 東大寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>東大寺 法華堂（三月堂）</strong></td>
+            <td style="font-size:.82rem">東大寺</td>
+            <td style="font-size:.82rem">東大寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="東大寺 転害門 寺院 東大寺 東大寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>東大寺 転害門</strong></td>
+            <td style="font-size:.82rem">東大寺</td>
+            <td style="font-size:.82rem">東大寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="正倉院 正倉（校倉） 倉庫 宮内庁 正倉院"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">倉庫</td>
+            <td><strong>正倉院 正倉（校倉）</strong></td>
+            <td style="font-size:.82rem">宮内庁</td>
+            <td style="font-size:.82rem">正倉院</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="法隆寺 中門 寺院 法隆寺 法隆寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>法隆寺 中門</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="法隆寺 五重塔 寺院 法隆寺 法隆寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>法隆寺 五重塔</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="法隆寺 夢殿 寺院 法隆寺 法隆寺 東院伽藍"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>法隆寺 夢殿</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺 東院伽藍</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="法隆寺 金堂 寺院 法隆寺 法隆寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>法隆寺 金堂</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="當麻寺 東塔 寺院 當麻寺 當麻寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>當麻寺 東塔</strong></td>
+            <td style="font-size:.82rem">當麻寺</td>
+            <td style="font-size:.82rem">當麻寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="當麻寺 西塔 寺院 當麻寺 當麻寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>當麻寺 西塔</strong></td>
+            <td style="font-size:.82rem">當麻寺</td>
+            <td style="font-size:.82rem">當麻寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="興福寺 北円堂 寺院 興福寺 興福寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>興福寺 北円堂</strong></td>
+            <td style="font-size:.82rem">興福寺</td>
+            <td style="font-size:.82rem">興福寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="興福寺 東金堂 寺院 興福寺 興福寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>興福寺 東金堂</strong></td>
+            <td style="font-size:.82rem">興福寺</td>
+            <td style="font-size:.82rem">興福寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="薬師寺 東塔 寺院 薬師寺 薬師寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>薬師寺 東塔</strong></td>
+            <td style="font-size:.82rem">薬師寺</td>
+            <td style="font-size:.82rem">薬師寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="金峯山寺 蔵王堂 寺院 金峯山寺 金峯山寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>金峯山寺 蔵王堂</strong></td>
+            <td style="font-size:.82rem">金峯山寺</td>
+            <td style="font-size:.82rem">金峯山寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="architecture"
+            data-kw="長谷寺 本堂 寺院 長谷寺 長谷寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>長谷寺 本堂</strong></td>
+            <td style="font-size:.82rem">長谷寺</td>
+            <td style="font-size:.82rem">長谷寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="七支刀（石上神宮） 工芸品 石上神宮 石上神宮"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>七支刀（石上神宮）</strong></td>
+            <td style="font-size:.82rem">石上神宮</td>
+            <td style="font-size:.82rem">石上神宮</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="信貴山縁起絵巻（三巻） 絵画 朝護孫子寺 朝護孫子寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>信貴山縁起絵巻（三巻）</strong></td>
+            <td style="font-size:.82rem">朝護孫子寺</td>
+            <td style="font-size:.82rem">朝護孫子寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="天寿国曼荼羅繡帳 工芸品 中宮寺 中宮寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>天寿国曼荼羅繡帳</strong></td>
+            <td style="font-size:.82rem">中宮寺</td>
+            <td style="font-size:.82rem">中宮寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="木造十一面観音立像（法華寺） 彫刻 法華寺 法華寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造十一面観音立像（法華寺）</strong></td>
+            <td style="font-size:.82rem">法華寺</td>
+            <td style="font-size:.82rem">法華寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="木造聖観音立像（法隆寺夢殿） 彫刻 法隆寺 法隆寺夢殿"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造聖観音立像（法隆寺夢殿）</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺夢殿</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="木造薬師如来坐像（唐招提寺） 彫刻 唐招提寺 唐招提寺金堂"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造薬師如来坐像（唐招提寺）</strong></td>
+            <td style="font-size:.82rem">唐招提寺</td>
+            <td style="font-size:.82rem">唐招提寺金堂</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="木造金剛力士立像（東大寺南大門） 彫刻 東大寺 東大寺南大門"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造金剛力士立像（東大寺南大門）</strong></td>
+            <td style="font-size:.82rem">東大寺</td>
+            <td style="font-size:.82rem">東大寺南大門</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="百済観音立像（法隆寺） 彫刻 法隆寺 法隆寺大宝蔵院"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>百済観音立像（法隆寺）</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺大宝蔵院</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="釈迦三尊像（法隆寺金堂） 彫刻 法隆寺 法隆寺"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>釈迦三尊像（法隆寺金堂）</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">法隆寺</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="金銅釈迦如来坐像（法隆寺） 彫刻 法隆寺 東京国立博物館（寄託）"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>金銅釈迦如来坐像（法隆寺）</strong></td>
+            <td style="font-size:.82rem">法隆寺</td>
+            <td style="font-size:.82rem">東京国立博物館（寄託）</td>
+          </tr>
+          
+          <tr
+            data-pref="奈良県"
+            data-cat="art"
+            data-kw="阿修羅像（興福寺） 彫刻 興福寺 興福寺国宝館"
+          >
+            <td>奈良県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>阿修羅像（興福寺）</strong></td>
+            <td style="font-size:.82rem">興福寺</td>
+            <td style="font-size:.82rem">興福寺国宝館</td>
+          </tr>
+          
+          <tr
+            data-pref="宮城県"
+            data-cat="architecture"
+            data-kw="瑞巌寺 本堂 寺院 瑞巌寺 瑞巌寺"
+          >
+            <td>宮城県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>瑞巌寺 本堂</strong></td>
+            <td style="font-size:.82rem">瑞巌寺</td>
+            <td style="font-size:.82rem">瑞巌寺</td>
+          </tr>
+          
+          <tr
+            data-pref="山口県"
+            data-cat="art"
+            data-kw="山水長巻（雪舟） 絵画 毛利博物館 毛利博物館"
+          >
+            <td>山口県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>山水長巻（雪舟）</strong></td>
+            <td style="font-size:.82rem">毛利博物館</td>
+            <td style="font-size:.82rem">毛利博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="山形県"
+            data-cat="art"
+            data-kw="洛中洛外図屏風（上杉本） 絵画 米沢市上杉博物館 米沢市上杉博物館"
+          >
+            <td>山形県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>洛中洛外図屏風（上杉本）</strong></td>
+            <td style="font-size:.82rem">米沢市上杉博物館</td>
+            <td style="font-size:.82rem">米沢市上杉博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="岡山県"
+            data-cat="architecture"
+            data-kw="旧閑谷学校 講堂 学校 岡山県 旧閑谷学校"
+          >
+            <td>岡山県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">学校</td>
+            <td><strong>旧閑谷学校 講堂</strong></td>
+            <td style="font-size:.82rem">岡山県</td>
+            <td style="font-size:.82rem">旧閑谷学校</td>
+          </tr>
+          
+          <tr
+            data-pref="岩手県"
+            data-cat="architecture"
+            data-kw="中尊寺 金色堂 寺院 中尊寺 中尊寺讃衡蔵"
+          >
+            <td>岩手県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>中尊寺 金色堂</strong></td>
+            <td style="font-size:.82rem">中尊寺</td>
+            <td style="font-size:.82rem">中尊寺讃衡蔵</td>
+          </tr>
+          
+          <tr
+            data-pref="岩手県"
+            data-cat="art"
+            data-kw="紺紙金字一切経（中尊寺） 書跡・典籍 中尊寺 中尊寺讃衡蔵"
+          >
+            <td>岩手県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">書跡・典籍</td>
+            <td><strong>紺紙金字一切経（中尊寺）</strong></td>
+            <td style="font-size:.82rem">中尊寺</td>
+            <td style="font-size:.82rem">中尊寺讃衡蔵</td>
+          </tr>
+          
+          <tr
+            data-pref="島根県"
+            data-cat="architecture"
+            data-kw="出雲大社 本殿 神社 出雲大社 出雲大社"
+          >
+            <td>島根県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>出雲大社 本殿</strong></td>
+            <td style="font-size:.82rem">出雲大社</td>
+            <td style="font-size:.82rem">出雲大社</td>
+          </tr>
+          
+          <tr
+            data-pref="広島県"
+            data-cat="architecture"
+            data-kw="厳島神社 廻廊（東西） 神社 厳島神社 厳島神社"
+          >
+            <td>広島県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>厳島神社 廻廊（東西）</strong></td>
+            <td style="font-size:.82rem">厳島神社</td>
+            <td style="font-size:.82rem">厳島神社</td>
+          </tr>
+          
+          <tr
+            data-pref="広島県"
+            data-cat="architecture"
+            data-kw="厳島神社 本殿・幣殿・拝殿 神社 厳島神社 厳島神社"
+          >
+            <td>広島県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>厳島神社 本殿・幣殿・拝殿</strong></td>
+            <td style="font-size:.82rem">厳島神社</td>
+            <td style="font-size:.82rem">厳島神社</td>
+          </tr>
+          
+          <tr
+            data-pref="広島県"
+            data-cat="architecture"
+            data-kw="厳島神社 能舞台 神社 厳島神社 厳島神社"
+          >
+            <td>広島県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>厳島神社 能舞台</strong></td>
+            <td style="font-size:.82rem">厳島神社</td>
+            <td style="font-size:.82rem">厳島神社</td>
+          </tr>
+          
+          <tr
+            data-pref="愛知県"
+            data-cat="architecture"
+            data-kw="犬山城 天守 城郭 財団法人犬山城白帝文庫 犬山城"
+          >
+            <td>愛知県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">城郭</td>
+            <td><strong>犬山城 天守</strong></td>
+            <td style="font-size:.82rem">財団法人犬山城白帝文庫</td>
+            <td style="font-size:.82rem">犬山城</td>
+          </tr>
+          
+          <tr
+            data-pref="愛知県"
+            data-cat="art"
+            data-kw="太刀 銘 国行（号 桑名江） 工芸品 徳川黎明会 徳川美術館"
+          >
+            <td>愛知県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>太刀 銘 国行（号 桑名江）</strong></td>
+            <td style="font-size:.82rem">徳川黎明会</td>
+            <td style="font-size:.82rem">徳川美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="愛知県"
+            data-cat="art"
+            data-kw="志野茶碗 銘「不二山」 工芸品 徳川美術館 徳川美術館"
+          >
+            <td>愛知県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>志野茶碗 銘「不二山」</strong></td>
+            <td style="font-size:.82rem">徳川美術館</td>
+            <td style="font-size:.82rem">徳川美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="愛知県"
+            data-cat="art"
+            data-kw="源氏物語絵巻（徳川美術館本） 絵画 徳川美術館 徳川美術館"
+          >
+            <td>愛知県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>源氏物語絵巻（徳川美術館本）</strong></td>
+            <td style="font-size:.82rem">徳川美術館</td>
+            <td style="font-size:.82rem">徳川美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="新潟県"
+            data-cat="art"
+            data-kw="火焔型土器 考古資料 十日町市 十日町市博物館"
+          >
+            <td>新潟県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">考古資料</td>
+            <td><strong>火焔型土器</strong></td>
+            <td style="font-size:.82rem">十日町市</td>
+            <td style="font-size:.82rem">十日町市博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="伴大納言絵詞 絵画 出光美術館 出光美術館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>伴大納言絵詞</strong></td>
+            <td style="font-size:.82rem">出光美術館</td>
+            <td style="font-size:.82rem">出光美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="住吉物語絵巻 絵画 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>住吉物語絵巻</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="動植綵絵（伊藤若冲） 絵画 宮内庁 三の丸尚蔵館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>動植綵絵（伊藤若冲）</strong></td>
+            <td style="font-size:.82rem">宮内庁</td>
+            <td style="font-size:.82rem">三の丸尚蔵館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="太刀 銘 三条（号 三日月宗近） 工芸品 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>太刀 銘 三条（号 三日月宗近）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="太刀 銘 長光（号 津田遠江入道正信所持） 工芸品 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>太刀 銘 長光（号 津田遠江入道正信所持）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="平治物語絵巻（三条殿夜討巻） 絵画 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>平治物語絵巻（三条殿夜討巻）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="春日権現験記絵 絵画 宮内庁 三の丸尚蔵館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>春日権現験記絵</strong></td>
+            <td style="font-size:.82rem">宮内庁</td>
+            <td style="font-size:.82rem">三の丸尚蔵館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="松島図屏風（俵屋宗達） 絵画 宮内庁 三の丸尚蔵館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>松島図屏風（俵屋宗達）</strong></td>
+            <td style="font-size:.82rem">宮内庁</td>
+            <td style="font-size:.82rem">三の丸尚蔵館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="松林図屏風（長谷川等伯） 絵画 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>松林図屏風（長谷川等伯）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="源氏物語絵巻（五島美術館本） 絵画 五島美術館 五島美術館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>源氏物語絵巻（五島美術館本）</strong></td>
+            <td style="font-size:.82rem">五島美術館</td>
+            <td style="font-size:.82rem">五島美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="燕子花図屏風（尾形光琳） 絵画 根津美術館 根津美術館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>燕子花図屏風（尾形光琳）</strong></td>
+            <td style="font-size:.82rem">根津美術館</td>
+            <td style="font-size:.82rem">根津美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="秋冬山水図（雪舟） 絵画 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>秋冬山水図（雪舟）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="色絵藤花文茶壺（仁清） 工芸品 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>色絵藤花文茶壺（仁清）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="蒔絵冊子箱（浮線綾螺鈿蒔絵手箱） 工芸品 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">工芸品</td>
+            <td><strong>蒔絵冊子箱（浮線綾螺鈿蒔絵手箱）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="蒙古襲来絵詞 絵画 宮内庁 三の丸尚蔵館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>蒙古襲来絵詞</strong></td>
+            <td style="font-size:.82rem">宮内庁</td>
+            <td style="font-size:.82rem">三の丸尚蔵館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="観楓図屏風（狩野秀頼） 絵画 東京国立博物館 東京国立博物館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>観楓図屏風（狩野秀頼）</strong></td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+            <td style="font-size:.82rem">東京国立博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="那智瀧図 絵画 根津美術館 根津美術館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>那智瀧図</strong></td>
+            <td style="font-size:.82rem">根津美術館</td>
+            <td style="font-size:.82rem">根津美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="雪松図屏風（円山応挙） 絵画 三井記念美術館 三井記念美術館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>雪松図屏風（円山応挙）</strong></td>
+            <td style="font-size:.82rem">三井記念美術館</td>
+            <td style="font-size:.82rem">三井記念美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="東京都"
+            data-cat="art"
+            data-kw="青木繁「海の幸」 絵画 アーティゾン美術館 アーティゾン美術館"
+          >
+            <td>東京都</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>青木繁「海の幸」</strong></td>
+            <td style="font-size:.82rem">アーティゾン美術館</td>
+            <td style="font-size:.82rem">アーティゾン美術館</td>
+          </tr>
+          
+          <tr
+            data-pref="栃木県"
+            data-cat="architecture"
+            data-kw="日光東照宮 唐門 神社 日光東照宮 日光東照宮"
+          >
+            <td>栃木県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>日光東照宮 唐門</strong></td>
+            <td style="font-size:.82rem">日光東照宮</td>
+            <td style="font-size:.82rem">日光東照宮</td>
+          </tr>
+          
+          <tr
+            data-pref="栃木県"
+            data-cat="architecture"
+            data-kw="日光東照宮 本殿・石の間・拝殿 神社 日光東照宮 日光東照宮"
+          >
+            <td>栃木県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>日光東照宮 本殿・石の間・拝殿</strong></td>
+            <td style="font-size:.82rem">日光東照宮</td>
+            <td style="font-size:.82rem">日光東照宮</td>
+          </tr>
+          
+          <tr
+            data-pref="栃木県"
+            data-cat="architecture"
+            data-kw="日光東照宮 陽明門 神社 日光東照宮 日光東照宮"
+          >
+            <td>栃木県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>日光東照宮 陽明門</strong></td>
+            <td style="font-size:.82rem">日光東照宮</td>
+            <td style="font-size:.82rem">日光東照宮</td>
+          </tr>
+          
+          <tr
+            data-pref="栃木県"
+            data-cat="art"
+            data-kw="那須国造碑 考古資料 栃木県 笠石神社"
+          >
+            <td>栃木県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">考古資料</td>
+            <td><strong>那須国造碑</strong></td>
+            <td style="font-size:.82rem">栃木県</td>
+            <td style="font-size:.82rem">笠石神社</td>
+          </tr>
+          
+          <tr
+            data-pref="滋賀県"
+            data-cat="architecture"
+            data-kw="彦根城 天守 城郭 彦根市 彦根城"
+          >
+            <td>滋賀県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">城郭</td>
+            <td><strong>彦根城 天守</strong></td>
+            <td style="font-size:.82rem">彦根市</td>
+            <td style="font-size:.82rem">彦根城</td>
+          </tr>
+          
+          <tr
+            data-pref="滋賀県"
+            data-cat="architecture"
+            data-kw="日吉大社 東本宮本殿 神社 日吉大社 日吉大社"
+          >
+            <td>滋賀県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>日吉大社 東本宮本殿</strong></td>
+            <td style="font-size:.82rem">日吉大社</td>
+            <td style="font-size:.82rem">日吉大社</td>
+          </tr>
+          
+          <tr
+            data-pref="滋賀県"
+            data-cat="architecture"
+            data-kw="日吉大社 西本宮本殿 神社 日吉大社 日吉大社"
+          >
+            <td>滋賀県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>日吉大社 西本宮本殿</strong></td>
+            <td style="font-size:.82rem">日吉大社</td>
+            <td style="font-size:.82rem">日吉大社</td>
+          </tr>
+          
+          <tr
+            data-pref="滋賀県"
+            data-cat="architecture"
+            data-kw="比叡山延暦寺 根本中堂 寺院 比叡山延暦寺 延暦寺"
+          >
+            <td>滋賀県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>比叡山延暦寺 根本中堂</strong></td>
+            <td style="font-size:.82rem">比叡山延暦寺</td>
+            <td style="font-size:.82rem">延暦寺</td>
+          </tr>
+          
+          <tr
+            data-pref="滋賀県"
+            data-cat="architecture"
+            data-kw="石山寺 多宝塔 寺院 石山寺 石山寺"
+          >
+            <td>滋賀県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>石山寺 多宝塔</strong></td>
+            <td style="font-size:.82rem">石山寺</td>
+            <td style="font-size:.82rem">石山寺</td>
+          </tr>
+          
+          <tr
+            data-pref="滋賀県"
+            data-cat="art"
+            data-kw="木造十一面観音立像（向源寺） 彫刻 向源寺（渡岸寺） 渡岸寺観音堂"
+          >
+            <td>滋賀県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">彫刻</td>
+            <td><strong>木造十一面観音立像（向源寺）</strong></td>
+            <td style="font-size:.82rem">向源寺（渡岸寺）</td>
+            <td style="font-size:.82rem">渡岸寺観音堂</td>
+          </tr>
+          
+          <tr
+            data-pref="神奈川県"
+            data-cat="architecture"
+            data-kw="円覚寺 舎利殿 寺院 円覚寺 円覚寺"
+          >
+            <td>神奈川県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>円覚寺 舎利殿</strong></td>
+            <td style="font-size:.82rem">円覚寺</td>
+            <td style="font-size:.82rem">円覚寺</td>
+          </tr>
+          
+          <tr
+            data-pref="神奈川県"
+            data-cat="art"
+            data-kw="一遍聖絵（一遍上人絵伝） 絵画 清浄光寺（遊行寺） 清浄光寺（遊行寺）"
+          >
+            <td>神奈川県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>一遍聖絵（一遍上人絵伝）</strong></td>
+            <td style="font-size:.82rem">清浄光寺（遊行寺）</td>
+            <td style="font-size:.82rem">清浄光寺（遊行寺）</td>
+          </tr>
+          
+          <tr
+            data-pref="福井県"
+            data-cat="art"
+            data-kw="国宝 正法眼蔵（道元） 書跡・典籍 永平寺 永平寺"
+          >
+            <td>福井県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">書跡・典籍</td>
+            <td><strong>国宝 正法眼蔵（道元）</strong></td>
+            <td style="font-size:.82rem">永平寺</td>
+            <td style="font-size:.82rem">永平寺</td>
+          </tr>
+          
+          <tr
+            data-pref="福岡県"
+            data-cat="architecture"
+            data-kw="太宰府天満宮 本殿 神社 太宰府天満宮 太宰府天満宮"
+          >
+            <td>福岡県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">神社</td>
+            <td><strong>太宰府天満宮 本殿</strong></td>
+            <td style="font-size:.82rem">太宰府天満宮</td>
+            <td style="font-size:.82rem">太宰府天満宮</td>
+          </tr>
+          
+          <tr
+            data-pref="福岡県"
+            data-cat="art"
+            data-kw="金印（漢委奴国王印） 考古資料 福岡市 福岡市博物館"
+          >
+            <td>福岡県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">考古資料</td>
+            <td><strong>金印（漢委奴国王印）</strong></td>
+            <td style="font-size:.82rem">福岡市</td>
+            <td style="font-size:.82rem">福岡市博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="長崎県"
+            data-cat="architecture"
+            data-kw="崇福寺 大雄宝殿 寺院 崇福寺 崇福寺"
+          >
+            <td>長崎県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>崇福寺 大雄宝殿</strong></td>
+            <td style="font-size:.82rem">崇福寺</td>
+            <td style="font-size:.82rem">崇福寺</td>
+          </tr>
+          
+          <tr
+            data-pref="長崎県"
+            data-cat="architecture"
+            data-kw="崇福寺 第一峰門 寺院 崇福寺 崇福寺"
+          >
+            <td>長崎県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>崇福寺 第一峰門</strong></td>
+            <td style="font-size:.82rem">崇福寺</td>
+            <td style="font-size:.82rem">崇福寺</td>
+          </tr>
+          
+          <tr
+            data-pref="長野県"
+            data-cat="architecture"
+            data-kw="善光寺 本堂 寺院 善光寺 善光寺"
+          >
+            <td>長野県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">寺院</td>
+            <td><strong>善光寺 本堂</strong></td>
+            <td style="font-size:.82rem">善光寺</td>
+            <td style="font-size:.82rem">善光寺</td>
+          </tr>
+          
+          <tr
+            data-pref="長野県"
+            data-cat="architecture"
+            data-kw="松本城 天守 城郭 松本市 松本城"
+          >
+            <td>長野県</td>
+            <td>
+              <span class="badge-arch">建造</span>
+            </td>
+            <td style="font-size:.82rem">城郭</td>
+            <td><strong>松本城 天守</strong></td>
+            <td style="font-size:.82rem">松本市</td>
+            <td style="font-size:.82rem">松本城</td>
+          </tr>
+          
+          <tr
+            data-pref="長野県"
+            data-cat="art"
+            data-kw="縄文のビーナス（土偶） 考古資料 茅野市 茅野市尖石縄文考古館"
+          >
+            <td>長野県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">考古資料</td>
+            <td><strong>縄文のビーナス（土偶）</strong></td>
+            <td style="font-size:.82rem">茅野市</td>
+            <td style="font-size:.82rem">茅野市尖石縄文考古館</td>
+          </tr>
+          
+          <tr
+            data-pref="青森県"
+            data-cat="art"
+            data-kw="合掌土偶 考古資料 八戸市 八戸市博物館"
+          >
+            <td>青森県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">考古資料</td>
+            <td><strong>合掌土偶</strong></td>
+            <td style="font-size:.82rem">八戸市</td>
+            <td style="font-size:.82rem">八戸市博物館</td>
+          </tr>
+          
+          <tr
+            data-pref="静岡県"
+            data-cat="art"
+            data-kw="紅白梅図屏風（尾形光琳） 絵画 MOA美術館 MOA美術館"
+          >
+            <td>静岡県</td>
+            <td>
+              <span class="badge-art">美工</span>
+              
+            </td>
+            <td style="font-size:.82rem">絵画</td>
+            <td><strong>紅白梅図屏風（尾形光琳）</strong></td>
+            <td style="font-size:.82rem">MOA美術館</td>
+            <td style="font-size:.82rem">MOA美術館</td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer class="container text-center">
+  <p>🇯🇵 国宝チェックリストアプリ ─ 文化資産の攻略台帳</p>
+</footer>
+
+<!-- Plotly チャート描画 -->
+<script>
+(function() {
+  var prefData = {"data": [{"type": "bar", "x": ["京都府", "奈良県", "東京都", "滋賀県", "栃木県", "愛知県", "大阪府", "兵庫県", "長野県", "広島県", "岩手県", "神奈川県", "和歌山県", "福岡県", "長崎県", "青森県", "宮城県", "山形県", "新潟県", "福井県", "静岡県", "島根県", "岡山県", "山口県", "大分県"], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "text": ["0/37", "0/34", "0/19", "0/6", "0/4", "0/4", "0/4", "0/4", "0/3", "0/3", "0/2", "0/2", "0/2", "0/2", "0/2", "0/1", "0/1", "0/1", "0/1", "0/1", "0/1", "0/1", "0/1", "0/1", "0/1"], "textposition": "outside", "marker": {"color": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "colorscale": "RdYlGn", "cmin": 0, "cmax": 100, "showscale": false}, "hovertemplate": "%{x}<br>達成率: %{y}%<br>(%{text})<extra></extra>"}], "layout": {"title": {"text": "都道府県別達成率（所在県基準）", "font": {"size": 16}}, "xaxis": {"title": "", "tickangle": -45, "tickfont": {"size": 11}}, "yaxis": {"title": "達成率 (%)", "range": [0, 110]}, "margin": {"b": 120, "t": 60}, "height": 420, "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"}};
+  Plotly.newPlot('chart-pref', prefData.data, prefData.layout, {responsive: true, displayModeBar: false});
+
+  var catData = {"data": [{"type": "pie", "labels": ["建造物 観覧済", "美術工芸品 観覧済", "建造物 未達", "美術工芸品 未達"], "values": [0, 0, 77, 61], "hole": 0.4, "marker": {"colors": ["#4CAF50", "#2196F3", "#FF9800", "#F44336"]}, "textinfo": "label+value"}], "layout": {"title": {"text": "カテゴリ別 観覧状況", "font": {"size": 15}}, "height": 350, "margin": {"t": 50, "b": 20}, "showlegend": true}};
+  Plotly.newPlot('chart-cat', catData.data, catData.layout, {responsive: true, displayModeBar: false});
+
+  var typeData = {"data": [{"type": "bar", "x": ["寺院", "絵画", "彫刻", "神社", "工芸品", "考古資料", "城郭", "書跡・典籍"], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "text": ["0/52", "0/27", "0/17", "0/16", "0/10", "0/5", "0/5", "0/2"], "textposition": "outside", "marker": {"color": "#5c6bc0"}, "hovertemplate": "%{x}<br>達成率: %{y}%<br>(%{text})<extra></extra>"}], "layout": {"title": {"text": "種別別達成率", "font": {"size": 15}}, "xaxis": {"tickangle": -30, "tickfont": {"size": 11}}, "yaxis": {"title": "達成率 (%)", "range": [0, 110]}, "height": 360, "margin": {"b": 100, "t": 50}, "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"}};
+  Plotly.newPlot('chart-type', typeData.data, typeData.layout, {responsive: true, displayModeBar: false});
+})();
+</script>
+
+<!-- 未達一覧 フィルタリング -->
+<script>
+(function() {
+  var filterPref = document.getElementById('filter-pref');
+  var filterCat  = document.getElementById('filter-cat');
+  var filterKw   = document.getElementById('filter-kw');
+  var countEl    = document.getElementById('filter-count');
+  var tbody      = document.getElementById('not-viewed-body');
+
+  function applyFilter() {
+    var pref = filterPref.value;
+    var cat  = filterCat.value;
+    var kw   = filterKw.value.toLowerCase();
+    var rows = tbody.querySelectorAll('tr[data-pref]');
+    var visible = 0;
+    rows.forEach(function(row) {
+      var ok = true;
+      if (pref && row.dataset.pref !== pref) ok = false;
+      if (cat  && row.dataset.cat  !== cat)  ok = false;
+      if (kw   && !row.dataset.kw.toLowerCase().includes(kw)) ok = false;
+      row.style.display = ok ? '' : 'none';
+      if (ok) visible++;
+    });
+    countEl.textContent = visible + ' 件表示中（未達 138 件中）';
+  }
+
+  filterPref.addEventListener('change', applyFilter);
+  filterCat.addEventListener('change', applyFilter);
+  filterKw.addEventListener('input', applyFilter);
+  applyFilter();
+})();
+</script>
+
+</body>
+</html>
