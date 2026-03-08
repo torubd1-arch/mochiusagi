@@ -1,0 +1,1602 @@
+[
+  {
+    "id": "junk_boot",
+    "name": "ながぐつ",
+    "type": "junk",
+    "rarity": "E",
+    "score": 0,
+    "spawnWeight": 8,
+    "length": {
+      "min": 25,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "junk_bottle",
+    "name": "ペットボトル",
+    "type": "junk",
+    "rarity": "E",
+    "score": 0,
+    "spawnWeight": 8,
+    "length": {
+      "min": 20,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.03,
+      "max": 0.1
+    }
+  },
+  {
+    "id": "fish_medaka",
+    "name": "ぷちぷちめだかちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 10,
+    "spawnWeight": 14,
+    "length": {
+      "min": 2,
+      "max": 4
+    },
+    "weight": {
+      "min": 0.001,
+      "max": 0.003
+    }
+  },
+  {
+    "id": "fish_tanago",
+    "name": "ぷちぷちたなごちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 13,
+    "length": {
+      "min": 5,
+      "max": 12
+    },
+    "weight": {
+      "min": 0.002,
+      "max": 0.02
+    }
+  },
+  {
+    "id": "fish_yoshino",
+    "name": "ぷちぷちよしのぼりちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 12,
+    "length": {
+      "min": 5,
+      "max": 10
+    },
+    "weight": {
+      "min": 0.001,
+      "max": 0.01
+    }
+  },
+  {
+    "id": "fish_zezera",
+    "name": "ぷちぷちぜぜらちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 11,
+    "length": {
+      "min": 5,
+      "max": 8
+    },
+    "weight": {
+      "min": 0.001,
+      "max": 0.005
+    }
+  },
+  {
+    "id": "fish_itomoro",
+    "name": "ぷちぷちいともろこちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 11,
+    "length": {
+      "min": 6,
+      "max": 10
+    },
+    "weight": {
+      "min": 0.001,
+      "max": 0.01
+    }
+  },
+  {
+    "id": "fish_dojo",
+    "name": "ぷちぷちどじょうちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 25,
+    "spawnWeight": 12,
+    "length": {
+      "min": 10,
+      "max": 20
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.03
+    }
+  },
+  {
+    "id": "fish_oikawa",
+    "name": "ぷちぷちおいかわちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 25,
+    "spawnWeight": 13,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.03
+    }
+  },
+  {
+    "id": "fish_abraya",
+    "name": "ぷちぷちあぶらはやちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 11,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.003,
+      "max": 0.02
+    }
+  },
+  {
+    "id": "fish_takahaya",
+    "name": "ぷちぷちたかはやちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 11,
+    "length": {
+      "min": 8,
+      "max": 14
+    },
+    "weight": {
+      "min": 0.003,
+      "max": 0.015
+    }
+  },
+  {
+    "id": "fish_motsugo",
+    "name": "ぷちぷちもつごちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 25,
+    "spawnWeight": 12,
+    "length": {
+      "min": 7,
+      "max": 12
+    },
+    "weight": {
+      "min": 0.003,
+      "max": 0.015
+    }
+  },
+  {
+    "id": "fish_chichibu",
+    "name": "ぷちぷちちちぶちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 11,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.003,
+      "max": 0.02
+    }
+  },
+  {
+    "id": "fish_ukigori",
+    "name": "ぷちぷちうきごりちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 25,
+    "spawnWeight": 11,
+    "length": {
+      "min": 7,
+      "max": 12
+    },
+    "weight": {
+      "min": 0.002,
+      "max": 0.015
+    }
+  },
+  {
+    "id": "fish_shirouo",
+    "name": "ぷちぷちしろうおちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 25,
+    "spawnWeight": 10,
+    "length": {
+      "min": 5,
+      "max": 8
+    },
+    "weight": {
+      "min": 0.001,
+      "max": 0.005
+    }
+  },
+  {
+    "id": "fish_haze",
+    "name": "ぷちぷちはぜちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 14,
+    "length": {
+      "min": 8,
+      "max": 18
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.05
+    }
+  },
+  {
+    "id": "fish_kamatsuka",
+    "name": "ぷちぷちかまつかちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 10,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.02
+    }
+  },
+  {
+    "id": "fish_kawamutsu",
+    "name": "ぷちぷちかわむつちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 12,
+    "length": {
+      "min": 10,
+      "max": 20
+    },
+    "weight": {
+      "min": 0.01,
+      "max": 0.06
+    }
+  },
+  {
+    "id": "fish_mugitsuku",
+    "name": "ぷちぷちむぎつくちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 10,
+    "length": {
+      "min": 10,
+      "max": 20
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.03
+    }
+  },
+  {
+    "id": "fish_bluegill",
+    "name": "ぷちぷちぶるーぎるちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 13,
+    "length": {
+      "min": 8,
+      "max": 20
+    },
+    "weight": {
+      "min": 0.02,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_sujishima",
+    "name": "ぷちぷちすじしまどじょうちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 10,
+    "length": {
+      "min": 10,
+      "max": 20
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.02
+    }
+  },
+  {
+    "id": "fish_honmoro",
+    "name": "ぷちぷちほんもろこちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 11,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.003,
+      "max": 0.02
+    }
+  },
+  {
+    "id": "fish_yaritanago",
+    "name": "ぷちぷちやりたなごちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 35,
+    "spawnWeight": 10,
+    "length": {
+      "min": 6,
+      "max": 10
+    },
+    "weight": {
+      "min": 0.002,
+      "max": 0.015
+    }
+  },
+  {
+    "id": "fish_kanehira",
+    "name": "ぷちぷちかねひらちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 40,
+    "spawnWeight": 10,
+    "length": {
+      "min": 7,
+      "max": 14
+    },
+    "weight": {
+      "min": 0.003,
+      "max": 0.03
+    }
+  },
+  {
+    "id": "fish_ugui",
+    "name": "ぷちぷちうぐいちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 35,
+    "spawnWeight": 12,
+    "length": {
+      "min": 15,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.03,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_funa",
+    "name": "ぷちぷちふなちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 35,
+    "spawnWeight": 13,
+    "length": {
+      "min": 10,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.05,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "fish_ginbuna",
+    "name": "ぷちぷちぎんぶなちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 40,
+    "spawnWeight": 12,
+    "length": {
+      "min": 15,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.05,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "fish_gori",
+    "name": "ぷちぷちごりちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 40,
+    "spawnWeight": 10,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.03
+    }
+  },
+  {
+    "id": "fish_wataka",
+    "name": "ぷちぷちわたかちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 50,
+    "spawnWeight": 10,
+    "length": {
+      "min": 20,
+      "max": 40
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "fish_sappa",
+    "name": "ぷちぷちさっぱちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 12,
+    "length": {
+      "min": 10,
+      "max": 18
+    },
+    "weight": {
+      "min": 0.015,
+      "max": 0.08
+    }
+  },
+  {
+    "id": "fish_konoshiro",
+    "name": "ぷちぷちこのしろちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 35,
+    "spawnWeight": 11,
+    "length": {
+      "min": 20,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_aji",
+    "name": "ぷちぷちあじちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 40,
+    "spawnWeight": 14,
+    "length": {
+      "min": 15,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.05,
+      "max": 0.4
+    }
+  },
+  {
+    "id": "fish_katakuchi",
+    "name": "ぷちぷちかたくちいわしちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 25,
+    "spawnWeight": 13,
+    "length": {
+      "min": 10,
+      "max": 18
+    },
+    "weight": {
+      "min": 0.01,
+      "max": 0.05
+    }
+  },
+  {
+    "id": "fish_iwashi",
+    "name": "ぷちぷちいわしちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 30,
+    "spawnWeight": 14,
+    "length": {
+      "min": 12,
+      "max": 25
+    },
+    "weight": {
+      "min": 0.02,
+      "max": 0.15
+    }
+  },
+  {
+    "id": "fish_nisin",
+    "name": "ぷちぷちにしんちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 40,
+    "spawnWeight": 11,
+    "length": {
+      "min": 25,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_koango",
+    "name": "ぷちぷちこうなごちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 20,
+    "spawnWeight": 12,
+    "length": {
+      "min": 5,
+      "max": 10
+    },
+    "weight": {
+      "min": 0.001,
+      "max": 0.005
+    }
+  },
+  {
+    "id": "fish_kisu",
+    "name": "ぷちぷちきすちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 45,
+    "spawnWeight": 12,
+    "length": {
+      "min": 15,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.03,
+      "max": 0.2
+    }
+  },
+  {
+    "id": "fish_bera",
+    "name": "ぷちぷちべらちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 35,
+    "spawnWeight": 11,
+    "length": {
+      "min": 15,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.05,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_suzumedai",
+    "name": "ぷちぷちすずめだいちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 35,
+    "spawnWeight": 11,
+    "length": {
+      "min": 12,
+      "max": 18
+    },
+    "weight": {
+      "min": 0.02,
+      "max": 0.08
+    }
+  },
+  {
+    "id": "fish_aigo",
+    "name": "ぷちぷちあいごちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 40,
+    "spawnWeight": 10,
+    "length": {
+      "min": 15,
+      "max": 25
+    },
+    "weight": {
+      "min": 0.05,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_mejina_s",
+    "name": "ぷちぷちめじなちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 50,
+    "spawnWeight": 10,
+    "length": {
+      "min": 10,
+      "max": 20
+    },
+    "weight": {
+      "min": 0.03,
+      "max": 0.2
+    }
+  },
+  {
+    "id": "fish_saba",
+    "name": "ぷちぷちさばちゃん",
+    "type": "fish",
+    "rarity": "E",
+    "score": 50,
+    "spawnWeight": 13,
+    "length": {
+      "min": 25,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 1.0
+    }
+  },
+  {
+    "id": "fish_wakasagi",
+    "name": "わんぱくわかさぎちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 120,
+    "spawnWeight": 7,
+    "length": {
+      "min": 8,
+      "max": 15
+    },
+    "weight": {
+      "min": 0.005,
+      "max": 0.03
+    }
+  },
+  {
+    "id": "fish_ishimochi",
+    "name": "わんぱくいしもちちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 130,
+    "spawnWeight": 6,
+    "length": {
+      "min": 20,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "fish_anago",
+    "name": "わんぱくあなごちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 150,
+    "spawnWeight": 6,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.8
+    }
+  },
+  {
+    "id": "fish_bora",
+    "name": "わんぱくぼらちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 140,
+    "spawnWeight": 6,
+    "length": {
+      "min": 30,
+      "max": 70
+    },
+    "weight": {
+      "min": 0.3,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_maiwashi",
+    "name": "わんぱくまいわしちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 130,
+    "spawnWeight": 6,
+    "length": {
+      "min": 20,
+      "max": 28
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_kasago",
+    "name": "わんぱくかさごちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 180,
+    "spawnWeight": 5,
+    "length": {
+      "min": 15,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "fish_mebaru",
+    "name": "わんぱくめばるちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 180,
+    "spawnWeight": 5,
+    "length": {
+      "min": 20,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.8
+    }
+  },
+  {
+    "id": "fish_mejina_l",
+    "name": "わんぱくめじなちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 200,
+    "spawnWeight": 4,
+    "length": {
+      "min": 30,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.3,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_ainame",
+    "name": "わんぱくあいなめちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 220,
+    "spawnWeight": 4,
+    "length": {
+      "min": 30,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 1.5
+    }
+  },
+  {
+    "id": "fish_soi",
+    "name": "わんぱくくろそいちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 220,
+    "spawnWeight": 4,
+    "length": {
+      "min": 25,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_chinu",
+    "name": "わんぱくくろだいちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 230,
+    "spawnWeight": 4,
+    "length": {
+      "min": 30,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.3,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_ayu",
+    "name": "わんぱくあゆちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 200,
+    "spawnWeight": 5,
+    "length": {
+      "min": 15,
+      "max": 30
+    },
+    "weight": {
+      "min": 0.05,
+      "max": 0.3
+    }
+  },
+  {
+    "id": "fish_nigoi",
+    "name": "わんぱくにごいちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 200,
+    "spawnWeight": 4,
+    "length": {
+      "min": 30,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.3,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_himemasu",
+    "name": "わんぱくひめますちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 240,
+    "spawnWeight": 4,
+    "length": {
+      "min": 25,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 0.8
+    }
+  },
+  {
+    "id": "fish_amago",
+    "name": "わんぱくあまごちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 260,
+    "spawnWeight": 4,
+    "length": {
+      "min": 20,
+      "max": 40
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.8
+    }
+  },
+  {
+    "id": "fish_yamame",
+    "name": "わんぱくやまめちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 260,
+    "spawnWeight": 4,
+    "length": {
+      "min": 20,
+      "max": 40
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.8
+    }
+  },
+  {
+    "id": "fish_iwana",
+    "name": "わんぱくいわなちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 280,
+    "spawnWeight": 3,
+    "length": {
+      "min": 20,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_nijimasu",
+    "name": "わんぱくにじますちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 280,
+    "spawnWeight": 4,
+    "length": {
+      "min": 25,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_bass",
+    "name": "わんぱくぶらっくばすちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 300,
+    "spawnWeight": 4,
+    "length": {
+      "min": 20,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_namazu",
+    "name": "わんぱくなまずちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 300,
+    "spawnWeight": 3,
+    "length": {
+      "min": 30,
+      "max": 70
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_raigyo",
+    "name": "わんぱくらいぎょちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 320,
+    "spawnWeight": 3,
+    "length": {
+      "min": 40,
+      "max": 100
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_koi",
+    "name": "わんぱくこいちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 300,
+    "spawnWeight": 4,
+    "length": {
+      "min": 30,
+      "max": 80
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 10.0
+    }
+  },
+  {
+    "id": "fish_unagi",
+    "name": "わんぱくうなぎちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 340,
+    "spawnWeight": 3,
+    "length": {
+      "min": 40,
+      "max": 100
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_souko",
+    "name": "わんぱくそうぎょちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 340,
+    "spawnWeight": 3,
+    "length": {
+      "min": 50,
+      "max": 100
+    },
+    "weight": {
+      "min": 2.0,
+      "max": 20.0
+    }
+  },
+  {
+    "id": "fish_hakuren",
+    "name": "わんぱくはくれんちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 320,
+    "spawnWeight": 3,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 1.0,
+      "max": 10.0
+    }
+  },
+  {
+    "id": "fish_suzuki",
+    "name": "わんぱくすずきちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 360,
+    "spawnWeight": 4,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 8.0
+    }
+  },
+  {
+    "id": "fish_tako",
+    "name": "わんぱくまだこちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 280,
+    "spawnWeight": 4,
+    "length": {
+      "min": 20,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_ika",
+    "name": "わんぱくするめいかちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 260,
+    "spawnWeight": 4,
+    "length": {
+      "min": 20,
+      "max": 40
+    },
+    "weight": {
+      "min": 0.1,
+      "max": 0.5
+    }
+  },
+  {
+    "id": "fish_sakura",
+    "name": "わんぱくさくらますちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 380,
+    "spawnWeight": 3,
+    "length": {
+      "min": 30,
+      "max": 65
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_hirasuzuki",
+    "name": "わんぱくひらすずきちゃん",
+    "type": "fish",
+    "rarity": "D",
+    "score": 380,
+    "spawnWeight": 3,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_isaki",
+    "name": "きらきらいさきちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 500,
+    "spawnWeight": 2.5,
+    "length": {
+      "min": 25,
+      "max": 45
+    },
+    "weight": {
+      "min": 0.3,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_aoriika",
+    "name": "きらきらあおりいかちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 520,
+    "spawnWeight": 2.5,
+    "length": {
+      "min": 25,
+      "max": 40
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_makarei",
+    "name": "きらきらまこがれいちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 550,
+    "spawnWeight": 2.0,
+    "length": {
+      "min": 30,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_kijihata",
+    "name": "きらきらきじはたちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 580,
+    "spawnWeight": 2.0,
+    "length": {
+      "min": 25,
+      "max": 45
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_hobo",
+    "name": "きらきらほうぼうちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 580,
+    "spawnWeight": 2.0,
+    "length": {
+      "min": 25,
+      "max": 40
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 1.0
+    }
+  },
+  {
+    "id": "fish_onikasago",
+    "name": "きらきらおにかさごちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 620,
+    "spawnWeight": 1.8,
+    "length": {
+      "min": 20,
+      "max": 35
+    },
+    "weight": {
+      "min": 0.2,
+      "max": 1.5
+    }
+  },
+  {
+    "id": "fish_mahata",
+    "name": "きらきらまはたちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 650,
+    "spawnWeight": 1.5,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 1.0,
+      "max": 10.0
+    }
+  },
+  {
+    "id": "fish_tachiuo",
+    "name": "きらきらたちうおちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 680,
+    "spawnWeight": 1.5,
+    "length": {
+      "min": 80,
+      "max": 150
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_isidai",
+    "name": "きらきらいしだいちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 700,
+    "spawnWeight": 1.5,
+    "length": {
+      "min": 30,
+      "max": 70
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_sawara",
+    "name": "きらきらさわらちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 720,
+    "spawnWeight": 1.5,
+    "length": {
+      "min": 50,
+      "max": 100
+    },
+    "weight": {
+      "min": 1.0,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_hirame",
+    "name": "きらきらひらめちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 750,
+    "spawnWeight": 1.5,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_shimaaji",
+    "name": "きらきらしまあじちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 800,
+    "spawnWeight": 1.2,
+    "length": {
+      "min": 30,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 4.0
+    }
+  },
+  {
+    "id": "fish_kanpachi",
+    "name": "きらきらかんぱちちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 850,
+    "spawnWeight": 1.2,
+    "length": {
+      "min": 50,
+      "max": 100
+    },
+    "weight": {
+      "min": 2.0,
+      "max": 10.0
+    }
+  },
+  {
+    "id": "fish_buri",
+    "name": "きらきらぶりちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 900,
+    "spawnWeight": 1.0,
+    "length": {
+      "min": 50,
+      "max": 100
+    },
+    "weight": {
+      "min": 2.0,
+      "max": 10.0
+    }
+  },
+  {
+    "id": "fish_madai",
+    "name": "きらきらまだいちゃん",
+    "type": "fish",
+    "rarity": "C",
+    "score": 1000,
+    "spawnWeight": 1.0,
+    "length": {
+      "min": 40,
+      "max": 80
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 5.0
+    }
+  },
+  {
+    "id": "fish_kinmedai",
+    "name": "すごつよきんめだいくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 1500,
+    "spawnWeight": 0.8,
+    "length": {
+      "min": 30,
+      "max": 50
+    },
+    "weight": {
+      "min": 0.3,
+      "max": 2.0
+    }
+  },
+  {
+    "id": "fish_magochi",
+    "name": "すごつよまごちくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 1600,
+    "spawnWeight": 0.7,
+    "length": {
+      "min": 30,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_akahata",
+    "name": "すごつよあかはたくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 1800,
+    "spawnWeight": 0.7,
+    "length": {
+      "min": 30,
+      "max": 60
+    },
+    "weight": {
+      "min": 0.5,
+      "max": 3.0
+    }
+  },
+  {
+    "id": "fish_katsuo",
+    "name": "すごつよかつおくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 2000,
+    "spawnWeight": 0.6,
+    "length": {
+      "min": 50,
+      "max": 100
+    },
+    "weight": {
+      "min": 2.0,
+      "max": 10.0
+    }
+  },
+  {
+    "id": "fish_hiramasa",
+    "name": "すごつよひらまさくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 2200,
+    "spawnWeight": 0.5,
+    "length": {
+      "min": 60,
+      "max": 120
+    },
+    "weight": {
+      "min": 3.0,
+      "max": 20.0
+    }
+  },
+  {
+    "id": "fish_shiira",
+    "name": "すごつよしいらくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 2400,
+    "spawnWeight": 0.5,
+    "length": {
+      "min": 60,
+      "max": 150
+    },
+    "weight": {
+      "min": 5.0,
+      "max": 25.0
+    }
+  },
+  {
+    "id": "fish_kue",
+    "name": "すごつよくえくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 2600,
+    "spawnWeight": 0.4,
+    "length": {
+      "min": 50,
+      "max": 100
+    },
+    "weight": {
+      "min": 5.0,
+      "max": 50.0
+    }
+  },
+  {
+    "id": "fish_chozame",
+    "name": "すごつよちょうざめくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 2800,
+    "spawnWeight": 0.4,
+    "length": {
+      "min": 50,
+      "max": 150
+    },
+    "weight": {
+      "min": 5.0,
+      "max": 100.0
+    }
+  },
+  {
+    "id": "fish_kajiki",
+    "name": "すごつよかじきくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 3000,
+    "spawnWeight": 0.3,
+    "length": {
+      "min": 60,
+      "max": 120
+    },
+    "weight": {
+      "min": 5.0,
+      "max": 30.0
+    }
+  },
+  {
+    "id": "fish_oodai",
+    "name": "すごつよだいおうまだいくん",
+    "type": "fish",
+    "rarity": "B",
+    "score": 3500,
+    "spawnWeight": 0.3,
+    "length": {
+      "min": 60,
+      "max": 90
+    },
+    "weight": {
+      "min": 3.0,
+      "max": 15.0
+    }
+  },
+  {
+    "id": "fish_kuromaguro",
+    "name": "でんせつのくろまぐろさま",
+    "type": "fish",
+    "rarity": "A",
+    "score": 5000,
+    "spawnWeight": 1.0,
+    "length": {
+      "min": 150,
+      "max": 280
+    },
+    "weight": {
+      "min": 50.0,
+      "max": 300.0
+    }
+  },
+  {
+    "id": "fish_ryugu",
+    "name": "でんせつのりゅうぐうのつかいさま",
+    "type": "fish",
+    "rarity": "A",
+    "score": 8000,
+    "spawnWeight": 0.7,
+    "length": {
+      "min": 300,
+      "max": 800
+    },
+    "weight": {
+      "min": 50.0,
+      "max": 300.0
+    }
+  },
+  {
+    "id": "fish_megamouth",
+    "name": "でんせつのめがまうすさま",
+    "type": "fish",
+    "rarity": "A",
+    "score": 10000,
+    "spawnWeight": 0.5,
+    "length": {
+      "min": 400,
+      "max": 700
+    },
+    "weight": {
+      "min": 700.0,
+      "max": 2000.0
+    }
+  }
+]
