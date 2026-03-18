@@ -57,10 +57,11 @@ const Game = (() => {
   return {
     getState() { return state; },
 
-    // バトルモード開始
-    startBattle(kanjiList) {
+    // バトルモード開始 (mode: 'battle' | 'practice' | 'boss')
+    startBattle(kanjiList, mode = 'battle', bossId = null) {
       state = {
-        mode: 'battle',
+        mode,
+        bossId,
         kanjiList,           // 今回の漢字リスト
         kanjiIndex: 0,       // 現在の漢字番号
         phase: 'strokeCount', // 'strokeCount' | 'strokeOrder' | 'cleared'
@@ -75,7 +76,7 @@ const Game = (() => {
       const k = curKanji();
       state.enemyHP = calcMaxHP(k);
       state.enemyMaxHP = state.enemyHP;
-      Storage.incrementPlay();
+      if (mode === 'battle' || mode === 'boss') Storage.incrementPlay();
     },
 
     // 現在の漢字
@@ -115,6 +116,7 @@ const Game = (() => {
         damage: 0,
         kanjiCleared: false,
         sessionDone: false,
+        bossId: null,
       };
 
       if (isCorrect) {
@@ -138,16 +140,23 @@ const Game = (() => {
               stars,
               mistakes: state.mistakes,
             });
-            result.isNewCapture = !Storage.isCleared(curKanji().char);
-            const prevLevel = Storage.getLevel();
-            Storage.saveResult(curKanji().char, stars);
-            const newLevel = Storage.getLevel();
-            result.leveledUp = newLevel > prevLevel;
-            result.newLevel  = newLevel;
-            // 完全正解クリア (ミスなし) → 苦手カウント -1
-            if (state.mistakes === 0) Storage.recordConsecutiveCorrect(curKanji().char);
+            if (state.mode === 'battle' || state.mode === 'boss') {
+              result.isNewCapture = !Storage.isCleared(curKanji().char);
+              const prevLevel = Storage.getLevel();
+              Storage.saveResult(curKanji().char, stars);
+              const newLevel = Storage.getLevel();
+              result.leveledUp = newLevel > prevLevel;
+              result.newLevel  = newLevel;
+              // 完全正解クリア (ミスなし) → 苦手カウント -1
+              if (state.mistakes === 0) Storage.recordConsecutiveCorrect(curKanji().char);
+            }
             result.kanjiCleared = true;
             result.stars = stars;
+
+            // ボスモード: クリア時にbossIdを結果に付与
+            if (state.mode === 'boss') {
+              result.bossId = state.bossId;
+            }
 
             // 次の漢字へ
             state.kanjiIndex++;
@@ -167,7 +176,9 @@ const Game = (() => {
       } else {
         state.mistakes++;
         state.totalMistakes++;
-        Storage.recordMistake(curKanji().char); // 苦手カウント +1
+        if (state.mode === 'battle' || state.mode === 'boss') {
+          Storage.recordMistake(curKanji().char); // 苦手カウント +1
+        }
       }
 
       return result;

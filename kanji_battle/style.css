@@ -521,6 +521,14 @@ html, body {
 #btn-practice-reset { background: #446; color: var(--text); }
 #btn-practice-quiz  { background: var(--accent2); color: #fff; grid-column: 1 / -1; }
 #btn-practice-back  { background: #334; color: var(--text-sub); grid-column: 1 / -1; border: 1px solid var(--border); }
+#btn-practice-back-body { background: #334; color: var(--text-sub); grid-column: 1 / -1; border: 1px solid var(--border); }
+
+.btn-practice:disabled {
+  opacity: 0.40;
+  cursor: not-allowed;
+  filter: brightness(0.65);
+}
+.btn-practice:disabled:active { transform: none; box-shadow: 0 4px 0 #0006; }
 
 /* ===== ずかん画面 ===== */
 #screen-zukan {
@@ -1317,8 +1325,200 @@ html, body {
   100% { opacity: 0; transform: translateX(-50%) translateY(-8px); }
 }
 
+/* ===== 学年タブ ===== */
+.grade-tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+.grade-tab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text-sub);
+  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.grade-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.grade-tab:hover:not(.active) {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+
+/* 練習モード結果 */
+.result-practice-msg {
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-align: center;
+  color: var(--accent2);
+  margin: 12px 0;
+}
+
 /* ===== アクセシビリティ / フォーカス ===== */
 button:focus-visible {
   outline: 3px solid var(--accent2);
   outline-offset: 2px;
+}
+
+/* ===== タイトル学年タブ ===== */
+#title-grade-tabs { margin-bottom: 0; }
+
+/* ===== 練習選択: 画数グループ見出し ===== */
+.practice-stroke-group {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-sub);
+  margin: 10px 0 4px;
+  font-weight: 700;
+}
+
+.psb-char { display: block; font-size: 22px; font-weight: 800; }
+.psb-count { display: block; font-size: 10px; color: var(--text-sub); margin-top: 2px; }
+
+/* ===== ボス登場演出 ===== */
+#boss-flash-overlay {
+  position: fixed; inset: 0; background: #e94560;
+  opacity: 0; pointer-events: none; z-index: 900;
+}
+#boss-flash-overlay.active { animation: boss-flash 0.5s ease-out forwards; }
+@keyframes boss-flash {
+  0%   { opacity: 0.85; }
+  80%  { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+#boss-telop-overlay {
+  position: fixed; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.85); z-index: 950;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+#boss-telop-overlay.active { opacity: 1; pointer-events: auto; }
+
+.boss-telop-text {
+  font-size: clamp(28px, 8vw, 48px); color: #e94560; font-weight: 900;
+  animation: shake 0.4s ease-in-out 3; text-shadow: 0 0 20px #e94560;
+}
+.boss-telop-sub {
+  font-size: clamp(14px, 4vw, 20px); color: #fff; margin-top: 12px;
+}
+
+/* ===== ボス図鑑 ===== */
+.boss-section-title { color: #f5a623 !important; }
+
+.boss-zukan-grid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  justify-content: center; margin-bottom: 20px;
+}
+
+.boss-zukan-card {
+  width: 120px; min-height: 160px;
+  background: var(--surface2); border: 3px solid var(--border);
+  border-radius: 12px; text-align: center; padding: 12px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.boss-zukan-card.captured {
+  border-color: #f5a623; box-shadow: 0 0 12px rgba(245,166,35,0.4);
+  cursor: pointer;
+}
+.boss-zukan-card.captured:hover  { transform: translateY(-2px); }
+.boss-zukan-card.captured:active { transform: translateY(1px); }
+.boss-zukan-card.locked { opacity: 0.42; }
+
+.boss-monster svg, .boss-monster { width: 80px; height: 80px; }
+.boss-char { font-size: 28px; font-weight: 900; }
+.boss-name { font-size: 11px; color: var(--text-sub); }
+.boss-badge { font-size: 10px; font-weight: 900; color: #f5a623; margin-top: 2px; }
+
+.boss-monster-unknown {
+  font-size: 40px; width: 80px; height: 80px;
+  display: flex; align-items: center; justify-content: center; color: var(--text-sub);
+}
+
+/* ===== 進化チェーン コンパクトカード (Phase 7) ===== */
+.evo-chain-card {
+  background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 12px; padding: 10px 12px; opacity: 0.55;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.evo-chain-card.unlocked {
+  border-color: gold; opacity: 1;
+  box-shadow: 0 0 12px #ffd70044;
+}
+.evo-chain-card.complete {
+  border-color: #f5a623 !important;
+  box-shadow: 0 0 14px rgba(245,166,35,0.5);
+}
+
+.evo-stages-row {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 4px; justify-content: center;
+}
+
+.evo-stage {
+  display: flex; flex-direction: column; align-items: center;
+  width: 60px; gap: 2px; opacity: 0.4;
+}
+.evo-stage.captured { opacity: 1; }
+
+.evo-stage-monster { width: 44px; height: 44px; }
+.evo-stage-char { font-size: 16px; font-weight: 900; }
+.evo-stage-name { font-size: 8px; color: var(--text-sub); text-align: center; }
+.evo-stage-stars { font-size: 9px; color: #f5a623; }
+.evo-stage-unknown {
+  width: 44px; height: 44px; font-size: 22px;
+  display: flex; align-items: center; justify-content: center; color: var(--text-sub);
+}
+
+.evo-arrow { font-size: 18px; color: var(--text-sub); padding: 0 2px; }
+
+.evo-chain-complete-badge {
+  font-size: 10px; font-weight: 900; color: #f5a623;
+  background: rgba(245,166,35,0.15); border-radius: 8px;
+  padding: 2px 8px; margin-top: 4px; text-align: center;
+}
+
+/* ===== 進化チェーン 特別モンスターステージ ===== */
+.evo-stage.evo-stage-reward { width: 74px; }
+
+.evo-reward-icon {
+  position: relative;
+  width: 68px; height: 68px;
+}
+.evo-reward-icon svg { width: 68px; height: 68px; }
+
+.evo-reward-crown {
+  position: absolute;
+  top: -10px; right: -6px;
+  font-size: 15px;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px #ffd700);
+}
+
+.evo-reward-name-text {
+  font-size: 9px !important;
+  color: #f5a623 !important;
+  line-height: 1.2;
+  text-align: center;
+  max-width: 74px;
+}
+
+.evo-reward-locked {
+  background: #0a1020;
+  border-radius: 8px;
+  border: 2px dashed #334;
+}
+
+.evo-stage.evo-stage-reward.captured .evo-reward-icon svg {
+  filter: drop-shadow(0 0 6px rgba(245,166,35,0.5));
 }

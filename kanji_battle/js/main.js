@@ -4,6 +4,12 @@
 const battleSVGId   = 'battle-kanji-svg';
 const practiceSVGId = 'practice-kanji-svg';
 
+// ========== 学年フィルタ ==========
+function getCharactersByGrade() {
+  const m = Storage.getGradeMode();
+  return m === 'all' ? KANJI_DATA : KANJI_DATA.filter(k => k.grade === m);
+}
+
 // ========== Weighted random サンプリング (苦手漢字優先) ==========
 // weight = 1 + mistakeCount → ミスが多いほど出やすい
 function weightedSample(pool, n) {
@@ -164,21 +170,34 @@ async function onChoiceClick(value, _correct) {
       spawnStars(12);
       await delay(700);
 
-      // ゲット演出 (初クリア時のみ)
-      if (result.isNewCapture && clearingKanji) {
-        await showCaptureOverlay(clearingKanji, result.stars);
-      }
+      if (state.mode === 'battle' || state.mode === 'boss') {
+        // ボスキャプチャ登録
+        if (result.bossId) {
+          Storage.registerCapturedBoss(result.bossId);
+        }
 
-      // レベルアップ演出
-      if (result.leveledUp) {
-        await showLevelUpOverlay(result.newLevel);
-      }
+        // ゲット演出 (初クリア時のみ)
+        if (result.isNewCapture && clearingKanji) {
+          await showCaptureOverlay(clearingKanji, result.stars);
+        }
 
-      // 進化チェーン解放チェック
-      if (clearingKanji) {
-        const unlockedChain = checkEvolutionUnlock(clearingKanji.char);
-        if (unlockedChain) {
-          await showEvolutionOverlay(unlockedChain);
+        // レベルアップ演出
+        if (result.leveledUp) {
+          await showLevelUpOverlay(result.newLevel);
+        }
+
+        // 進化チェーン解放チェック
+        if (clearingKanji) {
+          const unlockedChain = checkEvolutionUnlock(clearingKanji.char);
+          if (unlockedChain) {
+            await showEvolutionOverlay(unlockedChain);
+            // 全字コンプリート演出 (初回のみ)
+            if (!Storage.hasSeenChainEffect(unlockedChain.id)) {
+              Storage.markChainComplete(unlockedChain.id);
+              Storage.markChainEffectSeen(unlockedChain.id);
+              await triggerChainCompleteEffect(unlockedChain);
+            }
+          }
         }
       }
 
@@ -289,9 +308,24 @@ function advanceBattleUI() {
 
 // ========== 結果画面 ==========
 function showResultScreen() {
+  const st = Game.getState();
+
+  // 練習モードはシンプル表示
+  if (st?.mode === 'practice') {
+    const listEl = document.getElementById('result-list');
+    if (listEl) listEl.innerHTML = '<div class="result-practice-msg">れんしゅう できたね！</div>';
+    const summaryEl = document.getElementById('result-summary');
+    if (summaryEl) summaryEl.innerHTML = '<div>つぎも やってみよう！</div>';
+    const retryBtn = document.getElementById('btn-result-retry');
+    if (retryBtn) retryBtn.textContent = '✏ れんしゅうに もどる';
+    showScreen('screen-result');
+    Audio.playVictory();
+    return;
+  }
+
   const results = Game.getResults();
   const totalStars = results.reduce((s, r) => s + r.stars, 0);
-  const mistakes   = Game.getState().totalMistakes;
+  const mistakes   = st.totalMistakes;
 
   const listEl = document.getElementById('result-list');
   if (listEl) {
@@ -309,6 +343,9 @@ function showResultScreen() {
       `<div>ごうけい ★ ${totalStars} こ</div>
        <div>まちがい: ${mistakes} かい</div>`;
   }
+
+  const retryBtn = document.getElementById('btn-result-retry');
+  if (retryBtn) retryBtn.textContent = '▶ もういちど';
 
   showScreen('screen-result');
   Audio.playVictory();
@@ -377,109 +414,99 @@ function showEvolutionOverlay(chain) {
   });
 }
 
-// ========== 進化チェーン1本の描画 ==========
+// ========== 進化チェーン1本の描画 (コンパクトカード方式 + 特別モンスター) ==========
 function renderEvolutionChain(chain) {
   const unlocked = Storage.isEvolutionUnlocked(chain.id);
-  const block = document.createElement('div');
-  block.className = 'evo-chain-block' + (unlocked ? ' unlocked' : '');
+  const complete  = Storage.isChainComplete(chain.id);
 
-  // ヘッダー行: ラベル + 完成バッジ
+  const wrap = document.createElement('div');
+  wrap.className = 'evo-chain-card' + (unlocked ? ' unlocked' : '');
+  if (complete) wrap.classList.add('complete');
+
   const header = document.createElement('div');
   header.className = 'evo-chain-header';
+  header.textContent = chain.label;
+  wrap.appendChild(header);
 
-  const label = document.createElement('div');
-  label.className = 'evo-chain-label';
-  label.textContent = chain.label;
-  header.appendChild(label);
+  const stagesRow = document.createElement('div');
+  stagesRow.className = 'evo-stages-row';
 
-  if (unlocked) {
-    const badge = document.createElement('div');
-    badge.className = 'evo-complete-badge';
-    badge.textContent = '★ かんせい！';
-    header.appendChild(badge);
-  } else {
-    const clearedN = chain.chars.filter(c => Storage.isCleared(c)).length;
-    const prog = document.createElement('div');
-    prog.className = 'evo-chain-progress';
-    prog.textContent = `${clearedN} / ${chain.chars.length}`;
-    header.appendChild(prog);
-  }
-  block.appendChild(header);
-
-  const row = document.createElement('div');
-  row.className = 'evo-chain-row';
-  block.appendChild(row);
-
-  chain.chars.forEach((char, i) => {
-    const cleared = Storage.isCleared(char);
+  // 漢字ステージ (各ステージの後に矢印を付ける)
+  chain.chars.forEach(char => {
     const kData = KANJI_DATA.find(k => k.char === char);
-
+    const captured = Storage.isCleared(char);
     const stage = document.createElement('div');
-    stage.className = 'evo-stage' + (cleared ? ' cleared' : '');
+    stage.className = 'evo-stage' + (captured ? ' captured' : '');
+    const stars = Storage.getStars(char);
+    stage.innerHTML = (captured && kData)
+      ? `<div class="evo-stage-monster">${buildMonsterSVG(kData.enemyVariant, kData.enemyColor, 1)}</div>
+         <div class="evo-stage-char">${char}</div>
+         <div class="evo-stage-name">${kData.enemyName}</div>
+         <div class="evo-stage-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>`
+      : `<div class="evo-stage-unknown">？</div>
+         <div class="evo-stage-char">？</div>`;
+    stagesRow.appendChild(stage);
 
-    const monsterDiv = document.createElement('div');
-    monsterDiv.className = 'evo-stage-monster';
-    monsterDiv.innerHTML = (cleared && kData)
-      ? buildMonsterSVG(kData.enemyVariant, kData.enemyColor, 1)
-      : '<span class="evo-locked-mark">？</span>';
-    stage.appendChild(monsterDiv);
-
-    const charDiv = document.createElement('div');
-    charDiv.className = 'evo-stage-char';
-    charDiv.textContent = char;
-    stage.appendChild(charDiv);
-
-    row.appendChild(stage);
-
-    if (i < chain.chars.length - 1) {
-      const arrow = document.createElement('div');
-      arrow.className = 'evo-arrow-sm';
-      arrow.textContent = '→';
-      row.appendChild(arrow);
-    }
+    // 漢字の後に必ず矢印 (最終漢字→特別モンスターの間にも必要)
+    const arrow = document.createElement('div');
+    arrow.className = 'evo-arrow';
+    arrow.textContent = '→';
+    stagesRow.appendChild(arrow);
   });
 
-  const sep = document.createElement('div');
-  sep.className = 'evo-reward-sep';
-  sep.textContent = '⇒';
-  row.appendChild(sep);
-
-  const rewardWrap = document.createElement('div');
-  rewardWrap.className = 'evo-reward-wrap' + (unlocked ? ' unlocked' : '');
-
+  // 特別モンスター最終ステージ
+  const rewardStage = document.createElement('div');
+  rewardStage.className = 'evo-stage evo-stage-reward' + (unlocked ? ' captured' : '');
   if (unlocked) {
-    const crown = document.createElement('div');
-    crown.className = 'evo-reward-crown';
-    crown.textContent = '👑';
-    rewardWrap.appendChild(crown);
+    rewardStage.innerHTML =
+      `<div class="evo-reward-icon">
+         <span class="evo-reward-crown">👑</span>
+         ${buildMonsterSVG(chain.rewardVariant, chain.rewardColor, 1)}
+       </div>
+       <div class="evo-stage-char evo-reward-name-text">${chain.rewardName}</div>`;
+  } else {
+    rewardStage.innerHTML =
+      `<div class="evo-stage-unknown evo-reward-locked">🔒</div>
+       <div class="evo-stage-char">？？？</div>`;
   }
+  stagesRow.appendChild(rewardStage);
 
-  const rewardMonster = document.createElement('div');
-  rewardMonster.className = 'evo-reward-monster' + (unlocked ? '' : ' locked');
-  rewardMonster.innerHTML = unlocked
-    ? buildMonsterSVG(chain.rewardVariant, chain.rewardColor, 1)
-    : '<span class="evo-locked-mark">🔒</span>';
-  rewardWrap.appendChild(rewardMonster);
+  wrap.appendChild(stagesRow);
 
-  const rewardName = document.createElement('div');
-  rewardName.className = 'evo-reward-name';
-  rewardName.textContent = unlocked ? chain.rewardName : '？？？';
-  rewardWrap.appendChild(rewardName);
-
-  row.appendChild(rewardWrap);
-  return block;
+  if (complete) {
+    const badge = document.createElement('div');
+    badge.className = 'evo-chain-complete-badge';
+    badge.textContent = '✦ COMPLETE';
+    wrap.appendChild(badge);
+  }
+  return wrap;
 }
 
 // ========== ずかん画面 ==========
-function showZukan() {
+function showZukan(gradeFilter = 'all') {
   const grid = document.getElementById('zukan-grid');
   if (!grid) return;
   grid.innerHTML = '';
 
+  // 学年フィルタタブバー
+  const tabBar = document.createElement('div');
+  tabBar.className = 'grade-tab-bar';
+  [['all', 'すべて'], [1, '1年'], [2, '2年']].forEach(([val, label]) => {
+    const tab = document.createElement('button');
+    tab.className = 'grade-tab' + (gradeFilter === val ? ' active' : '');
+    tab.textContent = label;
+    tab.addEventListener('click', () => showZukan(val));
+    tabBar.appendChild(tab);
+  });
+  grid.appendChild(tabBar);
+
+  // フィルタ済み漢字リスト
+  const filteredData = KANJI_DATA.filter(k => gradeFilter === 'all' || k.grade === gradeFilter);
+
   // 図鑑完成率ブロック
-  const totalChars   = KANJI_DATA.length;
-  const clearedCount = KANJI_DATA.filter(k => Storage.isCleared(k.char)).length;
-  const pctNum       = Math.round((clearedCount / totalChars) * 100);
+  const totalChars   = filteredData.length;
+  const clearedCount = filteredData.filter(k => Storage.isCleared(k.char)).length;
+  const pctNum       = totalChars > 0 ? Math.round((clearedCount / totalChars) * 100) : 0;
   const compBlock = document.createElement('div');
   compBlock.className = 'zukan-completion-block';
   compBlock.innerHTML = `
@@ -492,8 +519,11 @@ function showZukan() {
     </div>`;
   grid.appendChild(compBlock);
 
-  // にがてのかんじ セクション
-  const weakList = Storage.getWeakKanji(12);
+  // にがてのかんじ セクション (フィルタ適用)
+  const allWeakList = Storage.getWeakKanji(12);
+  const weakList = allWeakList.filter(({ char }) =>
+    filteredData.find(k => k.char === char)
+  );
   if (weakList.length > 0) {
     const weakTitle = document.createElement('div');
     weakTitle.className = 'zukan-section-title weak-section-title';
@@ -523,7 +553,7 @@ function showZukan() {
   monstersGrid.className = 'zukan-monsters-grid';
   grid.appendChild(monstersGrid);
 
-  KANJI_DATA.forEach(k => {
+  filteredData.forEach(k => {
     const stars = Storage.getStars(k.char);
     const captured = Storage.isCleared(k.char);
     const card = document.createElement('div');
@@ -545,6 +575,37 @@ function showZukan() {
     }
     monstersGrid.appendChild(card);
   });
+
+  // ボスセクション
+  const bossTitle = document.createElement('div');
+  bossTitle.className = 'zukan-section-title boss-section-title';
+  bossTitle.textContent = '⚡ ボスモンスター';
+  grid.appendChild(bossTitle);
+
+  const bossGrid = document.createElement('div');
+  bossGrid.className = 'boss-zukan-grid';
+  const filteredBoss = BOSS_LIST.filter(b => gradeFilter === 'all' || b.grade === gradeFilter);
+  filteredBoss.forEach(boss => {
+    const captured = Storage.isBossCaptured(boss.id);
+    const card = document.createElement('div');
+    card.className = 'boss-zukan-card' + (captured ? ' captured' : ' locked');
+    if (captured) {
+      const kData = KANJI_DATA.find(k => k.char === boss.char);
+      card.innerHTML = `
+        <div class="boss-monster">${buildMonsterSVG(boss.variant, boss.color, 1)}</div>
+        <div class="boss-char">${boss.char}</div>
+        <div class="boss-name">${boss.name}</div>
+        <div class="boss-badge">★ BOSS</div>`;
+      if (kData) card.addEventListener('click', () => startPractice(kData));
+    } else {
+      card.innerHTML = `
+        <div class="boss-monster-unknown">？</div>
+        <div class="boss-char">？</div>
+        <div class="boss-name">？？？</div>`;
+    }
+    bossGrid.appendChild(card);
+  });
+  grid.appendChild(bossGrid);
 
   // 進化チェーンセクション
   if (EVOLUTION_CHAINS.length > 0) {
@@ -577,16 +638,48 @@ function showZukan() {
 let practiceKanji = null;
 let practiceStep  = 0;
 let practiceMode  = 'view'; // 'view' | 'quiz'
+let isPlayingAll  = false;  // 「ぜんぶ みる」再生中フラグ
+let practiceGradeFilter = 'all'; // 学年フィルタ状態を保持
 
-function showPracticeSelect() {
+function showPracticeSelect(gradeFilter) {
+  // 引数がある場合は保存、ない場合は前回の値を継続使用
+  if (gradeFilter !== undefined) {
+    practiceGradeFilter = gradeFilter;
+  }
+  const activeFilter = practiceGradeFilter;
+
   const grid = document.getElementById('practice-select-grid');
   if (!grid) return;
   grid.innerHTML = '';
 
-  KANJI_DATA.forEach(k => {
+  // 学年タブバー
+  const tabBar = document.createElement('div');
+  tabBar.className = 'grade-tab-bar';
+  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん']].forEach(([val, label]) => {
+    const tab = document.createElement('button');
+    tab.className = 'grade-tab' + (activeFilter === val ? ' active' : '');
+    tab.textContent = label;
+    tab.addEventListener('click', () => showPracticeSelect(val));
+    tabBar.appendChild(tab);
+  });
+  grid.appendChild(tabBar);
+
+  // フィルタ済み漢字リスト (画数順ソート)
+  const list = KANJI_DATA.filter(k => activeFilter === 'all' || k.grade === activeFilter);
+  list.sort((a, b) => a.strokeCount - b.strokeCount);
+
+  let lastCount = null;
+  list.forEach(k => {
+    if (k.strokeCount !== lastCount) {
+      const h = document.createElement('div');
+      h.className = 'practice-stroke-group';
+      h.textContent = `── ${k.strokeCount}かく ──`;
+      grid.appendChild(h);
+      lastCount = k.strokeCount;
+    }
     const btn = document.createElement('button');
     btn.className = 'practice-select-btn';
-    btn.textContent = k.char;
+    btn.innerHTML = `<span class="psb-char">${k.char}</span><span class="psb-count">${k.strokeCount}</span>`;
     btn.title = k.reading;
     btn.addEventListener('click', () => startPractice(k));
     grid.appendChild(btn);
@@ -631,6 +724,11 @@ function practiceStepForward() {
 
 async function practicePlayAll() {
   if (!practiceKanji) return;
+  if (isPlayingAll) return; // 多重開始を防ぐ
+
+  isPlayingAll = true;
+  updatePracticeControlsState();
+
   practiceStep = 0;
   Renderer.render(practiceKanji, 0, -1);
   const label = document.getElementById('practice-step-label');
@@ -643,13 +741,22 @@ async function practicePlayAll() {
     }
     Audio.playCorrect();
   });
+
+  isPlayingAll = false;
+  updatePracticeControlsState();
+}
+
+// ========== れんしゅうコントロールの活性/非活性を更新 ==========
+function updatePracticeControlsState() {
+  const resetBtn = document.getElementById('btn-practice-reset');
+  if (resetBtn) resetBtn.disabled = isPlayingAll;
 }
 
 // れんしゅうモードからクイズ開始
 function startPracticeQuiz() {
   if (!practiceKanji) return;
-  // 1文字だけのバトルセッション
-  Game.startBattle([practiceKanji]);
+  // 1文字だけのpracticeセッション (保存しない)
+  Game.startBattle([practiceKanji], 'practice');
   Renderer.setSVG(document.getElementById(battleSVGId));
   showScreen('screen-battle');
   initBattleUI();
@@ -793,6 +900,56 @@ function startBattle(kanjiList) {
   initBattleUI();
 }
 
+// ========== 進化チェーン コンプリート演出 ==========
+async function triggerChainCompleteEffect(chain) {
+  spawnStars(20);
+  setLog(`「${chain.label}」チェーン コンプリート！`, '✦ ✦ ✦');
+  Audio.playVictory();
+  await delay(2000);
+}
+
+// ========== ボス登場演出 ==========
+async function triggerEmergencyFlash() {
+  const el = document.getElementById('boss-flash-overlay');
+  el.classList.add('active');
+  Audio.playWrong();
+  await delay(500);
+  el.classList.remove('active');
+}
+
+async function triggerEmergencyTelop() {
+  const el = document.getElementById('boss-telop-overlay');
+  el.classList.add('active');
+  await delay(2200);
+  el.classList.remove('active');
+  await delay(300);
+}
+
+async function startBossIntro() {
+  await triggerEmergencyFlash();
+  await triggerEmergencyTelop();
+
+  // ボス選択: 未捕獲を優先、全捕獲ならランダム
+  const gradeMode = Storage.getGradeMode();
+  const pool = BOSS_LIST.filter(b => gradeMode === 'all' || b.grade === gradeMode);
+  const uncaptured = pool.filter(b => !Storage.isBossCaptured(b.id));
+  const candidates = uncaptured.length > 0 ? uncaptured : pool;
+  const boss = candidates[Math.floor(Math.random() * candidates.length)];
+
+  const kanjiData = KANJI_DATA.find(k => k.char === boss.char);
+  if (!kanjiData) {
+    // フォールバック: 通常バトル
+    const list = weightedSample(getCharactersByGrade(), 5);
+    Renderer.setSVG(document.getElementById(battleSVGId));
+    startBattle(list);
+    return;
+  }
+  Game.startBattle([kanjiData], 'boss', boss.id);
+  Renderer.setSVG(document.getElementById(battleSVGId));
+  showScreen('screen-battle');
+  initBattleUI();
+}
+
 // ========== 画面切り替え (SVG付き) ==========
 function goToBattle() {
   Renderer.setSVG(document.getElementById(battleSVGId));
@@ -806,12 +963,33 @@ function goToPractice() {
 
 // ========== イベント登録 ==========
 document.addEventListener('DOMContentLoaded', () => {
+
+  // タイトル学年タブ初期化
+  function initTitleGradeTabs() {
+    const saved = Storage.getGradeMode();
+    document.querySelectorAll('#title-grade-tabs .grade-tab').forEach(tab => {
+      const val = tab.dataset.grade === 'all' ? 'all' : parseInt(tab.dataset.grade);
+      tab.classList.toggle('active', val === saved);
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#title-grade-tabs .grade-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        Storage.setGradeMode(tab.dataset.grade === 'all' ? 'all' : parseInt(tab.dataset.grade));
+      });
+    });
+  }
+  initTitleGradeTabs();
+
   // タイトル画面
   document.getElementById('btn-start').addEventListener('click', () => {
     Audio.playSelect();
-    const list = weightedSample(KANJI_DATA, 5);
-    Renderer.setSVG(document.getElementById(battleSVGId));
-    startBattle(list);
+    if (Storage.shouldSpawnBoss()) {
+      Storage.resetBossCounter();
+      startBossIntro();
+    } else {
+      const list = weightedSample(getCharactersByGrade(), 5);
+      Renderer.setSVG(document.getElementById(battleSVGId));
+      startBattle(list);
+    }
   });
 
   document.getElementById('btn-practice').addEventListener('click', () => {
@@ -849,6 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btn-practice-reset').addEventListener('click', () => {
+    if (isPlayingAll) return; // 再生中は無効
     Renderer.setSVG(document.getElementById(practiceSVGId));
     if (practiceKanji) {
       practiceStep = 0;
@@ -863,9 +1042,16 @@ document.addEventListener('DOMContentLoaded', () => {
     startPracticeQuiz();
   });
 
+  // 上部「◀ もどる」ボタン (screen-header内)
   document.getElementById('btn-practice-back').addEventListener('click', () => {
     Audio.playSelect();
-    showPracticeSelect();
+    showPracticeSelect(); // 引数なし → 前回フィルタを維持
+  });
+
+  // 下部「もどる」ボタン (practice-controls内) — 独自IDで修正
+  document.getElementById('btn-practice-back-body').addEventListener('click', () => {
+    Audio.playSelect();
+    showPracticeSelect(); // 引数なし → 前回フィルタを維持
   });
 
   // ずかん
@@ -877,9 +1063,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // 結果画面
   document.getElementById('btn-result-retry').addEventListener('click', () => {
     Audio.playSelect();
-    const list = weightedSample(KANJI_DATA, 5);
-    Renderer.setSVG(document.getElementById(battleSVGId));
-    startBattle(list);
+    const st = Game.getState();
+    if (st?.mode === 'practice') {
+      showPracticeSelect();
+      return;
+    }
+    if (Storage.shouldSpawnBoss()) {
+      Storage.resetBossCounter();
+      startBossIntro();
+    } else {
+      const list = weightedSample(getCharactersByGrade(), 5);
+      Renderer.setSVG(document.getElementById(battleSVGId));
+      startBattle(list);
+    }
   });
 
   document.getElementById('btn-result-title').addEventListener('click', () => {

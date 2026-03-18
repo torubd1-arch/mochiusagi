@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>　
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>かんじバトル しょきゅうへん</title>
@@ -17,6 +17,12 @@
   <div class="title-main">かんじバトル<br>しょきゅうへん</div>
   <div class="title-sub">もじモンスターを たおせ！</div>
 
+  <div class="grade-tab-bar" id="title-grade-tabs">
+    <button class="grade-tab active" data-grade="all">ぜんぶ</button>
+    <button class="grade-tab" data-grade="1">1ねん</button>
+    <button class="grade-tab" data-grade="2">2ねん</button>
+  </div>
+
   <div class="title-buttons">
     <button class="btn-title" id="btn-start">▶ スタート</button>
     <button class="btn-title" id="btn-practice">✏ れんしゅう</button>
@@ -24,7 +30,7 @@
   </div>
 
   <div class="title-footer">
-    小学1年生の かんじ 80もじ しゅうろく
+    小学1・2年生の かんじ しゅうろく
   </div>
 </div>
 
@@ -139,7 +145,7 @@
       <button class="btn-practice" id="btn-practice-step">▶| 1かく ずつ</button>
       <button class="btn-practice" id="btn-practice-reset">↺ リセット</button>
       <button class="btn-practice" id="btn-practice-quiz">⚔ クイズに ちょうせん！</button>
-      <button class="btn-practice" id="btn-practice-back">もどる</button>
+      <button class="btn-practice" id="btn-practice-back-body">もどる</button>
     </div>
   </div>
 </div>
@@ -167,18 +173,29 @@
   </div>
 </div>
 
+<!-- ===================== ボス登場演出 ===================== -->
+<div id="boss-flash-overlay"></div>
+<div id="boss-telop-overlay">
+  <div class="boss-telop-text">きんきゅうじたい！！</div>
+  <div class="boss-telop-sub">ボスモンスターが あらわれた！！</div>
+</div>
+
 <!-- ===================== パーティクルレイヤー ===================== -->
 <div id="particle-layer"></div>
 
 <!-- スクリプト読み込み -->
 <script src="js/data/grade1.js"></script>
+<script src="js/data/grade2.js"></script>
 <script src="js/strokeData/kanjivg_data.js"></script>
+<script src="js/strokeData/kanjivg_data_grade2.js"></script>
 <script src="js/data.js"></script>
 <script src="js/characters.js"></script>
+<script src="js/grade2Characters.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/validator.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/storage.js"></script>
+<script src="js/bosses.js"></script>
 <script src="js/evolutions.js"></script>
 <script src="js/render.js"></script>
 <script src="js/game.js"></script>

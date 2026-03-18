@@ -24,6 +24,8 @@ const STROKE_TYPE_MAP = {
   '㇈': 'まがり',     // 湾曲折れゴール (九・気など)
   '㇜': 'まがり',     // 複雑な折れ (糸など)
   '㇟': 'まがり',     // 複雑な折れゴール (見・四・花・先など)
+  '㇉': 'まがり',     // 弟など (U+31C9)
+
 };
 
 function getStrokeLabel(type) {
@@ -40,20 +42,29 @@ function getStrokeLabel(type) {
   return label;
 }
 
-// KANJI_DATA配列を構築 (KANJIVG_DATA + GRADE1_CHARACTERS から)
-const KANJI_DATA = GRADE1_CHARACTERS.map(meta => {
-  const kvg = KANJIVG_DATA[meta.char];
-  if (!kvg) {
-    console.warn(`[parser] "${meta.char}" のKanjiVGデータが見つかりません`);
-    return null;
-  }
-  return {
-    ...meta,
-    strokeCount: kvg.strokes.length,
-    strokes: kvg.strokes.map((s, i) => ({
-      id: i + 1,
-      label: getStrokeLabel(s.type),
-      path: s.d,
-    })),
-  };
-}).filter(Boolean);
+// 共通ビルダー関数
+function buildKanjiEntries(characters, kvgData, grade) {
+  return characters.map(meta => {
+    const kvg = kvgData[meta.char];
+    if (!kvg) {
+      console.warn(`[parser] "${meta.char}" のKanjiVGデータが見つかりません (grade${grade})`);
+      return null;
+    }
+    return {
+      ...meta,
+      grade,
+      strokeCount: kvg.strokes.length,
+      strokes: kvg.strokes.map((s, i) => ({
+        id: i + 1,
+        label: getStrokeLabel(s.type),
+        path: s.d,
+      })),
+    };
+  }).filter(Boolean);
+}
+
+// KANJI_DATA配列を構築 (1年生 + 2年生)
+const KANJI_DATA = [
+  ...buildKanjiEntries(GRADE1_CHARACTERS, KANJIVG_DATA,        1),
+  ...buildKanjiEntries(GRADE2_CHARACTERS, KANJIVG_DATA_GRADE2, 2),
+];

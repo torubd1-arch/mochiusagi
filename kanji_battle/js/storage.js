@@ -22,6 +22,12 @@ const Storage = (() => {
       xp: 0,            // 総獲得XP (初クリア1字 = 10XP)
       totalPlays: 0,
       lastPlayed: null,
+      selectedGradeMode: 'all',
+      playCountSinceBoss: 0,
+      bossBattleSeenCount: 0,
+      capturedBosses: {},
+      completedEvolutionChains: {},
+      seenEvolutionCompleteEffects: {},
     };
   }
 
@@ -55,6 +61,7 @@ const Storage = (() => {
       const data = load();
       data.totalPlays = (data.totalPlays || 0) + 1;
       data.lastPlayed = new Date().toISOString().slice(0, 10);
+      data.playCountSinceBoss = (data.playCountSinceBoss || 0) + 1;
       save(data);
     },
 
@@ -133,17 +140,69 @@ const Storage = (() => {
     // 図鑑・進化チェーンのみリセット (プレイ回数・設定は保持)
     resetCollection() {
       const data = load();
-      data.cleared    = {};
-      data.stars      = {};
-      data.evolutions = {};
-      data.mistakes   = {};
-      data.xp         = 0;
+      Object.assign(data, {
+        cleared: {},
+        stars: {},
+        evolutions: {},
+        mistakes: {},
+        xp: 0,
+        capturedBosses: {},
+        completedEvolutionChains: {},
+        seenEvolutionCompleteEffects: {},
+      });
       save(data);
     },
 
     // 全データリセット
     resetAll() {
       localStorage.removeItem(KEY);
-    }
+    },
+
+    // 学年モード取得/設定
+    getGradeMode() { return this.getData().selectedGradeMode ?? 'all'; },
+    setGradeMode(mode) {
+      const d = this.getData(); d.selectedGradeMode = mode;
+      save(d);
+    },
+
+    // ボス出現判定 (4〜6回に1回)
+    shouldSpawnBoss() {
+      const d = this.getData();
+      const threshold = 4 + Math.floor(Math.random() * 3);
+      return (d.playCountSinceBoss || 0) >= threshold;
+    },
+
+    // ボスカウンターリセット
+    resetBossCounter() {
+      const d = this.getData();
+      d.playCountSinceBoss = 0;
+      d.bossBattleSeenCount = (d.bossBattleSeenCount || 0) + 1;
+      save(d);
+    },
+
+    // ボスキャプチャ登録/確認
+    registerCapturedBoss(bossId) {
+      const d = this.getData();
+      if (!d.capturedBosses) d.capturedBosses = {};
+      d.capturedBosses[bossId] = true;
+      save(d);
+    },
+    isBossCaptured(bossId) { return !!(this.getData().capturedBosses || {})[bossId]; },
+
+    // 進化チェーン完了フラグ
+    isChainComplete(chainId)     { return !!(this.getData().completedEvolutionChains || {})[chainId]; },
+    markChainComplete(chainId)   {
+      const d = this.getData();
+      if (!d.completedEvolutionChains) d.completedEvolutionChains = {};
+      d.completedEvolutionChains[chainId] = true;
+      save(d);
+    },
+    hasSeenChainEffect(chainId)  { return !!(this.getData().seenEvolutionCompleteEffects || {})[chainId]; },
+    markChainEffectSeen(chainId) {
+      const d = this.getData();
+      if (!d.seenEvolutionCompleteEffects) d.seenEvolutionCompleteEffects = {};
+      d.seenEvolutionCompleteEffects[chainId] = true;
+      save(d);
+    },
   };
 })();
