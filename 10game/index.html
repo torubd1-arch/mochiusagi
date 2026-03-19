@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>りんごモンスター 10のひきざん</title>
+<style>
+:root {
+  --correct: #27AE60;
+  --wrong:   #E74C3C;
+  --text:    #2C3E50;
+  --monster: #8E44AD;
+  --ml:      #C39BD3;
+  --p1: #27AE60; --p2: #2980B9; --p3: #E67E22; --p4: #8E44AD;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Hiragino Maru Gothic ProN','M PLUS Rounded 1c',cursive,sans-serif;
+  background: linear-gradient(160deg,#87CEEB 0%,#b8f5c8 60%,#90EE90 100%);
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 10px 10px 24px;
+  overflow-x: hidden;
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; width: 100%; max-width: 460px; flex-direction: column; align-items: center; gap: 14px; }
+.screen.active { display: flex; }
+
+/* ===== TOP BAR ===== */
+#top-bar {
+  display: none; width: 100%; max-width: 460px;
+  padding: 8px 12px;
+  justify-content: space-between; align-items: center;
+  background: rgba(255,255,255,.35); backdrop-filter: blur(8px);
+  border-radius: 50px; margin-bottom: 4px;
+}
+#top-bar.visible { display: flex; }
+.icon-btn {
+  background: rgba(255,255,255,.6); border: none; border-radius: 50%;
+  width: 44px; height: 44px; font-size: 1.35em; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .1s;
+}
+.icon-btn:active { transform: scale(.88); }
+.top-center { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+#phase-badge {
+  font-size: .72em; font-weight: bold; color: white;
+  padding: 2px 10px; border-radius: 20px; background: var(--monster);
+}
+#streak-disp { font-size: .95em; font-weight: bold; color: var(--text); }
+
+/* ===== TITLE ===== */
+.game-title {
+  font-size: 2.1em; color: #E74C3C;
+  text-shadow: 3px 3px 0 #ffb3b3, 5px 5px 0 rgba(0,0,0,.1);
+  text-align: center; line-height: 1.3; margin-top: 10px;
+}
+.game-sub { font-size: .9em; color: var(--text); opacity: .7; }
+
+/* Phase grid */
+.phase-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 11px; width: 100%; padding: 0 4px;
+}
+.phase-card {
+  border: none; border-radius: 20px; padding: 14px 10px;
+  font-family: inherit; cursor: pointer; text-align: center;
+  box-shadow: 0 5px 0 rgba(0,0,0,.18);
+  transition: transform .1s, box-shadow .1s;
+  color: white; position: relative; overflow: hidden;
+}
+.phase-card:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+.phase-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 40%;
+  background: rgba(255,255,255,.22); border-radius: 20px 20px 0 0;
+}
+.phase-card[data-ph="1"] { background: linear-gradient(135deg,#2ECC71,#27AE60); }
+.phase-card[data-ph="2"] { background: linear-gradient(135deg,#3498DB,#2980B9); }
+.phase-card[data-ph="3"] { background: linear-gradient(135deg,#E67E22,#D35400); }
+.phase-card[data-ph="4"] { background: linear-gradient(135deg,#9B59B6,#8E44AD); }
+.pc-num { font-size: .65em; background: rgba(255,255,255,.28); border-radius: 20px; padding: 1px 8px; display: inline-block; margin-bottom: 5px; }
+.pc-icon { font-size: 1.9em; display: block; margin: 3px 0; }
+.pc-name { font-size: .95em; font-weight: bold; display: block; }
+.pc-desc { font-size: .62em; opacity: .9; display: block; margin-top: 4px; line-height: 1.3; }
+.best-txt { font-size: .85em; color: var(--text); opacity: .6; }
+
+/* ===== MONSTER ===== */
+.monster-wrap { position: relative; height: 130px; width: 200px; display: flex; align-items: flex-end; justify-content: center; }
+.monster { position: relative; width: 110px; height: 110px; transform-origin: bottom center; }
+.m-body {
+  width: 110px; height: 110px;
+  background: radial-gradient(circle at 35% 30%,#B07FE8,var(--monster));
+  border-radius: 55% 55% 48% 48%/55% 55% 65% 65%;
+  position: relative;
+}
+.m-belly { position: absolute; width: 58px; height: 48px; background: radial-gradient(circle at 45% 40%,#f0e0ff,var(--ml)); border-radius: 50%; bottom: 12px; left: 26px; }
+.m-eyes { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; }
+.m-eye { width: 22px; height: 22px; background: white; border-radius: 50%; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,.2); }
+.m-pupil { width: 12px; height: 12px; background: #1a1a2e; border-radius: 50%; position: absolute; top: 5px; left: 5px; }
+.m-pupil::after { content:''; width:4px; height:4px; background:white; border-radius:50%; position:absolute; top:1px; left:2px; }
+.m-mouth { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: 30px; height: 10px; background: #4a1a6e; border-radius: 0 0 15px 15px; overflow: hidden; transition: height .12s, border-radius .12s; }
+.m-mouth.open { height: 26px; border-radius: 5px; }
+.m-teeth { display: flex; justify-content: center; gap: 2px; padding-top: 1px; }
+.m-tooth { width: 6px; height: 8px; background: white; border-radius: 0 0 3px 3px; }
+.m-horn { position: absolute; width: 14px; height: 22px; background: linear-gradient(to top,var(--monster),#FF9F43); border-radius: 50% 50% 0 0; top: -14px; }
+.m-horn.left  { left: 18px; transform: rotate(-15deg); }
+.m-horn.right { right: 18px; transform: rotate(15deg); }
+.m-arm { position: absolute; width: 26px; height: 16px; background: radial-gradient(circle at 40% 35%,#B07FE8,var(--monster)); border-radius: 50%; top: 58px; }
+.m-arm.left  { left: -16px; transform: rotate(-25deg); }
+.m-arm.right { right: -16px; transform: rotate(25deg); }
+.m-leg { position: absolute; width: 20px; height: 18px; background: var(--monster); border-radius: 0 0 10px 10px; bottom: -10px; }
+.m-leg.left  { left: 22px; }
+.m-leg.right { right: 22px; }
+
+/* Monster animations */
+.monster.entering { animation: mEnter .7s cubic-bezier(.22,1.5,.5,1) forwards; }
+.monster.idle     { animation: mIdle 2.2s ease-in-out infinite; }
+.monster.eating   { animation: mEat .4s ease-in-out; }
+.monster.happy    { animation: mHappy .5s ease-in-out; }
+.monster.confused { animation: mConf .5s ease-in-out; }
+@keyframes mEnter { 0%{transform:translateY(120px) scale(.4);opacity:0} 65%{transform:translateY(-12px) scale(1.12);opacity:1} 100%{transform:translateY(0) scale(1);opacity:1} }
+@keyframes mIdle  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes mEat   { 0%{transform:scale(1)} 35%{transform:translateY(-8px) scale(1.08)} 65%{transform:scale(.94)} 100%{transform:scale(1)} }
+@keyframes mHappy { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-12deg) scale(1.12)} 75%{transform:rotate(12deg) scale(1.12)} }
+@keyframes mConf  { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+/* Title screen: eating pose */
+.monster.munching { animation: mMunch 1.1s ease-in-out infinite; }
+@keyframes mMunch {
+  0%,100% { transform: translateY(0); }
+  40%     { transform: translateY(-7px) scale(1.05); }
+  70%     { transform: translateY(-3px); }
+}
+.monster.munching .m-mouth { animation: mouthChew .5s ease-in-out infinite; }
+@keyframes mouthChew {
+  0%,100% { height: 10px; border-radius: 0 0 15px 15px; }
+  50%     { height: 24px; border-radius: 5px; }
+}
+.title-apple {
+  position: absolute; font-size: 1.7em;
+  right: -22px; top: 16px; z-index: 10; pointer-events: none;
+  animation: appleWobble 1.1s ease-in-out infinite;
+}
+@keyframes appleWobble {
+  0%,100% { transform: rotate(12deg) translate(0, 0); }
+  40%     { transform: rotate(4deg)  translate(-5px, -7px); }
+  70%     { transform: rotate(18deg) translate(-2px, -4px); }
+}
+
+/* ===== SPEECH BUBBLE ===== */
+.speech {
+  background: white; border-radius: 20px; padding: 11px 20px;
+  font-size: 1.15em; font-weight: bold; color: var(--text);
+  text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  position: relative; max-width: 92%;
+  min-height: 50px; display: flex; align-items: center; justify-content: center;
+}
+.speech::after {
+  content: ''; position: absolute;
+  bottom: -13px; left: 50%; transform: translateX(-50%);
+  border: 9px solid transparent; border-top-color: white; border-bottom: 0;
+}
+
+/* ===== APPLE AREA ===== */
+.apple-area {
+  background: rgba(255,255,255,.42); border-radius: 22px;
+  padding: 14px 14px 12px; width: 100%; position: relative;
+}
+.apple-label { text-align: center; font-size: .82em; color: var(--text); opacity: .7; margin-bottom: 8px; }
+.apple-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; justify-items: center; }
+.a-item {
+  width: 52px; height: 52px; font-size: 1.9em;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: rgba(255,255,255,.55);
+  user-select: none; transition: all .3s;
+}
+.a-item.eaten     { opacity: 0; transform: scale(0); }
+.a-item.highlight { background: rgba(255,200,60,.38); animation: aGlow .7s ease-in-out infinite alternate; }
+@keyframes aGlow { from{box-shadow:0 0 8px rgba(255,165,0,.4)} to{box-shadow:0 0 18px rgba(255,165,0,.8)} }
+
+/* Curtain */
+.curtain {
+  position: absolute; inset: 0;
+  background: #fff; border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5em; font-weight: bold; color: var(--text);
+  opacity: 0; pointer-events: none; transition: opacity .35s; z-index: 5;
+}
+.curtain.show { opacity: 1; pointer-events: all; }
+
+/* ===== BIG EQUATION (phase 4) ===== */
+.big-eq {
+  font-size: 2.8em; font-weight: bold; color: var(--text);
+  background: rgba(255,255,255,.7); border-radius: 20px;
+  padding: 16px 32px; text-align: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  animation: eqPop .4s cubic-bezier(.22,1.5,.5,1);
+  display: none;
+}
+@keyframes eqPop { from{transform:scale(.6);opacity:0} to{transform:scale(1);opacity:1} }
+
+/* Hint equation (phases 1-3, wrong answer) */
+.hint-eq {
+  font-size: 1.5em; font-weight: bold; color: var(--text);
+  background: rgba(255,255,255,.7); border-radius: 16px;
+  padding: 8px 24px; text-align: center; display: none;
+}
+
+/* ===== TIMER ===== */
+.timer-wrap { width: 100%; max-width: 380px; display: none; }
+.timer-wrap.visible { display: block; }
+.timer-track { height: 10px; background: rgba(255,255,255,.4); border-radius: 5px; overflow: hidden; }
+#timer-fill { height: 100%; background: linear-gradient(90deg,#2ECC71,#FFD700,#FF6B6B); border-radius: 5px; width: 100%; }
+
+/* ===== ANSWER SECTION ===== */
+.answer-section { width: 100%; }
+.answer-label { text-align: center; font-size: 1.05em; font-weight: bold; color: var(--text); margin-bottom: 10px; }
+.answer-btns { display: flex; gap: 14px; justify-content: center; }
+.ans-btn {
+  width: 86px; height: 86px; border: none; border-radius: 50%;
+  font-size: 2.3em; font-weight: bold; font-family: inherit;
+  cursor: pointer; color: white;
+  background: linear-gradient(135deg,#4ECDC4,#27AE60);
+  box-shadow: 0 6px 0 rgba(0,0,0,.2); text-shadow: 0 2px 4px rgba(0,0,0,.2);
+  position: relative; overflow: hidden;
+  transition: transform .1s, box-shadow .1s;
+}
+.ans-btn::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 40%;
+  background: rgba(255,255,255,.28); border-radius: 50% 50% 0 0/30% 30% 0 0;
+}
+.ans-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.2); }
+.ans-btn:disabled { cursor: default; }
+.ans-btn.correct { background: linear-gradient(135deg,#2ECC71,#27AE60) !important; animation: btnOK .5s ease-out; }
+.ans-btn.wrong   { background: linear-gradient(135deg,#E74C3C,#C0392B) !important; animation: btnNG .5s; }
+@keyframes btnOK { 0%{transform:scale(1)} 50%{transform:scale(1.2) translateY(-6px)} 100%{transform:scale(1) translateY(0)} }
+@keyframes btnNG { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+/* ===== FEEDBACK OVERLAY ===== */
+.fb-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.42);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 300; opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+.fb-overlay.show { opacity: 1; pointer-events: all; }
+.fb-card {
+  background: white; border-radius: 28px; padding: 22px 28px;
+  text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.28);
+  max-width: 320px; width: 92%;
+  animation: cardPop .4s cubic-bezier(.22,1.5,.5,1);
+}
+@keyframes cardPop { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+.fb-emoji { font-size: 3.4em; margin-bottom: 6px; }
+.fb-title { font-size: 1.75em; font-weight: bold; margin-bottom: 6px; }
+.fb-title.ok { color: var(--correct); }
+.fb-title.ng { color: var(--wrong); }
+.fb-eq {
+  font-size: 1.5em; color: var(--text);
+  background: #f0f9f0; border-radius: 14px;
+  padding: 8px 16px; margin: 8px 0; display: none;
+}
+
+/* Pair hint */
+.pair-hint {
+  margin: 10px 0; padding: 12px;
+  background: #fff8f0; border-radius: 16px;
+  border: 2px solid #FFE0B2; display: none;
+}
+.pair-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-bottom: 8px; flex-wrap: wrap;
+}
+.pair-group { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pair-dots  { display: flex; flex-wrap: wrap; gap: 4px; max-width: 120px; justify-content: center; }
+.pd { width: 18px; height: 18px; border-radius: 50%; }
+.pd.eaten  { background: #FF6B6B; }
+.pd.remain { background: #2ECC71; }
+.pair-num        { font-size: 1em; font-weight: bold; }
+.pair-num.eaten  { color: #E74C3C; }
+.pair-num.remain { color: #27AE60; }
+.pair-op  { font-size: 1.4em; font-weight: bold; color: #999; }
+.pair-eq-txt { font-size: 1.2em; font-weight: bold; color: #333; }
+.pair-msg { font-size: .88em; font-weight: bold; color: #E67E22; margin-top: 4px; }
+
+.fb-msg { font-size: .9em; color: #555; margin: 6px 0 16px; line-height: 1.5; white-space: pre-line; }
+.fb-next {
+  background: linear-gradient(135deg,#FFD700,#FFA500);
+  color: white; border: none; border-radius: 50px;
+  padding: 13px 34px; font-size: 1.1em; font-weight: bold;
+  font-family: inherit; cursor: pointer;
+  box-shadow: 0 4px 0 rgba(0,0,0,.2); transition: transform .1s;
+}
+.fb-next:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.2); }
+
+/* ===== SPARKLES ===== */
+#sparkles { position: fixed; inset: 0; pointer-events: none; z-index: 200; overflow: hidden; }
+.sp { position: absolute; pointer-events: none; animation: spFloat 1.4s ease-out forwards; }
+@keyframes spFloat { 0%{transform:translate(0,0) scale(0) rotate(0deg);opacity:1} 100%{transform:translate(var(--dx),var(--dy)) scale(1.6) rotate(360deg);opacity:0} }
+
+/* ===== UTILITIES ===== */
+.hidden { display: none !important; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 360px) {
+  .a-item { width: 44px; height: 44px; font-size: 1.65em; }
+  .ans-btn { width: 76px; height: 76px; font-size: 2em; }
+  .game-title { font-size: 1.8em; }
+  .big-eq { font-size: 2.3em; padding: 12px 24px; }
+}
+@media (min-height: 700px) { body { justify-content: center; } }
+</style>
+</head>
+<body>
+
+<div id="sparkles"></div>
+
+<!-- TOP BAR -->
+<div id="top-bar">
+  <button class="icon-btn" id="home-btn">🏠</button>
+  <div class="top-center">
+    <div id="phase-badge">フェーズ1</div>
+    <div id="streak-disp">🔥 0れんぞく</div>
+  </div>
+  <button class="icon-btn" id="sound-btn">🔊</button>
+</div>
+
+<!-- ========== TITLE SCREEN ========== -->
+<div id="title-screen" class="screen active">
+  <div class="game-title">🍎 りんごモンスター</div>
+  <div class="game-sub">10のひきざん ゲーム</div>
+
+  <div style="height:115px;display:flex;align-items:flex-end;justify-content:center;position:relative;">
+    <div class="monster munching" style="width:100px;height:100px;position:relative;">
+      <div class="m-body" style="width:100px;height:100px">
+        <div class="m-horn left"></div><div class="m-horn right"></div>
+        <div class="m-belly" style="width:52px;height:42px;left:24px;bottom:10px"></div>
+        <div class="m-eyes" style="top:20px;gap:14px">
+          <div class="m-eye"><div class="m-pupil"></div></div>
+          <div class="m-eye"><div class="m-pupil"></div></div>
+        </div>
+        <div class="m-mouth" style="bottom:24px;width:26px">
+          <div class="m-teeth">
+            <div class="m-tooth"></div><div class="m-tooth"></div><div class="m-tooth"></div>
+          </div>
+        </div>
+        <div class="m-arm left"></div><div class="m-arm right"></div>
+        <div class="m-leg left"></div><div class="m-leg right"></div>
+        <span class="title-apple">🍎</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-grid">
+    <button class="phase-card" data-ph="1">
+      <span class="pc-num">フェーズ1</span>
+      <span class="pc-icon">🌱</span>
+      <span class="pc-name">ぜんぶみえる</span>
+      <span class="pc-desc">たべたあとも のこりが みえる</span>
+    </button>
+    <button class="phase-card" data-ph="2">
+      <span class="pc-num">フェーズ2</span>
+      <span class="pc-icon">🙈</span>
+      <span class="pc-name">たべたらかくす</span>
+      <span class="pc-desc">のこりが かくれる きおくで こたえよう</span>
+    </button>
+    <button class="phase-card" data-ph="3">
+      <span class="pc-num">フェーズ3</span>
+      <span class="pc-icon">⚡</span>
+      <span class="pc-name">ちらっとだけ</span>
+      <span class="pc-desc">1びょうだけ みえる タイマーあり</span>
+    </button>
+    <button class="phase-card" data-ph="4">
+      <span class="pc-num">フェーズ4</span>
+      <span class="pc-icon">🧠</span>
+      <span class="pc-name">あたまで かんがえる</span>
+      <span class="pc-desc">えなし しきだけ タイマーあり</span>
+    </button>
+  </div>
+
+  <div class="best-txt" id="best-txt">さいこうれんぞく：0かい</div>
+</div>
+
+<!-- ========== GAME SCREEN ========== -->
+<div id="game-screen" class="screen">
+
+  <div class="speech" id="speech">りんごが 10こ あるよ！</div>
+
+  <div class="monster-wrap">
+    <div class="monster" id="game-monster">
+      <div class="m-body">
+        <div class="m-horn left"></div><div class="m-horn right"></div>
+        <div class="m-belly"></div>
+        <div class="m-eyes">
+          <div class="m-eye"><div class="m-pupil"></div></div>
+          <div class="m-eye"><div class="m-pupil"></div></div>
+        </div>
+        <div class="m-mouth" id="m-mouth">
+          <div class="m-teeth">
+            <div class="m-tooth"></div><div class="m-tooth"></div><div class="m-tooth"></div>
+          </div>
+        </div>
+        <div class="m-arm left"></div><div class="m-arm right"></div>
+        <div class="m-leg left"></div><div class="m-leg right"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apple area (hidden in phase 4) -->
+  <div class="apple-area" id="apple-area">
+    <div class="apple-label">🍎 りんご</div>
+    <div class="apple-grid" id="apple-grid"></div>
+    <div class="curtain" id="curtain">🙈</div>
+  </div>
+
+  <!-- Phase 4: pure equation -->
+  <div class="big-eq" id="big-eq"></div>
+
+  <!-- Hint equation (wrong answer, phases 1–3) -->
+  <div class="hint-eq" id="hint-eq"></div>
+
+  <!-- Timer bar (phases 3–4) -->
+  <div class="timer-wrap" id="timer-wrap">
+    <div class="timer-track"><div id="timer-fill"></div></div>
+  </div>
+
+  <!-- Answer buttons -->
+  <div class="answer-section hidden" id="answer-section">
+    <div class="answer-label">のこりは なんこ？</div>
+    <div class="answer-btns" id="answer-btns"></div>
+  </div>
+
+</div>
+
+<!-- ========== FEEDBACK OVERLAY ========== -->
+<div class="fb-overlay" id="fb-overlay">
+  <div class="fb-card">
+    <div class="fb-emoji" id="fb-emoji"></div>
+    <div class="fb-title" id="fb-title"></div>
+    <div class="fb-eq"    id="fb-eq"></div>
+    <div class="pair-hint" id="pair-hint">
+      <div class="pair-row" id="pair-row"></div>
+      <div class="pair-msg" id="pair-msg"></div>
+    </div>
+    <div class="fb-msg"  id="fb-msg"></div>
+    <button class="fb-next" id="fb-next">つぎへ ▶</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+//  STATE
+// =====================================================
+const S = {
+  phase:   1,
+  q:       null,   // { sub, ans }
+  lastSub: -1,
+  streak:  0,
+  best:    parseInt(localStorage.getItem('bestStreak') || '0'),
+  sound:   localStorage.getItem('soundOn') !== 'false',
+  gPhase:  'idle', // 'idle'|'running'|'answering'|'feedback'
+  timerTO: null,
+};
+
+// =====================================================
+//  QUESTION POOL  (10-8, 10-9 weighted x4)
+// =====================================================
+const POOL = [1,2,3,4,5,6,7, 8,8,8,8, 9,9,9,9];
+function genQ() {
+  let sub, t = 0;
+  do { sub = POOL[Math.floor(Math.random() * POOL.length)]; t++; }
+  while (sub === S.lastSub && t < 15);
+  return { sub, ans: 10 - sub };
+}
+
+// =====================================================
+//  AUDIO
+// =====================================================
+let actx = null;
+function ac() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); return actx; }
+function tone(f, d, type='sine', v=.28, delay=0) {
+  if (!S.sound) return;
+  try {
+    const c=ac(), o=c.createOscillator(), g=c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = type;
+    o.frequency.setValueAtTime(f, c.currentTime+delay);
+    g.gain.setValueAtTime(v, c.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(.001, c.currentTime+delay+d);
+    o.start(c.currentTime+delay); o.stop(c.currentTime+delay+d);
+  } catch(e) {}
+}
+const SFX = {
+  correct(){ tone(523,.15,'sine',.3,0); tone(659,.15,'sine',.3,.1); tone(784,.15,'sine',.3,.2); tone(1047,.4,'sine',.3,.3); },
+  wrong()  { tone(300,.2,'sawtooth',.2,0); tone(240,.35,'sawtooth',.18,.2); },
+  eat()    { tone(440,.08,'triangle',.22,0); tone(380,.1,'triangle',.18,.09); },
+  pop()    { tone(500,.1,'sine',.2,0); tone(700,.15,'sine',.24,.1); tone(600,.2,'sine',.2,.25); },
+};
+
+// =====================================================
+//  DOM REFS
+// =====================================================
+const $  = id => document.getElementById(id);
+const titleScreen = $('title-screen'), gameScreen  = $('game-screen');
+const topBar      = $('top-bar'),      phaseBadge  = $('phase-badge'), streakDisp = $('streak-disp');
+const speech      = $('speech'),       gameMon     = $('game-monster'), mMouth = $('m-mouth');
+const appleArea   = $('apple-area'),   appleGrid   = $('apple-grid'),  curtain = $('curtain');
+const bigEq       = $('big-eq'),       hintEq      = $('hint-eq');
+const timerWrap   = $('timer-wrap'),   timerFill   = $('timer-fill');
+const ansSection  = $('answer-section'), ansBtns   = $('answer-btns');
+const fbOverlay   = $('fb-overlay'),   fbEmoji     = $('fb-emoji'), fbTitle = $('fb-title');
+const fbEq        = $('fb-eq'),        pairHint    = $('pair-hint');
+const pairRow     = $('pair-row'),     pairMsg     = $('pair-msg');
+const fbMsg       = $('fb-msg'),       fbNext      = $('fb-next');
+const sparkles    = $('sparkles'),     soundBtn    = $('sound-btn'), homeBtn = $('home-btn');
+const bestTxt     = $('best-txt');
+
+// =====================================================
+//  SCREEN
+// =====================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+  topBar.classList.toggle('visible', id === 'game-screen');
+}
+
+// =====================================================
+//  APPLES
+// =====================================================
+let apples = [];
+function buildApples() {
+  appleGrid.innerHTML = ''; apples = [];
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'a-item'; d.textContent = '🍎';
+    appleGrid.appendChild(d); apples.push(d);
+  }
+}
+
+function eatApple(idx) {
+  return new Promise(res => {
+    const a  = apples[idx];
+    const ar = a.getBoundingClientRect();
+    const mr = gameMon.getBoundingClientRect();
+    const dx = (mr.left + mr.width/2) - (ar.left + ar.width/2);
+    const dy = (mr.top  + mr.height/2) - (ar.top + ar.height/2);
+    a.style.transition = 'transform .38s ease-in, opacity .38s ease-in';
+    a.style.transform  = `translate(${dx}px,${dy}px) scale(.18)`;
+    a.style.opacity    = '0';
+    mMouth.classList.add('open');
+    trigAnim(gameMon, 'eating');
+    SFX.eat();
+    setTimeout(() => {
+      a.className = 'a-item eaten'; a.style.cssText = '';
+      mMouth.classList.remove('open'); res();
+    }, 400);
+  });
+}
+
+// Glow highlight on remaining
+function highlightRemaining(sub) {
+  for (let i = sub; i < 10; i++) apples[i].classList.add('highlight');
+}
+
+// =====================================================
+//  MONSTER
+// =====================================================
+function trigAnim(el, cls) {
+  el.classList.remove('idle','entering','eating','happy','confused');
+  void el.offsetWidth; el.classList.add(cls);
+}
+
+// =====================================================
+//  CHOICES
+// =====================================================
+function makeChoices(correct) {
+  const s = new Set([correct]); let t = 0;
+  while (s.size < 3 && t++ < 30) {
+    const off = (Math.floor(Math.random()*3)+1) * (Math.random()<.5 ? 1 : -1);
+    const c = correct + off;
+    if (c >= 0 && c <= 9) s.add(c);
+  }
+  for (let v = 0; s.size < 3; v++) if (v !== correct && v >= 0 && v <= 9) s.add(v);
+  return [...s].sort(() => Math.random()-.5);
+}
+
+// =====================================================
+//  TIMER
+// =====================================================
+function startTimer(sec) {
+  timerWrap.classList.add('visible');
+  timerFill.style.transition = 'none';
+  timerFill.style.width = '100%';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    timerFill.style.transition = `width ${sec}s linear`;
+    timerFill.style.width = '0%';
+  }));
+  S.timerTO = setTimeout(() => {
+    if (S.gPhase === 'answering') handleAnswer(-999, S.q.ans, true);
+  }, sec * 1000);
+}
+function stopTimer() {
+  clearTimeout(S.timerTO);
+  timerFill.style.transition = 'none';
+  timerFill.style.width = '0%';
+}
+
+// =====================================================
+//  ANSWER HANDLING
+// =====================================================
+function handleAnswer(val, correct, timeout=false) {
+  if (S.gPhase !== 'answering') return;
+  S.gPhase = 'feedback';
+  stopTimer();
+  document.querySelectorAll('.ans-btn').forEach(b => b.disabled = true);
+
+  const ok = !timeout && (val === correct);
+
+  document.querySelectorAll('.ans-btn').forEach(b => {
+    const v = parseInt(b.dataset.v);
+    if (v === correct) b.classList.add('correct');
+    else if (v === val && !ok) b.classList.add('wrong');
+  });
+
+  if (ok) {
+    S.streak++;
+    if (S.streak > S.best) { S.best = S.streak; localStorage.setItem('bestStreak', S.best); }
+    updateStreak(); SFX.correct(); boom();
+    trigAnim(gameMon, 'happy');
+    setTimeout(() => showFB(true, false), 650);
+  } else {
+    S.streak = 0; updateStreak(); SFX.wrong();
+    trigAnim(gameMon, 'confused');
+
+    // Phase-specific visual correction
+    if (S.phase === 1) {
+      highlightRemaining(correct);
+    } else if (S.phase === 2) {
+      curtain.classList.remove('show');
+      highlightRemaining(correct);
+    } else if (S.phase === 3) {
+      // Rebuild visual snapshot of correct state
+      buildApples();
+      curtain.classList.remove('show');
+      for (let i = 0; i < S.q.sub; i++) apples[i].className = 'a-item eaten';
+      highlightRemaining(correct);
+    } else if (S.phase === 4) {
+      bigEq.textContent = `10 − ${S.q.sub} ＝ ${correct}`;
+    }
+
+    if (S.phase < 4) {
+      hintEq.textContent = `10 − ${S.q.sub} ＝ ${correct}`;
+      hintEq.style.display = 'block';
+    }
+    setTimeout(() => showFB(false, timeout), 900);
+  }
+}
+
+// =====================================================
+//  FEEDBACK
+// =====================================================
+function showFB(ok, timeout) {
+  const { sub, ans } = S.q;
+  fbEmoji.textContent = timeout ? '⏰' : ok ? '🎉' : '🤔';
+  fbTitle.textContent = timeout ? 'じかんぎれ！' : ok ? 'せいかい！' : 'おしい！';
+  fbTitle.className   = 'fb-title ' + (ok ? 'ok' : 'ng');
+  fbEq.textContent    = `10 − ${sub} ＝ ${ans}`;
+  fbEq.style.display  = 'block';
+
+  if (!ok) {
+    buildPairHint(sub, ans);
+    pairHint.style.display = 'block';
+    pairMsg.textContent = `${sub} と ${ans} で 10 に なるよ！`;
+  } else {
+    pairHint.style.display = 'none';
+  }
+
+  fbMsg.textContent = ok
+    ? `すごい！ ${ans}こ のこったね！\nれんぞく ${S.streak}かい！`
+    : timeout
+      ? `じかんぎれ！ のこりは ${ans}こ だよ！`
+      : `のこりは ${ans}こ だよ！\nいっしょにみてみよう！`;
+
+  fbNext.textContent = ok ? 'つぎへ ▶' : 'わかった！ ▶';
+  fbOverlay.classList.add('show');
+}
+
+function buildPairHint(sub, ans) {
+  pairRow.innerHTML = '';
+
+  const makeGroup = (n, cls, label) => {
+    const g = document.createElement('div'); g.className = 'pair-group';
+    const dots = document.createElement('div'); dots.className = 'pair-dots';
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('div'); d.className = `pd ${cls}`; dots.appendChild(d);
+    }
+    const num = document.createElement('div');
+    num.className = `pair-num ${cls}`; num.textContent = label;
+    g.append(dots, num); return g;
+  };
+  const op = t => { const d=document.createElement('div'); d.className='pair-op'; d.textContent=t; return d; };
+  const txt = t => { const d=document.createElement('div'); d.className='pair-eq-txt'; d.textContent=t; return d; };
+
+  pairRow.append(
+    makeGroup(sub, 'eaten',  `${sub}こ食べた`),
+    op('＋'),
+    makeGroup(ans, 'remain', `${ans}このこり`),
+    op('＝'),
+    txt('10')
+  );
+}
+
+// =====================================================
+//  SPARKLES
+// =====================================================
+function boom() {
+  const em = ['⭐','✨','🌟','💫','🎊','🎉','🍎'];
+  for (let i = 0; i < 14; i++) setTimeout(() => {
+    const el = document.createElement('div'); el.className = 'sp';
+    el.textContent = em[Math.floor(Math.random()*em.length)];
+    el.style.left = (15+Math.random()*70)+'vw';
+    el.style.top  = (15+Math.random()*60)+'vh';
+    el.style.fontSize = (.8+Math.random()*1.2)+'em';
+    el.style.setProperty('--dx', (Math.random()*120-60)+'px');
+    el.style.setProperty('--dy', (-40-Math.random()*100)+'px');
+    sparkles.appendChild(el); setTimeout(()=>el.remove(), 1500);
+  }, i*70);
+}
+
+// =====================================================
+//  UI HELPERS
+// =====================================================
+function updateStreak() { streakDisp.textContent = `🔥 ${S.streak}れんぞく`; }
+function updatePhaseBadge() {
+  const colors = ['','#27AE60','#2980B9','#E67E22','#8E44AD'];
+  phaseBadge.textContent  = `フェーズ${S.phase}`;
+  phaseBadge.style.background = colors[S.phase];
+}
+
+function setMonsterColor(ph) {
+  const main  = ['','#27AE60','#2980B9','#E67E22','#8E44AD'][ph];
+  const light = ['','#82E0AA','#85C1E9','#F0B27A','#C39BD3'][ph];
+  const r = document.documentElement;
+  r.style.setProperty('--monster', main);
+  r.style.setProperty('--ml', light);
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+// =====================================================
+//  PHASE FLOWS
+// =====================================================
+
+// Phase 1: everything visible, remaining highlighted after eating
+async function flow1() {
+  buildApples();
+  appleArea.classList.remove('hidden'); bigEq.style.display = 'none';
+  curtain.classList.remove('show');    hintEq.style.display = 'none';
+  trigAnim(gameMon, 'entering'); SFX.pop();
+  speech.textContent = '🍎 りんごが 10こ あるよ！';
+  await wait(950);
+  speech.textContent = `😋 ${S.q.sub}こ たべるよ！`;
+  await wait(700);
+  for (let i = 0; i < S.q.sub; i++) { await eatApple(i); await wait(220); }
+  speech.textContent = `${S.q.sub}こ たべちゃった！`;
+  // Highlight remaining (key for phase 1 learning)
+  highlightRemaining(S.q.sub);
+  await wait(450);
+}
+
+// Phase 2: eat visible → remaining masked with "？"
+async function flow2() {
+  buildApples();
+  appleArea.classList.remove('hidden'); bigEq.style.display = 'none';
+  curtain.classList.remove('show');    hintEq.style.display = 'none';
+  trigAnim(gameMon, 'entering'); SFX.pop();
+  speech.textContent = '🍎 りんごが 10こ あるよ！';
+  await wait(950);
+  speech.textContent = `😋 ${S.q.sub}こ たべるよ！`;
+  await wait(700);
+  for (let i = 0; i < S.q.sub; i++) { await eatApple(i); await wait(200); }
+  speech.textContent = `${S.q.sub}こ たべちゃった！`;
+  await wait(400);
+  curtain.classList.add('show');  // ← 全体をカーテンで完全に隠す
+  speech.textContent = '🙈 のこりが かくれちゃった...';
+  await wait(600);
+}
+
+// Phase 3: flash 10 apples for 1.2s → all hidden → announce eaten count
+async function flow3() {
+  buildApples();
+  appleArea.classList.remove('hidden'); bigEq.style.display = 'none';
+  curtain.classList.remove('show');    hintEq.style.display = 'none';
+  trigAnim(gameMon, 'entering'); SFX.pop();
+  speech.textContent = '🍎 りんごが 10こ あるよ！ よくみてね！';
+  await wait(1200);
+  curtain.classList.add('show');        // ← hide everything
+  await wait(350);
+  speech.textContent = `🙈 ${S.q.sub}こ たべちゃった！`;
+  await wait(650);
+}
+
+// Phase 4: no apples, pure equation
+async function flow4() {
+  appleArea.classList.add('hidden');
+  hintEq.style.display = 'none';
+  bigEq.textContent    = `10 − ${S.q.sub} ＝ ？`;
+  bigEq.style.display  = 'block';
+  trigAnim(gameMon, 'entering'); SFX.pop();
+  speech.textContent = 'こたえは いくつ？';
+  await wait(500);
+}
+
+// =====================================================
+//  RUN QUESTION
+// =====================================================
+async function runQ() {
+  S.q = genQ(); S.gPhase = 'running';
+  ansSection.classList.add('hidden');
+  timerWrap.classList.remove('visible');
+
+  await [null, flow1, flow2, flow3, flow4][S.phase]();
+
+  // Build answer buttons
+  ansBtns.innerHTML = '';
+  makeChoices(S.q.ans).forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'ans-btn'; b.textContent = v; b.dataset.v = v;
+    b.addEventListener('click', () => handleAnswer(v, S.q.ans));
+    ansBtns.appendChild(b);
+  });
+  speech.textContent = 'のこりは なんこ？';
+  ansSection.classList.remove('hidden');
+
+  if (S.phase >= 3) startTimer(S.phase === 3 ? 6 : 5);
+
+  S.gPhase = 'answering';
+  trigAnim(gameMon, 'idle');
+}
+
+// =====================================================
+//  START PHASE
+// =====================================================
+function startPhase(ph) {
+  S.phase = ph; S.streak = 0; S.lastSub = -1;
+  updateStreak(); updatePhaseBadge(); setMonsterColor(ph);
+  // Reset UI state for clean start
+  appleArea.classList.remove('hidden');
+  bigEq.style.display = 'none'; hintEq.style.display = 'none';
+  curtain.classList.remove('show'); timerWrap.classList.remove('visible');
+  showScreen('game-screen');
+  runQ();
+}
+
+// =====================================================
+//  INIT
+// =====================================================
+function init() {
+  bestTxt.textContent    = `さいこうれんぞく：${S.best}かい`;
+  soundBtn.textContent   = S.sound ? '🔊' : '🔇';
+
+  document.querySelectorAll('.phase-card').forEach(btn => {
+    btn.addEventListener('click', () => startPhase(parseInt(btn.dataset.ph)));
+  });
+
+  soundBtn.addEventListener('click', () => {
+    S.sound = !S.sound; localStorage.setItem('soundOn', S.sound);
+    soundBtn.textContent = S.sound ? '🔊' : '🔇';
+  });
+
+  homeBtn.addEventListener('click', () => {
+    stopTimer(); fbOverlay.classList.remove('show'); S.gPhase = 'idle';
+    appleArea.classList.remove('hidden');
+    bigEq.style.display = 'none'; hintEq.style.display = 'none';
+    curtain.classList.remove('show'); timerWrap.classList.remove('visible');
+    bestTxt.textContent = `さいこうれんぞく：${S.best}かい`;
+    showScreen('title-screen');
+  });
+
+  fbNext.addEventListener('click', () => {
+    fbOverlay.classList.remove('show');
+    S.lastSub = S.q.sub;
+    trigAnim(gameMon, 'idle');
+    curtain.classList.remove('show');
+    hintEq.style.display = 'none';
+    runQ();
+  });
+}
+
+init();
+</script>
+</body>
+</html>

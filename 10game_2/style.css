@@ -870,22 +870,21 @@ button { font-family: inherit; }
   filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.85));
 }
 .char.char-gameover .char-svg {
-  animation: charSlump 0.6s ease forwards;
-  opacity: 0.65;
+  animation: charJump 0.55s ease, charSway 2.8s ease-in-out 0.55s infinite;
 }
 
 .char.char-happy .carm-l,
-.char.char-fever .carm-l { transform: rotate(65deg); }
+.char.char-fever .carm-l,
+.char.char-gameover .carm-l { transform: rotate(65deg); }
 .char.char-happy .carm-r,
-.char.char-fever .carm-r { transform: rotate(-65deg); }
+.char.char-fever .carm-r,
+.char.char-gameover .carm-r { transform: rotate(-65deg); }
 
 .char.char-combo .carm-l { transform: rotate(35deg); }
 .char.char-combo .carm-r { transform: rotate(-35deg); }
 
-.char.char-sad      .carm-l,
-.char.char-gameover .carm-l { transform: rotate(-25deg); }
-.char.char-sad      .carm-r,
-.char.char-gameover .carm-r { transform: rotate(25deg); }
+.char.char-sad .carm-l { transform: rotate(-25deg); }
+.char.char-sad .carm-r { transform: rotate(25deg); }
 
 .char-speech {
   position: absolute;
@@ -894,9 +893,9 @@ button { font-family: inherit; }
   transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.95);
   color: #333;
-  border-radius: 12px;
-  padding: 4px 10px;
-  font-size: 0.65rem;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 1.3rem;
   font-weight: bold;
   white-space: nowrap;
   opacity: 0;
@@ -910,7 +909,7 @@ button { font-family: inherit; }
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border: 5px solid transparent;
+  border: 10px solid transparent;
   border-top-color: rgba(255, 255, 255, 0.95);
 }
 

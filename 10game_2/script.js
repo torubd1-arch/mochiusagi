@@ -44,6 +44,26 @@ const FEVER_RESET_COMBO_ON_END = true;
  */
 const COMBO_MULTS = [1, 2, 3, 5, 8];
 
+const SPEECH = {
+  happy: {
+    L: ['いいね！', 'ナイス！', 'いい感じ！', 'やるじゃん！', 'グッド！'],
+    R: ['やった！', 'ぴったり！', 'よっしゃ！', 'かわいい！', 'さすが！'],
+  },
+  combo: {
+    L: ['すごい！！', 'はやい！', 'コンボ！', 'まじで！？', '天才かも！'],
+    R: ['やばい！', '神！', 'すごすぎ！', 'え、はや！', 'うそ！？'],
+  },
+  sad: {
+    L: ['がんばれ！', 'ドンマイ！', 'つぎいこ！', 'まだまだ！', '大丈夫！'],
+    R: ['おしい！', 'もう一回！', 'ファイト！', 'きっとできる！', 'まけないで！'],
+  },
+  gameover: {
+    L: ['おつかれ！', 'たのしかった！', 'またやろう！', 'すごかったよ！', 'ありがとう！'],
+    R: ['おつかれ！', 'またね！', 'よくがんばった！', 'さいこう！', 'また来てね！'],
+  },
+};
+function pickSpeech(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
 /** コンボ数からスコア倍率を返す */
 function getComboMult(c) {
   if (c <= 0) return 1;
@@ -722,10 +742,10 @@ async function handleCorrectMatch(r1, c1, r2, c2) {
   if (wasAlreadyFever) {
     showCharSpeech(document.getElementById('speech-left'), '！');
   } else if (!isFever) {
-    if      (combo >= 5) setCharState('combo', 'すごい！！', '!!!');
-    else if (combo >= 3) setCharState('combo', 'はやい！',   '!!');
-    else if (combo >= 2) setCharState('happy', 'いいね！',   'やった！');
-    else                 setCharState('happy', 'いいね！',    '');
+    if      (combo >= 5) setCharState('combo', pickSpeech(SPEECH.combo.L), pickSpeech(SPEECH.combo.R));
+    else if (combo >= 3) setCharState('combo', pickSpeech(SPEECH.combo.L), pickSpeech(SPEECH.combo.R));
+    else if (combo >= 2) setCharState('happy', pickSpeech(SPEECH.happy.L), pickSpeech(SPEECH.happy.R));
+    else                 setCharState('happy', pickSpeech(SPEECH.happy.L), '');
   }
   // フィーバー突入時: startFever() 内で setCharState('fever') 済み
 
@@ -768,7 +788,7 @@ async function handleWrongMatch(r1, c1, r2, c2) {
   combo = 0;
   updateComboDisplay();
 
-  setCharState('sad', 'がんばれ！', 'おしい！');
+  setCharState('sad', pickSpeech(SPEECH.sad.L), pickSpeech(SPEECH.sad.R));
 
   const elA = getCellEl(r1, c1);
   if (elA) {
@@ -825,7 +845,7 @@ function triggerGameOver() {
   updateFeverUI(false);
   stopBgm();                // BGMを停止
   playSound('gameover');
-  setCharState('gameover', 'おつかれ！', '');
+  setCharState('gameover', pickSpeech(SPEECH.gameover.L), pickSpeech(SPEECH.gameover.R));
   document.getElementById('final-score').textContent = score;
   document.getElementById('final-best').textContent  = highScore;
   document.getElementById('game-over').classList.remove('hidden');
