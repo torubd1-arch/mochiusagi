@@ -1,30 +1,340 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>Mochiusagi Games</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>もちうさぎ ゲームス</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-from: #0f0c29;
+      --bg-to:   #302b63;
+      --card-bg: rgba(255,255,255,0.07);
+      --card-border: rgba(255,255,255,0.15);
+      --text-main: #f0eeff;
+      --text-sub: #b8b0d8;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--bg-from), var(--bg-to), #24243e);
+      background-size: 400% 400%;
+      animation: bgShift 12s ease infinite;
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      color: var(--text-main);
+      overflow-x: hidden;
+    }
+
+    @keyframes bgShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ── Stars ── */
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      width: 2px; height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle var(--d, 4s) var(--delay, 0s) ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; transform: scale(0.8); }
+      50%       { opacity: 0.8; transform: scale(1.2); }
+    }
+
+    /* ── Layout ── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .logo {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(90deg, #f9d7ff, #b5d5ff, #d4f1c5, #ffdab5);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradText 6s ease infinite;
+    }
+    @keyframes gradText {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .logo-icon {
+      display: block;
+      font-size: clamp(3rem, 8vw, 5rem);
+      margin-bottom: 8px;
+      -webkit-text-fill-color: initial;
+      background: none;
+      animation: bounce 2.4s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    .subtitle {
+      margin-top: 12px;
+      font-size: 1.05rem;
+      color: var(--text-sub);
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 28px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      cursor: pointer;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      z-index: 0;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 48px rgba(0,0,0,0.4), 0 0 0 1px var(--accent-a);
+      border-color: var(--accent-a);
+    }
+    .card:hover::before { opacity: 0.12; }
+    .card > * { position: relative; z-index: 1; }
+
+    .card-icon {
+      font-size: 3.2rem;
+      line-height: 1;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+      transition: transform 0.3s ease;
+    }
+    .card:hover .card-icon { transform: scale(1.15) rotate(-3deg); }
+
+    .card-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: rgba(255,255,255,0.12);
+      color: var(--text-sub);
+      width: fit-content;
+    }
+
+    .card-title {
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .card-en {
+      font-size: 0.78rem;
+      opacity: 0.55;
+      margin-top: -8px;
+      letter-spacing: 0.06em;
+    }
+    .card-desc {
+      font-size: 0.92rem;
+      color: var(--text-sub);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .card-arrow {
+      align-self: flex-end;
+      font-size: 1.3rem;
+      opacity: 0.5;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+    .card:hover .card-arrow {
+      transform: translateX(5px);
+      opacity: 1;
+    }
+
+    /* ── Per-card accent colours ── */
+    .c-choco    { --accent-a: #f9a825; --accent-b: #e64a19; }
+    .c-kanji    { --accent-a: #7c4dff; --accent-b: #e040fb; }
+    .c-fishing  { --accent-a: #00b0ff; --accent-b: #00e5ff; }
+    .c-deca     { --accent-a: #00c853; --accent-b: #64dd17; }
+    .c-undokai  { --accent-a: #ff4081; --accent-b: #ff6d00; }
+    .c-kokuho   { --accent-a: #c6aa45; --accent-b: #8d6e63; }
+
+    /* non-link card style */
+    .card-nolink {
+      opacity: 0.75;
+      cursor: default;
+    }
+    .card-nolink:hover {
+      transform: none;
+      box-shadow: none;
+      border-color: var(--card-border);
+    }
+    .card-nolink:hover::before { opacity: 0; }
+    .card-nolink:hover .card-icon { transform: none; }
+    .card-nolink:hover .card-arrow { transform: none; opacity: 0.5; }
+
+    .cli-tag {
+      font-size: 0.72rem;
+      background: rgba(198,170,69,0.2);
+      color: #c6aa45;
+      border: 1px solid rgba(198,170,69,0.4);
+      border-radius: 6px;
+      padding: 2px 8px;
+      width: fit-content;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      margin-top: 72px;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      opacity: 0.6;
+    }
+  </style>
 </head>
-<body style="text-align:center;font-family:sans-serif;">
-<h1>🐰 Mochiusagi Games</h1>
-<p>Welcome!</p>
+<body>
 
-<p>
-<a href="choco/" style="font-size:24px;">
-🍫 チョコ王国へ
-</a>
-</p>
+<!-- Stars -->
+<div class="stars" id="stars"></div>
 
-<p>
-<a href="kanji-battle/" style="font-size:24px;">
-かんじバトルへ
-</a>
-</p>
+<div class="wrapper">
 
-<p>
-<a href="fishing/" style="font-size:24px;">
-🎣 のんびりつりゲームへ
-</a>
-</p>
-  
+  <header>
+    <span class="logo-icon">🐰</span>
+    <h1 class="logo">もちうさぎ ゲームス</h1>
+    <p class="subtitle">Mochiusagi Games &amp; Apps</p>
+  </header>
+
+  <main class="grid">
+
+    <!-- チョコキャッチ -->
+    <a href="choco/index.html" class="card c-choco">
+      <div class="card-icon">🍫</div>
+      <span class="card-badge">Action</span>
+      <div class="card-title">チョコキャッチ！</div>
+      <div class="card-en">Choco Catch</div>
+      <p class="card-desc">チョコレートをキャッチする30秒アクションゲーム。落ちてくるチョコを全部つかまえろ！</p>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- かんじバトル -->
+    <a href="kanji_battle/index.html" class="card c-kanji">
+      <div class="card-icon">⚔️</div>
+      <span class="card-badge">Education</span>
+      <div class="card-title">かんじバトル</div>
+      <div class="card-en">Kanji Battle</div>
+      <p class="card-desc">もじモンスターをたおせ！漢字の読み方を答えてバトルするRPG風学習ゲーム。</p>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- フィッシング -->
+    <a href="fishing/index.html" class="card c-fishing">
+      <div class="card-icon">🎣</div>
+      <span class="card-badge">Casual</span>
+      <div class="card-title">ウキウキフィッシング！</div>
+      <div class="card-en">Ukiuki Fishing</div>
+      <p class="card-desc">のんびり釣りを楽しもう。60秒でどれだけスコアを稼げるか挑戦！</p>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- Decathlon -->
+    <a href="decathlon/index.html" class="card c-deca">
+      <div class="card-icon">🎲</div>
+      <span class="card-badge">Dice / Sports</span>
+      <div class="card-title">Decathlon</div>
+      <div class="card-en">Decathlon Dice Game</div>
+      <p class="card-desc">10種目のスポーツをダイスで競う。戦略的なダイス配置で高得点を狙え！</p>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- うんどうかい -->
+    <a href="undokai/index.html" class="card c-undokai">
+      <div class="card-icon">🏃</div>
+      <span class="card-badge">Dice / Sports</span>
+      <div class="card-title">うんどうかい</div>
+      <div class="card-en">Undokai Dice Game</div>
+      <p class="card-desc">運動会の6種目をダイスで楽しもう！クラス対抗の熱いバトルを体験しよう。</p>
+      <span class="card-arrow">→</span>
+    </a>
+
+    <!-- 国宝チェックリスト -->
+    <a href="kokuho/report.html" class="card c-kokuho">
+      <div class="card-icon">🏯</div>
+      <span class="card-badge">Tool</span>
+      <div class="card-title">国宝チェックリスト</div>
+      <div class="card-en">Kokuho Checklist</div>
+      <p class="card-desc">日本の国宝を都道府県別に管理し、観覧達成率を可視化するチェックリスト。</p>
+      <span class="card-arrow">→</span>
+    </a>
+
+  </main>
+
+  <footer>
+    <p>© 2025 Mochiusagi Games</p>
+  </footer>
+
+</div>
+
+<script>
+  // Generate random stars
+  const container = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top:  ${Math.random() * 100}%;
+      --d: ${2 + Math.random() * 5}s;
+      --delay: ${Math.random() * 6}s;
+      width:  ${1 + Math.random() * 2}px;
+      height: ${1 + Math.random() * 2}px;
+    `;
+    container.appendChild(s);
+  }
+</script>
 </body>
 </html>
