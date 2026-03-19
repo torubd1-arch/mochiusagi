@@ -80,6 +80,9 @@ let flashTimer  = 0;
 const inp = { space: false, shift: false, left: false, right: false };
 const prev = { space: false, left: false };
 
+// Touch device detection
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
 // Audio
 let audioCtx   = null;
 let muted      = false;
@@ -321,6 +324,20 @@ function setupInput() {
     if (e.button === 2) inp.right = false;
   });
   document.addEventListener('contextmenu', e => e.preventDefault());
+
+  // Touch controls (mobile)
+  const reelBtn  = document.getElementById('reel-btn');
+  const slackBtn = document.getElementById('slack-btn');
+  if (reelBtn) {
+    reelBtn.addEventListener('touchstart',  e => { e.preventDefault(); initAudio(); inp.left = true;  }, { passive: false });
+    reelBtn.addEventListener('touchend',    e => { e.preventDefault(); inp.left = false; }, { passive: false });
+    reelBtn.addEventListener('touchcancel', () => { inp.left = false; });
+  }
+  if (slackBtn) {
+    slackBtn.addEventListener('touchstart',  e => { e.preventDefault(); initAudio(); inp.right = true;  }, { passive: false });
+    slackBtn.addEventListener('touchend',    e => { e.preventDefault(); inp.right = false; }, { passive: false });
+    slackBtn.addEventListener('touchcancel', () => { inp.right = false; });
+  }
 }
 
 // ============================================================
@@ -1128,7 +1145,9 @@ function renderHUD() {
       dom.hint.textContent = '◀◀ SLACK中（糸を緩める） — テンション下降中';
       dom.hint.style.color = '#4dd0e1';
     } else {
-      dom.hint.textContent = '[Space/左] 長押し＝REEL  ／  [Shift/右] 長押し＝SLACK';
+      dom.hint.textContent = isTouch
+        ? 'REEL 長押し＝巻く  ／  SLACK 長押し＝緩める'
+        : '[Space/左] 長押し＝REEL  ／  [Shift/右] 長押し＝SLACK';
       dom.hint.style.color = '';
     }
   } else if (gameState !== 'CAST_WAIT' && gameState !== 'BITE_WINDOW') {
@@ -1151,17 +1170,23 @@ function showFlash(msg) {
 
 function setHint(state) {
   if (state === 'PLAYING_IDLE') {
-    dom.hint.textContent = 'Space / 左クリック でキャスト';
+    dom.hint.textContent = isTouch
+      ? 'REEL をタップでキャスト'
+      : 'Space / 左クリック でキャスト';
     dom.hint.style.color = '';
   } else if (state === 'CAST_WAIT') {
     dom.hint.textContent = 'アタリを待て… ※まだ合わせるな！';
     dom.hint.style.color = '#ffd54f';
   } else if (state === 'BITE_WINDOW') {
-    dom.hint.textContent = '▶ 今だ！Space / 左クリック で合わせろ！ ◀';
+    dom.hint.textContent = isTouch
+      ? '▶ 今だ！REEL をタップで合わせろ！ ◀'
+      : '▶ 今だ！Space / 左クリック で合わせろ！ ◀';
     dom.hint.style.color = '#ff5252';
   } else if (state === 'FIGHTING') {
     // FIGHTING hints are updated every frame by renderHUD(); just clear for now
-    dom.hint.textContent = '[Space/左] 長押し＝REEL  ／  [Shift/右] 長押し＝SLACK';
+    dom.hint.textContent = isTouch
+      ? 'REEL 長押し＝巻く  ／  SLACK 長押し＝緩める'
+      : '[Space/左] 長押し＝REEL  ／  [Shift/右] 長押し＝SLACK';
     dom.hint.style.color = '';
   } else {
     dom.hint.textContent = '';

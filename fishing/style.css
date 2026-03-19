@@ -27,6 +27,8 @@ body {
   align-items: flex-start;
   min-height: 100vh;
   padding: 8px;
+  touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 button {
@@ -430,10 +432,53 @@ kbd {
 .rar-A { color: #e040fb; font-weight: bold; }
 
 /* ========================================
+   TOUCH CONTROLS (mobile only)
+   ======================================== */
+#touch-controls {
+  display: none;
+  gap: 8px;
+}
+
+.touch-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1.5;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.touch-btn small { font-size: 11px; font-weight: normal; display: block; opacity: 0.85; }
+
+#reel-btn  { background: var(--accent); color: #000; border-color: #29b6f6; }
+#reel-btn:active  { background: #81d4fa; }
+#slack-btn { background: var(--warn);   color: #000; border-color: #f57c00; }
+#slack-btn:active { background: #ffb74d; }
+
+.key-help-touch { display: none; }
+
+/* ========================================
    RESPONSIVE ADJUSTMENTS
    ======================================== */
 @media (max-width: 620px) {
+  body { padding: 6px; align-items: flex-start; }
   #game-wrap { width: 100%; }
-  #scene-canvas { height: 160px; }
-  .overlay-box { padding: 24px 20px; }
+  #scene-canvas { height: 175px; }
+  .overlay-box { padding: 20px 16px; }
+  .overlay-box h1 { font-size: 24px; }
+  .overlay-box h2 { font-size: 20px; }
+  .big-btn { font-size: 16px; padding: 10px 28px; }
+  .btn-sub { font-size: 13px; padding: 8px 16px; }
+  #timer { font-size: 22px; }
+  #score-display, #highscore-display { font-size: 15px; min-width: 55px; }
+
+  /* Show touch controls */
+  #touch-controls { display: flex; }
+
+  /* Show touch help, hide keyboard help */
+  .key-help-kb    { display: none; }
+  .key-help-touch { display: block; }
 }

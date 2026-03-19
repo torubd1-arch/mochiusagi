@@ -63,6 +63,16 @@
 
     </div><!-- /gauges -->
 
+    <!-- Touch controls (mobile only) -->
+    <div id="touch-controls">
+      <button id="reel-btn" class="touch-btn">
+        🎣 REEL<br><small>タップ＝キャスト / 長押し＝巻く</small>
+      </button>
+      <button id="slack-btn" class="touch-btn">
+        〰 SLACK<br><small>長押し＝糸を緩める</small>
+      </button>
+    </div>
+
     <!-- Flash message -->
     <div id="flash-msg"></div>
 
@@ -75,12 +85,18 @@
         <h1>🎣 ウキウキフィッシング！</h1>
         <p class="sub">60秒で最高スコアを目指せ！</p>
         <p class="title-hi">BEST：<span id="title-hi-score">0</span> pt</p>
-        <div class="key-help">
+        <div class="key-help key-help-kb">
           <p>【操作方法】</p>
           <p>キャスト：<kbd>Space</kbd> / <kbd>左クリック</kbd></p>
           <p>リール（巻く）：<kbd>Space長押し</kbd> / <kbd>左クリック長押し</kbd></p>
           <p>スラック（緩める）：<kbd>Shift長押し</kbd> / <kbd>右クリック長押し</kbd></p>
           <p>合わせ：食い込み後 <kbd>Space</kbd> / <kbd>左クリック</kbd></p>
+        </div>
+        <div class="key-help key-help-touch">
+          <p>【タッチ操作】</p>
+          <p>キャスト / 合わせ：<strong>REEL</strong> をタップ</p>
+          <p>リール（巻く）：<strong>REEL</strong> を長押し</p>
+          <p>スラック（緩める）：<strong>SLACK</strong> を長押し</p>
         </div>
         <div class="title-btn-row">
           <button id="start-btn" class="big-btn">スタート</button>
