@@ -2,15 +2,22 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>チョコキャッチ！</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: sans-serif; }
-  canvas { display: block; }
+  body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: sans-serif; overflow: hidden; touch-action: none; }
+  canvas { display: block; touch-action: none; }
+  #touchControls { position: fixed; bottom: 16px; left: 0; right: 0; display: none; justify-content: space-between; padding: 0 24px; pointer-events: none; z-index: 10; }
+  #touchControls button { pointer-events: all; width: 88px; height: 88px; font-size: 36px; border-radius: 50%; background: rgba(255,255,255,0.18); border: 3px solid rgba(255,255,255,0.35); color: white; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; outline: none; }
 </style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
+<div id="touchControls">
+  <button id="btnLeft">◀</button>
+  <button id="btnRight">▶</button>
+</div>
 <script>
 'use strict';
 
@@ -211,6 +218,13 @@ const BGM_NOTES = [
 const canvas = document.getElementById('gameCanvas');
 canvas.width=CANVAS_W; canvas.height=CANVAS_H;
 const ctx = canvas.getContext('2d');
+function resizeCanvas(){
+  const scale=Math.min(window.innerWidth/CANVAS_W, window.innerHeight/CANVAS_H);
+  canvas.style.width=Math.floor(CANVAS_W*scale)+'px';
+  canvas.style.height=Math.floor(CANVAS_H*scale)+'px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 // ================================================================
 //  音響システム
@@ -335,6 +349,18 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&gameState==='collection') gameState='title';
 });
 document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+const isMobile='ontouchstart' in window||navigator.maxTouchPoints>0;
+const touchControls=document.getElementById('touchControls');
+function setupTouchBtn(btn,key){
+  btn.addEventListener('touchstart',e=>{e.preventDefault();keys[key]=true;initAudio();},{passive:false});
+  btn.addEventListener('touchend',  e=>{e.preventDefault();keys[key]=false;},{passive:false});
+  btn.addEventListener('mousedown', ()=>{keys[key]=true;});
+  btn.addEventListener('mouseup',   ()=>{keys[key]=false;});
+  btn.addEventListener('mouseleave',()=>{keys[key]=false;});
+}
+setupTouchBtn(document.getElementById('btnLeft'), 'ArrowLeft');
+setupTouchBtn(document.getElementById('btnRight'),'ArrowRight');
 
 // ================================================================
 //  ユーティリティ
@@ -589,6 +615,7 @@ function update(timestamp){
 //  描画メイン
 // ================================================================
 function draw(){
+  touchControls.style.display=gameState==='playing'?'flex':'none';
   ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
   drawBackground();
   if(gameState==='title'){
@@ -1222,7 +1249,7 @@ function drawTitle(){
   ctx.font='bold 52px sans-serif';ctx.fillText('🍫 チョコキャッチ！',CANVAS_W/2,82);ctx.shadowBlur=0;
 
   ctx.font='14px sans-serif';ctx.fillStyle='#EEEEEE';
-  ctx.fillText('← / → または A / D キーで移動',CANVAS_W/2,132);
+  ctx.fillText(isMobile?'画面左下・右下のボタンで移動':'← / → または A / D キーで移動',CANVAS_W/2,132);
   ctx.fillStyle='#FFCC88';ctx.fillText('茶チョコ +1点',CANVAS_W/2,155);
   ctx.fillStyle='#CC88FF';ctx.fillText('紫チョコ +2点',CANVAS_W/2,175);
   ctx.fillStyle='#AAFFAA';ctx.fillText('帽子・持ち物 +3点（rare ★ は2倍！）',CANVAS_W/2,195);
@@ -1239,7 +1266,7 @@ function drawTitle(){
   const sBx=CANVAS_W/2-135,sBy=302,sBw=270,sBh=48;
   ctx.fillStyle='#FF5500';fillRoundRect(sBx,sBy,sBw,sBh,12);
   ctx.fillStyle='#FFFFFF';ctx.font='bold 22px sans-serif';
-  ctx.fillText('▶ スタート  [Space]',CANVAS_W/2,sBy+sBh/2);
+  ctx.fillText(isMobile?'▶ スタート':'▶ スタート  [Space]',CANVAS_W/2,sBy+sBh/2);
 
   // COLLECTIONボタン
   const cBx=CANVAS_W/2-135,cBy=362,cBw=270,cBh=48;
@@ -1435,7 +1462,7 @@ function drawCollection(){
   ctx.fillStyle='#FFAAAA';ctx.fillText('🗑 リセット',rBx+rBw/2,rBy+rBh/2);
 
   ctx.fillStyle='#444444';ctx.font='11px sans-serif';
-  ctx.fillText('ESCキーでもどる',CANVAS_W/2,piY+116);
+  if(!isMobile) ctx.fillText('ESCキーでもどる',CANVAS_W/2,piY+116);
   ctx.textBaseline='alphabetic';
 }
 
