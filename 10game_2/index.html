@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>テンパズル</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <h1>テンパズル</h1>
+
+    <!-- タブナビゲーション -->
+    <nav id="tab-bar">
+      <button class="tab-btn active" data-tab="game">ゲーム</button>
+      <button class="tab-btn"        data-tab="daily">デイリー</button>
+      <button class="tab-btn"        data-tab="pairs">ずかん</button>
+      <button class="tab-btn"        data-tab="achievements">じっせき</button>
+    </nav>
+
+    <!-- ========== ゲームパネル ========== -->
+    <div id="panel-game" class="panel active">
+
+      <!-- タイマー表示 + BGM/SE ボタン -->
+      <div id="timer-wrap">
+        <button id="bgm-btn" title="BGM ON/OFF">🎵</button>
+        <span id="timer-display">1:30</span>
+        <button id="sound-btn">🔊</button>
+      </div>
+
+      <div id="score-board">
+        <div class="score-item">
+          <span class="score-label">スコア</span>
+          <span id="score">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">COMBO</span>
+          <span id="combo">-</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">ベスト</span>
+          <span id="high-score">0</span>
+          <button id="reset-hs-btn" class="reset-inline-btn" title="ベストをリセット">↺</button>
+        </div>
+      </div>
+
+      <div id="grid"></div>
+
+      <!-- フィーバー中の残り時間バー -->
+      <div id="fever-bar-wrap">
+        <span id="fever-label">FEVER</span>
+        <div id="fever-track"><div id="fever-bar"></div></div>
+      </div>
+
+      <!-- せつめいパネル（開閉式） -->
+      <details id="help-wrap">
+        <summary id="help-btn">？ せつめい</summary>
+        <div id="help-panel">
+          <div class="help-row">
+            <span class="help-icon">🎮</span>
+            <div>
+              <div class="help-title">あそびかた</div>
+              <div class="help-text">すうじを 2つ えらんで<br>たして <b>10</b> に なったら けせる！</div>
+            </div>
+          </div>
+          <div class="help-row">
+            <span class="help-icon">✨</span>
+            <div>
+              <div class="help-title">コンボ</div>
+              <div class="help-text">せいかいが つづくと コンボ！<br>まちがえると 0 に もどる</div>
+            </div>
+          </div>
+          <div class="help-row">
+            <span class="help-icon">🔥</span>
+            <div>
+              <div class="help-title">フィーバー</div>
+              <div class="help-text">5コンボで FEVER！<br>とくてんが <b>2ばい</b> に なる！</div>
+            </div>
+          </div>
+          <div class="help-row">
+            <span class="help-icon">⏱</span>
+            <div>
+              <div class="help-title">じかん</div>
+              <div class="help-text">90びょうで おわり<br>たくさん けそう！</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <button id="restart-btn">リスタート</button>
+
+      <!-- ゲームオーバーオーバーレイ -->
+      <div id="game-over" class="hidden">
+        <h2>GAME OVER</h2>
+        <p class="go-label">スコア</p>
+        <p id="final-score">0</p>
+        <p class="go-label">ベスト</p>
+        <p id="final-best">0</p>
+        <button id="retry-btn">もう一度</button>
+      </div>
+    </div>
+
+    <!-- ========== デイリーパネル ========== -->
+    <div id="panel-daily" class="panel">
+      <div id="daily-content"></div>
+    </div>
+
+    <!-- ========== 図鑑パネル ========== -->
+    <div id="panel-pairs" class="panel">
+      <div id="pairs-content"></div>
+    </div>
+
+    <!-- ========== 実績パネル ========== -->
+    <div id="panel-achievements" class="panel">
+      <div id="achievements-content"></div>
+    </div>
+
+    <!-- フィーバーバナー -->
+    <div id="fever-banner">FEVER!</div>
+  </div>
+
+  <!-- チュートリアルオーバーレイ（初回のみ） -->
+  <div id="tutorial" class="hidden">
+    <div id="tutorial-box">
+      <div id="tutorial-title">テンパズル</div>
+      <ul id="tutorial-list">
+        <li>2つのブロックをタップ</li>
+        <li>合計が <strong>10</strong> になれば消える</li>
+        <li>続けて消すと <strong>コンボ</strong> ボーナス</li>
+        <li>5コンボで <strong class="fever-hi">FEVER！</strong> スコア2倍</li>
+        <li>制限時間は <strong>90秒</strong> ！</li>
+      </ul>
+      <button id="tutorial-btn">はじめる！</button>
+    </div>
+  </div>
+
+  <!-- ========== キャラクター ========== -->
+  <!-- 左：応援キャラ「まる」 -->
+  <div id="char-left" class="char">
+    <div class="char-speech" id="speech-left"></div>
+    <svg class="char-svg" viewBox="0 0 80 96" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="92" rx="20" ry="5" fill="rgba(0,0,0,0.18)"/>
+      <ellipse class="carm-l" cx="8"  cy="60" rx="14" ry="9" fill="#ffcc44"/>
+      <ellipse class="carm-r" cx="72" cy="60" rx="14" ry="9" fill="#ffcc44"/>
+      <circle cx="40" cy="56" r="30" fill="#ffcc44"/>
+      <ellipse cx="23" cy="63" rx="7" ry="5" fill="#ff9966" opacity="0.6"/>
+      <ellipse cx="57" cy="63" rx="7" ry="5" fill="#ff9966" opacity="0.6"/>
+      <g class="cf-n">
+        <ellipse cx="30" cy="50" rx="5" ry="6" fill="#2a1a0a"/>
+        <ellipse cx="50" cy="50" rx="5" ry="6" fill="#2a1a0a"/>
+        <circle cx="32" cy="47" r="2" fill="white"/>
+        <circle cx="52" cy="47" r="2" fill="white"/>
+        <path d="M30 62 Q40 69 50 62" stroke="#2a1a0a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-h">
+        <path d="M24 51 Q30 44 36 51" stroke="#2a1a0a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M44 51 Q50 44 56 51" stroke="#2a1a0a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M27 63 Q40 75 53 63" stroke="#2a1a0a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-s">
+        <ellipse cx="30" cy="51" rx="4.5" ry="5" fill="#2a1a0a"/>
+        <ellipse cx="50" cy="51" rx="4.5" ry="5" fill="#2a1a0a"/>
+        <circle cx="31.5" cy="49" r="1.5" fill="white"/>
+        <circle cx="51.5" cy="49" r="1.5" fill="white"/>
+        <path d="M26 45 L32 48" stroke="#2a1a0a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M48 48 L54 45" stroke="#2a1a0a" stroke-width="2" stroke-linecap="round"/>
+        <path d="M31 65 Q40 58 49 65" stroke="#2a1a0a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-c">
+        <ellipse cx="30" cy="49" rx="6" ry="7" fill="#2a1a0a"/>
+        <ellipse cx="50" cy="49" rx="6" ry="7" fill="#2a1a0a"/>
+        <circle cx="33" cy="46" r="2.5" fill="white"/>
+        <circle cx="53" cy="46" r="2.5" fill="white"/>
+        <path d="M28 62 Q40 72 52 62" stroke="#2a1a0a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-f">
+        <ellipse cx="30" cy="48" rx="7.5" ry="8.5" fill="#2a1a0a"/>
+        <ellipse cx="50" cy="48" rx="7.5" ry="8.5" fill="#2a1a0a"/>
+        <circle cx="34" cy="44" r="3.5" fill="white"/>
+        <circle cx="54" cy="44" r="3.5" fill="white"/>
+        <text x="30" y="52" text-anchor="middle" font-size="8" fill="white">★</text>
+        <text x="50" y="52" text-anchor="middle" font-size="8" fill="white">★</text>
+        <ellipse cx="40" cy="64" rx="9" ry="7" fill="#2a1a0a"/>
+        <ellipse cx="40" cy="64" rx="6" ry="4.5" fill="#ff5544"/>
+      </g>
+      <g class="cf-g">
+        <line x1="25" y1="44" x2="35" y2="54" stroke="#2a1a0a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="35" y1="44" x2="25" y2="54" stroke="#2a1a0a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="45" y1="44" x2="55" y2="54" stroke="#2a1a0a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="55" y1="44" x2="45" y2="54" stroke="#2a1a0a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="30" y1="64" x2="50" y2="64" stroke="#2a1a0a" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <text x="40" y="20" text-anchor="middle" font-size="14" fill="#ffd700">★</text>
+    </svg>
+  </div>
+
+  <!-- 右：リアクションキャラ「ほし」 -->
+  <div id="char-right" class="char">
+    <div class="char-speech" id="speech-right"></div>
+    <svg class="char-svg" viewBox="0 0 80 96" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="40" cy="92" rx="20" ry="5" fill="rgba(0,0,0,0.18)"/>
+      <ellipse class="carm-l" cx="8"  cy="60" rx="14" ry="9" fill="#9b7edb"/>
+      <ellipse class="carm-r" cx="72" cy="60" rx="14" ry="9" fill="#9b7edb"/>
+      <circle cx="40" cy="56" r="30" fill="#9b7edb"/>
+      <ellipse cx="23" cy="63" rx="7" ry="5" fill="#ff99cc" opacity="0.6"/>
+      <ellipse cx="57" cy="63" rx="7" ry="5" fill="#ff99cc" opacity="0.6"/>
+      <g class="cf-n">
+        <ellipse cx="30" cy="50" rx="5" ry="6" fill="#1a0a2e"/>
+        <ellipse cx="50" cy="50" rx="5" ry="6" fill="#1a0a2e"/>
+        <circle cx="32" cy="47" r="2" fill="white"/>
+        <circle cx="52" cy="47" r="2" fill="white"/>
+        <path d="M32 62 Q40 68 48 62" stroke="#1a0a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-h">
+        <text x="30" y="55" text-anchor="middle" font-size="14" fill="#ffd700">★</text>
+        <text x="50" y="55" text-anchor="middle" font-size="14" fill="#ffd700">★</text>
+        <path d="M27 63 Q40 74 53 63" stroke="#1a0a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-s">
+        <ellipse cx="30" cy="50" rx="5" ry="6.5" fill="#1a0a2e"/>
+        <ellipse cx="50" cy="50" rx="5" ry="6.5" fill="#1a0a2e"/>
+        <circle cx="32" cy="47" r="2" fill="white"/>
+        <circle cx="52" cy="47" r="2" fill="white"/>
+        <ellipse cx="30" cy="59" rx="2" ry="3" fill="#88ccff" opacity="0.85"/>
+        <path d="M32 65 Q40 59 48 65" stroke="#1a0a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-c">
+        <ellipse cx="30" cy="49" rx="6" ry="7" fill="#1a0a2e"/>
+        <ellipse cx="50" cy="49" rx="6" ry="7" fill="#1a0a2e"/>
+        <circle cx="33" cy="46" r="2.5" fill="white"/>
+        <circle cx="53" cy="46" r="2.5" fill="white"/>
+        <path d="M26 42 Q33 38 39 42" stroke="#1a0a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M28 62 Q40 71 52 62" stroke="#1a0a2e" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+      <g class="cf-f">
+        <ellipse cx="30" cy="47" rx="8" ry="9" fill="#1a0a2e"/>
+        <ellipse cx="50" cy="47" rx="8" ry="9" fill="#1a0a2e"/>
+        <circle cx="34" cy="43" r="3.5" fill="white"/>
+        <circle cx="54" cy="43" r="3.5" fill="white"/>
+        <circle cx="35" cy="42" r="2" fill="white"/>
+        <circle cx="55" cy="42" r="2" fill="white"/>
+        <ellipse cx="40" cy="64" rx="10" ry="8" fill="#1a0a2e"/>
+        <ellipse cx="40" cy="64" rx="7" ry="5.5" fill="#ff3366"/>
+        <rect x="35" y="60" width="5" height="3" rx="1" fill="white"/>
+        <rect x="41" y="60" width="5" height="3" rx="1" fill="white"/>
+      </g>
+      <g class="cf-g">
+        <text x="30" y="55" text-anchor="middle" font-size="15" fill="#1a0a2e" font-weight="bold">×</text>
+        <text x="50" y="55" text-anchor="middle" font-size="15" fill="#1a0a2e" font-weight="bold">×</text>
+        <path d="M31 65 Q40 60 49 65" stroke="#1a0a2e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <text x="40" y="19" text-anchor="middle" font-size="14" fill="#ddaaff">✦</text>
+    </svg>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
