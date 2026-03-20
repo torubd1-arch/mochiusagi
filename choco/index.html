@@ -72,11 +72,11 @@ const BGM_VOL_LAST         = 0.65;
 //  カラーバリエーション（5色）
 // ================================================================
 const COLOR_VARIANTS = [
-  {id:'red',   hex:'#ff4d4d', name:'赤'},
-  {id:'blue',  hex:'#4d79ff', name:'青'},
-  {id:'green', hex:'#4dff88', name:'緑'},
-  {id:'black', hex:'#555555', name:'黒'},
-  {id:'gold',  hex:'#FFD700', name:'金'},
+  {id:'red',   hex:'#ff4d4d', name:'あか'},
+  {id:'blue',  hex:'#4d79ff', name:'あお'},
+  {id:'green', hex:'#4dff88', name:'みどり'},
+  {id:'black', hex:'#555555', name:'くろ'},
+  {id:'gold',  hex:'#FFD700', name:'きん'},
 ];
 const COLOR_HEX  = Object.fromEntries(COLOR_VARIANTS.map(c=>[c.id,c.hex]));
 const COLOR_NAME = Object.fromEntries(COLOR_VARIANTS.map(c=>[c.id,c.name]));
@@ -103,16 +103,16 @@ const ALL_HELD_IDS = [];
 for (const base of HELD_BASE_TYPES) for (const cv of COLOR_VARIANTS) ALL_HELD_IDS.push(`${base}_${cv.id}`);
 
 const HAT_BASE_NAMES = {
-  cap:'キャップ', beanie:'ニット帽', top_hat:'シルクハット', wizard:'魔法帽', helmet:'ヘルメット',
-  crown:'王冠', crown_prince:'王子冠', crown_queen:'女王冠', beret:'ベレー帽', cowboy:'カウボーイ帽',
-  ninja:'忍者頭巾', pirate:'海賊帽', chef:'シェフ帽', santa:'サンタ帽', bunny:'うさぎ耳',
-  flower:'花かんむり', cat_ears:'猫耳', headband:'ヘアバンド',
+  cap:'キャップ', beanie:'ニットぼう', top_hat:'シルクハット', wizard:'まほうぼう', helmet:'ヘルメット',
+  crown:'おうかん', crown_prince:'おうじかん', crown_queen:'じょおうかん', beret:'ベレーぼう', cowboy:'カウボーイぼう',
+  ninja:'にんじゃずきん', pirate:'かいぞくぼう', chef:'シェフぼう', santa:'サンタぼう', bunny:'うさぎみみ',
+  flower:'はなかんむり', cat_ears:'ねこみみ', headband:'ヘアバンド',
 };
 const HELD_BASE_NAMES = {
   controller:'コントローラー', tote:'トートバッグ', backpack:'リュック',
-  suitcase:'スーツケース', box:'ハコ', bicycle:'自転車', bobblehead:'ボブルヘッド',
+  suitcase:'スーツケース', box:'ハコ', bicycle:'じてんしゃ', bobblehead:'ボブルヘッド',
   icecream:'アイス', camera:'カメラ', umbrella:'かさ', book:'ほん',
-  flower:'はな', smartphone:'スマホ', flashlight:'かいちゅう電灯',
+  flower:'はな', smartphone:'スマホ', flashlight:'かいちゅうでんとう',
   microphone:'マイク', plush:'ぬいぐるみ', donut:'ドーナツ', star_wand:'ほしのつえ',
 };
 
@@ -1137,11 +1137,11 @@ function drawHUD(){
     const isLast=timeLeft<=LAST_SECONDS;
     ctx.fillStyle=isLast?'#FF2222':(timeLeft<=10?'#FF8844':'#FFFFFF');
     ctx.font=isLast?'bold 28px sans-serif':'bold 22px sans-serif';
-    ctx.textAlign='right';ctx.fillText('残り '+Math.ceil(timeLeft)+' 秒',CANVAS_W-135,25);
+    ctx.textAlign='right';ctx.fillText('のこり '+Math.ceil(timeLeft)+' びょう',CANVAS_W-135,25);
   }
   if(player.stunTimer>0){
     ctx.fillStyle='#FF6600';ctx.font='bold 18px sans-serif';ctx.textAlign='center';
-    ctx.fillText('⚡ スタン: '+player.stunTimer.toFixed(1)+' 秒',CANVAS_W/2,25);
+    ctx.fillText('⚡ スタン: '+player.stunTimer.toFixed(1)+' びょう',CANVAS_W/2,25);
   }
   ctx.textBaseline='alphabetic';
 }
@@ -1229,7 +1229,7 @@ function drawFullCompleteAnim(){
     ctx.fillText('👑 FULL COMPLETE! 👑',0,0);
     ctx.shadowBlur=0;
     ctx.fillStyle='#FFFFFF';ctx.font='18px sans-serif';
-    ctx.fillText('帽子90種 + 持ち物90種 コンプリート！',0,38);
+    ctx.fillText('ぼうし90しゅ + もちもの90しゅ コンプリート！',0,38);
   } else {
     ctx.fillStyle='rgba(0,0,0,0.6)';fillRoundRect(-200,-32,400,64,16);
     ctx.fillStyle='#FFD700';
@@ -1249,18 +1249,18 @@ function drawTitle(){
   ctx.font='bold 52px sans-serif';ctx.fillText('🍫 チョコキャッチ！',CANVAS_W/2,82);ctx.shadowBlur=0;
 
   ctx.font='14px sans-serif';ctx.fillStyle='#EEEEEE';
-  ctx.fillText(isMobile?'画面左下・右下のボタンで移動':'← / → または A / D キーで移動',CANVAS_W/2,132);
-  ctx.fillStyle='#FFCC88';ctx.fillText('茶チョコ +1点',CANVAS_W/2,155);
-  ctx.fillStyle='#CC88FF';ctx.fillText('紫チョコ +2点',CANVAS_W/2,175);
-  ctx.fillStyle='#AAFFAA';ctx.fillText('帽子・持ち物 +3点（rare ★ は2倍！）',CANVAS_W/2,195);
+  ctx.fillText(isMobile?'がめんひだりした・みぎしたのボタンでいどう':'← / → または A / D キーでいどう',CANVAS_W/2,132);
+  ctx.fillStyle='#FFCC88';ctx.fillText('ちゃチョコ +1てん',CANVAS_W/2,155);
+  ctx.fillStyle='#CC88FF';ctx.fillText('むらさきチョコ +2てん',CANVAS_W/2,175);
+  ctx.fillStyle='#AAFFAA';ctx.fillText('ぼうし・もちもの +3てん（rare ★ は2ばい！）',CANVAS_W/2,195);
   ctx.fillStyle='#FFAAAA';ctx.font='14px sans-serif';
-  ctx.fillText('⚠ 鉄アレイに当たると '+STUN_DURATION+' 秒スタン！',CANVAS_W/2,215);
+  ctx.fillText('⚠ てつアレイにあたると '+STUN_DURATION+' びょうスタン！',CANVAS_W/2,215);
   ctx.fillStyle='#FFDD44';ctx.font='bold 14px sans-serif';
-  ctx.fillText('制限時間 '+GAME_DURATION+' 秒！',CANVAS_W/2,235);
+  ctx.fillText('せいげんじかん '+GAME_DURATION+' びょう！',CANVAS_W/2,235);
   ctx.fillStyle='#FFFF88';ctx.font='bold 16px sans-serif';
-  ctx.fillText('★ Today\'s Lucky: '+getItemName(luckyItem)+' （2倍スコア！）',CANVAS_W/2,258);
+  ctx.fillText('★ Today\'s Lucky: '+getItemName(luckyItem)+' （2ばいスコア！）',CANVAS_W/2,258);
   ctx.fillStyle='#88CCFF';ctx.font='16px sans-serif';
-  ctx.fillText('最高スコア: '+highScore+' 点',CANVAS_W/2,280);
+  ctx.fillText('さいこうスコア: '+highScore+' てん',CANVAS_W/2,280);
 
   // STARTボタン
   const sBx=CANVAS_W/2-135,sBy=302,sBw=270,sBh=48;
@@ -1272,16 +1272,16 @@ function drawTitle(){
   const cBx=CANVAS_W/2-135,cBy=362,cBw=270,cBh=48;
   ctx.fillStyle='#225588';fillRoundRect(cBx,cBy,cBw,cBh,12);
   ctx.fillStyle='#88CCFF';ctx.font='bold 20px sans-serif';
-  ctx.fillText('📖 図鑑を見る',CANVAS_W/2,cBy+cBh/2);
+  ctx.fillText('📖 ずかんをみる',CANVAS_W/2,cBy+cBh/2);
 
   // 収集率
   const hg=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0).length;
   const hdg=ALL_HELD_IDS.filter(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0).length;
   const isFC=collection.meta.fullCompleteOnce;
   ctx.fillStyle='#AAAAAA';ctx.font='13px sans-serif';
-  ctx.fillText('帽子 '+hg+'/90  持ち物 '+hdg+'/90  プレイ '+collection.meta.plays+'回'+(isFC?' 👑COMPLETE!':''),CANVAS_W/2,428);
+  ctx.fillText('ぼうし '+hg+'/90  もちもの '+hdg+'/90  プレイ '+collection.meta.plays+'かい'+(isFC?' 👑COMPLETE!':''),CANVAS_W/2,428);
   ctx.fillStyle='#888888';ctx.font='12px sans-serif';
-  ctx.fillText('v3 - 帽子90種・持ち物90種',CANVAS_W/2,448);
+  ctx.fillText('v3 - ぼうし90しゅ・もちもの90しゅ',CANVAS_W/2,448);
   ctx.textBaseline='alphabetic';
 }
 
@@ -1291,11 +1291,11 @@ function drawTitle(){
 function drawGameOver(){
   ctx.fillStyle='rgba(0,0,20,0.80)';ctx.fillRect(0,0,CANVAS_W,CANVAS_H);
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 44px sans-serif';ctx.fillText('ゲーム終了！',CANVAS_W/2,52);
-  ctx.fillStyle='#FFD700';ctx.font='bold 32px sans-serif';ctx.fillText('スコア: '+score+' 点',CANVAS_W/2,96);
-  ctx.fillStyle='#88CCFF';ctx.font='18px sans-serif';ctx.fillText('最高スコア: '+highScore+' 点',CANVAS_W/2,128);
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 44px sans-serif';ctx.fillText('ゲームしゅうりょう！',CANVAS_W/2,52);
+  ctx.fillStyle='#FFD700';ctx.font='bold 32px sans-serif';ctx.fillText('スコア: '+score+' てん',CANVAS_W/2,96);
+  ctx.fillStyle='#88CCFF';ctx.font='18px sans-serif';ctx.fillText('さいこうスコア: '+highScore+' てん',CANVAS_W/2,128);
   if(score>0&&score>=highScore){
-    ctx.fillStyle='#FF6600';ctx.font='bold 16px sans-serif';ctx.fillText('🎉 新記録！',CANVAS_W/2,152);
+    ctx.fillStyle='#FF6600';ctx.font='bold 16px sans-serif';ctx.fillText('🎉 しんきろく！',CANVAS_W/2,152);
   }
 
   // 取得内訳
@@ -1305,15 +1305,15 @@ function drawGameOver(){
   ctx.beginPath();ctx.rect(px,py,pw,ph);ctx.stroke();
 
   ctx.textAlign='left';
-  ctx.fillStyle='#FFEE88';ctx.font='bold 13px sans-serif';ctx.fillText('今回の収集',px+12,py+18);
+  ctx.fillStyle='#FFEE88';ctx.font='bold 13px sans-serif';ctx.fillText('こんかいのしゅうしゅう',px+12,py+18);
 
   const uH=[...new Set(sessionHats)], uHd=[...new Set(sessionHeld)];
   ctx.fillStyle='#AAFFAA';ctx.font='12px sans-serif';
   const hStr=uH.length>0?uH.slice(0,8).map(id=>getItemName(id)).join('、')+(uH.length>8?'…':''):'なし';
-  ctx.fillText('帽子: '+hStr,px+12,py+42);
+  ctx.fillText('ぼうし: '+hStr,px+12,py+42);
   ctx.fillStyle='#AADDFF';
   const hdStr=uHd.length>0?uHd.slice(0,8).map(id=>getItemName(id)).join('、')+(uHd.length>8?'…':''):'なし';
-  ctx.fillText('持物: '+hdStr,px+12,py+66);
+  ctx.fillText('もちもの: '+hdStr,px+12,py+66);
 
   const hatGot=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0).length;
   const heldGot=ALL_HELD_IDS.filter(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0).length;
@@ -1326,16 +1326,16 @@ function drawGameOver(){
   if(collection.meta.fullCompleteOnce){
     ctx.textAlign='center';
     ctx.fillStyle='#FFD700';ctx.font='bold 13px sans-serif';
-    ctx.fillText('👑 FULL COMPLETE達成済み！',px+pw/2,py+126);
+    ctx.fillText('👑 FULL COMPLETEたっせいずみ！',px+pw/2,py+126);
   }
   ctx.textAlign='center';
 
   const bx=CANVAS_W/2-135,by=336,bw=270,bh=44;
   ctx.fillStyle='#FF5500';fillRoundRect(bx,by,bw,bh,12);
-  ctx.fillStyle='#FFFFFF';ctx.font='bold 20px sans-serif';ctx.fillText('もう一度遊ぶ',CANVAS_W/2,by+bh/2);
+  ctx.fillStyle='#FFFFFF';ctx.font='bold 20px sans-serif';ctx.fillText('もういちどあそぶ',CANVAS_W/2,by+bh/2);
   const cbx=CANVAS_W/2-135,cby=392,cbw=270,cbh=44;
   ctx.fillStyle='#225588';fillRoundRect(cbx,cby,cbw,cbh,12);
-  ctx.fillStyle='#88CCFF';ctx.font='bold 18px sans-serif';ctx.fillText('📖 図鑑を見る',CANVAS_W/2,cby+cbh/2);
+  ctx.fillStyle='#88CCFF';ctx.font='bold 18px sans-serif';ctx.fillText('📖 ずかんをみる',CANVAS_W/2,cby+cbh/2);
   ctx.textBaseline='alphabetic';
 }
 
@@ -1353,7 +1353,7 @@ const COLL_START_Y = 100;
 function drawCollection(){
   ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='#FFFFFF';ctx.font='bold 24px sans-serif';
-  ctx.fillText('📖 図鑑',CANVAS_W/2,20);
+  ctx.fillText('📖 ずかん',CANVAS_W/2,20);
 
   // 収集率サマリー
   const hg=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.normal||0)+(collection.hats[id]?.rare||0)>0).length;
@@ -1361,17 +1361,17 @@ function drawCollection(){
   const hr=ALL_HAT_IDS.filter(id=>(collection.hats[id]?.rare||0)>0).length;
   const dr=ALL_HELD_IDS.filter(id=>(collection.held[id]?.rare||0)>0).length;
   ctx.fillStyle='#AAAAAA';ctx.font='12px sans-serif';
-  ctx.fillText('帽子 '+hg+'/90 (★'+hr+')  持ち物 '+hd+'/90 (★'+dr+')',CANVAS_W/2,40);
+  ctx.fillText('ぼうし '+hg+'/90 (★'+hr+')  もちもの '+hd+'/90 (★'+dr+')',CANVAS_W/2,40);
 
   // タブボタン
   const t1x=50,ty=55,tw=340,th=34;
   const t2x=410;
   ctx.fillStyle=collectionTab==='hats'?'#446688':'#223344';fillRoundRect(t1x,ty,tw,th,8);
   ctx.fillStyle=collectionTab==='hats'?'#FFFFFF':'#888888';ctx.font='bold 14px sans-serif';
-  ctx.fillText('🎩 帽子（90種）',t1x+tw/2,ty+th/2);
+  ctx.fillText('🎩 ぼうし（90しゅ）',t1x+tw/2,ty+th/2);
   ctx.fillStyle=collectionTab==='held'?'#446688':'#223344';fillRoundRect(t2x,ty,tw,th,8);
   ctx.fillStyle=collectionTab==='held'?'#FFFFFF':'#888888';
-  ctx.fillText('🎒 持ち物（90種）',t2x+tw/2,ty+th/2);
+  ctx.fillText('🎒 もちもの（90しゅ）',t2x+tw/2,ty+th/2);
 
   // グリッド描画
   const ids=collectionTab==='hats'?ALL_HAT_IDS:ALL_HELD_IDS;
@@ -1507,7 +1507,7 @@ canvas.addEventListener('click',e=>{
     if(inRect(mx,my,40,bBy,130,36)){gameState='title';return;}
     // Reset
     if(inRect(mx,my,CANVAS_W-170,bBy,130,36)){
-      if(confirm('図鑑データをリセットしますか？\n（ベストスコアは保持されます）')){
+      if(confirm('ずかんデータをリセットしますか？\n（ベストスコアはほじされます）')){
         const best=collection.meta.bestScore||0;
         collection=makeEmptyCollection(); collection.meta.bestScore=best; saveCollection();
       }
