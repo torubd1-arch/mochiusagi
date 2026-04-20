@@ -314,6 +314,7 @@ function playSE(type) {
 //  ゲーム変数
 // ================================================================
 let gameState='title', score=0, timeLeft=GAME_DURATION;
+let characterType='girl'; // 'girl' or 'boy'
 let highScore=Number(localStorage.getItem(LS_KEY)||0);
 let lastTime=0, spawnTimer=0, timerBlinkTimer=0, timerBlinkVisible=true;
 let screenFlashTimer=0, screenFlashColor='#FFFFFF';
@@ -1069,7 +1070,10 @@ function drawDumbbell(item){
 function drawPlayer(){
   if(!player.blinkVisible) return;
   const x=player.x,y=player.y,stun=player.stunTimer>0;
-  const skin=stun?'#FFE033':'#FFCC88',body=stun?'#FFD000':'#3355EE',leg=stun?'#FFD000':'#1A2A88';
+  const isGirl=characterType==='girl';
+  const skin=stun?'#FFE033':'#FFCC88';
+  const body=stun?'#FFD000':(isGirl?'#EE5599':'#3355EE');
+  const leg =stun?'#FFD000':(isGirl?'#CC4488':'#1A2A88');
   ctx.save();ctx.translate(x,y);
 
   const lw=9,lh=30,la=player.legAngle;
@@ -1090,12 +1094,29 @@ function drawPlayer(){
   }
 
   ctx.fillStyle=body;ctx.fillRect(-18,-30,36,44);
-  ctx.strokeStyle=stun?'#AA6600':'#1133AA';ctx.lineWidth=2;
+  // 女の子スカート
+  if(isGirl&&!stun){
+    ctx.fillStyle='#FF88CC';
+    ctx.beginPath();ctx.moveTo(-20,5);ctx.lineTo(20,5);ctx.lineTo(27,24);ctx.lineTo(-27,24);ctx.closePath();ctx.fill();
+  }
+  ctx.strokeStyle=stun?'#AA6600':(isGirl?'#AA1155':'#1133AA');ctx.lineWidth=2;
   ctx.beginPath();ctx.moveTo(0,-30);ctx.lineTo(0,14);ctx.stroke();
 
   ctx.fillStyle=skin;ctx.fillRect(-7,-36,14,10);
+  // ツインテール（頭の後ろ側に描く）
+  if(!stun&&isGirl){
+    ctx.fillStyle='#774422';
+    ctx.beginPath();ctx.arc(-21,-55,7,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(21,-55,7,0,Math.PI*2);ctx.fill();
+  }
   const hR=20;ctx.beginPath();ctx.arc(0,-52,hR,0,Math.PI*2);
   ctx.fillStyle=skin;ctx.fill();ctx.strokeStyle=stun?'#CC8800':'#D4A070';ctx.lineWidth=1.5;ctx.stroke();
+  // 髪（頭の上部）
+  if(!stun){
+    ctx.fillStyle=isGirl?'#774422':'#333333';
+    ctx.save();ctx.beginPath();ctx.rect(-21,-73,42,14);ctx.clip();
+    ctx.beginPath();ctx.arc(0,-52,20,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
 
   if(stun){
     ctx.strokeStyle='#FF3300';ctx.lineWidth=2.5;ctx.beginPath();
@@ -1262,14 +1283,30 @@ function drawTitle(){
   ctx.fillStyle='#88CCFF';ctx.font='16px sans-serif';
   ctx.fillText('さいこうスコア: '+highScore+' てん',CANVAS_W/2,280);
 
+  // キャラクター選択
+  ctx.fillStyle='#DDDDDD';ctx.font='14px sans-serif';
+  ctx.fillText('キャラクターをえらんでね',CANVAS_W/2,297);
+  const gBx=CANVAS_W/2-145,gBy=310,gBw=130,gBh=38;
+  const mBx=CANVAS_W/2+15, mBy=310,mBw=130,mBh=38;
+  ctx.fillStyle=characterType==='girl'?'#CC2266':'#553344';fillRoundRect(gBx,gBy,gBw,gBh,10);
+  ctx.fillStyle=characterType==='girl'?'#FFFFFF':'#AAAAAA';ctx.font='bold 15px sans-serif';
+  ctx.fillText('♀ おんなのこ',gBx+gBw/2,gBy+gBh/2);
+  ctx.fillStyle=characterType==='boy'?'#2244CC':'#223366';fillRoundRect(mBx,mBy,mBw,mBh,10);
+  ctx.fillStyle=characterType==='boy'?'#FFFFFF':'#AAAAAA';
+  ctx.fillText('♂ おとこのこ',mBx+mBw/2,mBy+mBh/2);
+  // 選択中ボタンに白枠
+  ctx.strokeStyle='#FFFFFF';ctx.lineWidth=2.5;
+  if(characterType==='girl'){ctx.strokeRect(gBx,gBy,gBw,gBh);}
+  else{ctx.strokeRect(mBx,mBy,mBw,mBh);}
+
   // STARTボタン
-  const sBx=CANVAS_W/2-135,sBy=302,sBw=270,sBh=48;
+  const sBx=CANVAS_W/2-135,sBy=362,sBw=270,sBh=48;
   ctx.fillStyle='#FF5500';fillRoundRect(sBx,sBy,sBw,sBh,12);
   ctx.fillStyle='#FFFFFF';ctx.font='bold 22px sans-serif';
   ctx.fillText(isMobile?'▶ スタート':'▶ スタート  [Space]',CANVAS_W/2,sBy+sBh/2);
 
   // COLLECTIONボタン
-  const cBx=CANVAS_W/2-135,cBy=362,cBw=270,cBh=48;
+  const cBx=CANVAS_W/2-135,cBy=422,cBw=270,cBh=48;
   ctx.fillStyle='#225588';fillRoundRect(cBx,cBy,cBw,cBh,12);
   ctx.fillStyle='#88CCFF';ctx.font='bold 20px sans-serif';
   ctx.fillText('📖 ずかんをみる',CANVAS_W/2,cBy+cBh/2);
@@ -1279,9 +1316,9 @@ function drawTitle(){
   const hdg=ALL_HELD_IDS.filter(id=>(collection.held[id]?.normal||0)+(collection.held[id]?.rare||0)>0).length;
   const isFC=collection.meta.fullCompleteOnce;
   ctx.fillStyle='#AAAAAA';ctx.font='13px sans-serif';
-  ctx.fillText('ぼうし '+hg+'/90  もちもの '+hdg+'/90  プレイ '+collection.meta.plays+'かい'+(isFC?' 👑COMPLETE!':''),CANVAS_W/2,428);
+  ctx.fillText('ぼうし '+hg+'/90  もちもの '+hdg+'/90  プレイ '+collection.meta.plays+'かい'+(isFC?' 👑COMPLETE!':''),CANVAS_W/2,486);
   ctx.fillStyle='#888888';ctx.font='12px sans-serif';
-  ctx.fillText('v3 - ぼうし90しゅ・もちもの90しゅ',CANVAS_W/2,448);
+  ctx.fillText('v3 - ぼうし90しゅ・もちもの90しゅ',CANVAS_W/2,502);
   ctx.textBaseline='alphabetic';
 }
 
@@ -1482,7 +1519,9 @@ canvas.addEventListener('click',e=>{
   }
 
   if(gameState==='title'){
-    if(inRect(mx,my,CANVAS_W/2-135,362,270,48)){initAudio();collectionPage=0;gameState='collection';return;}
+    if(inRect(mx,my,CANVAS_W/2-145,310,130,38)){characterType='girl';return;}
+    if(inRect(mx,my,CANVAS_W/2+15, 310,130,38)){characterType='boy';return;}
+    if(inRect(mx,my,CANVAS_W/2-135,422,270,48)){initAudio();collectionPage=0;gameState='collection';return;}
     tryStart(); return;
   }
   if(gameState==='gameover'){
