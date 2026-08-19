@@ -40,6 +40,6 @@ const GRADE3_CHARACTERS_BATCH5 = [
   { char: '礼', reading: 'れい',     enemyName: 'おじぎんナイト',        enemyVariant: 0, enemyColor: '#2ecc71' },
   { char: '列', reading: 'れつ',     enemyName: 'ならびんバット',        enemyVariant: 1, enemyColor: '#9b59b6' },
   { char: '練', reading: 'ねる',     enemyName: 'れんしゅうオーク',      enemyVariant: 4, enemyColor: '#a04000' },
-  { char: '路', reading: 'じ',       enemyName: 'みちすじゴーレム',      enemyVariant: 2, enemyColor: '#5d6d7e' },
+  { char: '路', reading: 'ろ',       enemyName: 'みちすじゴーレム',      enemyVariant: 2, enemyColor: '#5d6d7e' },
   { char: '和', reading: 'わ',       enemyName: 'なかよしスライム',      enemyVariant: 0, enemyColor: '#e74c3c' },
 ];

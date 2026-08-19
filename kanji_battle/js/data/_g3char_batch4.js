@@ -4,7 +4,7 @@
 const GRADE3_CHARACTERS_BATCH4 = [
   { char: '炭', reading: 'すみ',     enemyName: 'すみやきゴーレム',    enemyVariant: 2, enemyColor: '#3b3b3b' },
   { char: '短', reading: 'みじかい', enemyName: 'ちょんぎりスライム',  enemyVariant: 0, enemyColor: '#f39c12' },
-  { char: '談', reading: 'はなす',   enemyName: 'おしゃべりゴースト',  enemyVariant: 3, enemyColor: '#9b59b6' },
+  { char: '談', reading: 'だん',     enemyName: 'おしゃべりゴースト',  enemyVariant: 3, enemyColor: '#9b59b6' },
   { char: '着', reading: 'きる',     enemyName: 'きがえドラゴン',      enemyVariant: 4, enemyColor: '#16a085' },
   { char: '注', reading: 'そそぐ',   enemyName: 'みずそそぎスライム',  enemyVariant: 0, enemyColor: '#2980b9' },
   { char: '柱', reading: 'はしら',   enemyName: 'つっぱりゴーレム',    enemyVariant: 2, enemyColor: '#8d5524' },
