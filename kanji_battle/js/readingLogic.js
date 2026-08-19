@@ -78,6 +78,7 @@ function createSessionState(pool, opts = {}) {
     pendingReveals: [],
     correctCount: 0,
     totalAsked: 0,
+    correctStreak: 0,
     cap,
     lastQuestionId: null,
   };
@@ -104,7 +105,9 @@ function insertRequeue(state, questionId) {
 }
 
 // 解答結果を記録し、必要なら再出題キューへ入れる。
-// 戻り値: { isFirstAttemptThisSession }
+// 戻り値: { isFirstAttemptThisSession, wasPreviouslyWrong, correctStreak }
+// wasPreviouslyWrong/correctStreakは応援キャラクターのイベント判定
+// (resolveSupportEvent、js/supporterSelector.js)にそのまま渡せる。
 function recordAnswer(state, questionId, correct) {
   state.totalAsked++;
   state.appearanceCount[questionId] = (state.appearanceCount[questionId] || 0) + 1;
@@ -116,10 +119,12 @@ function recordAnswer(state, questionId, correct) {
 
   if (correct) {
     state.correctCount++;
+    state.correctStreak = (state.correctStreak || 0) + 1;
     if (wasMissedBefore && !state.reLearnedThisSession.has(questionId)) {
       state.reLearnedThisSession.add(questionId);
     }
   } else {
+    state.correctStreak = 0;
     state.firstMissThisSession.add(questionId);
     const canRequeue =
       state.poolSize >= 2 &&
@@ -128,7 +133,11 @@ function recordAnswer(state, questionId, correct) {
     if (canRequeue) insertRequeue(state, questionId);
   }
 
-  return { isFirstAttemptThisSession };
+  return {
+    isFirstAttemptThisSession,
+    wasPreviouslyWrong: wasMissedBefore,
+    correctStreak: state.correctStreak,
+  };
 }
 
 // 選択肢リストを作る。id/textを分離し、判定はidで行う想定。

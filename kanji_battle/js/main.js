@@ -129,14 +129,41 @@ function renderChoices(choices, correctAnswer, charData) {
 // ========== 選択肢クリック処理 ==========
 let answerLocked = false;
 
+// おうえんキャラクター: 本編/れんしゅう/ボス戦で共有する抽選状態と、
+// 連続正解数・現在の一問(画数 or 1ストローク)を以前間違えたかどうかの追跡。
+// resetBattleSupporterTracking() は新しいバトル開始時に呼ぶ。
+const battleSupporterState = createSupporterState();
+let battleCorrectStreak = 0;
+let battleStepMissed = false;
+
+function resetBattleSupporterTracking() {
+  battleCorrectStreak = 0;
+  battleStepMissed = false;
+}
+
 async function onChoiceClick(value, _correct) {
   if (answerLocked) return;
   answerLocked = true;
 
   // answer() で kanjiIndex が進む前に現在の漢字を保存
   const clearingKanji = Game.currentKanji();
+  const wasPreviouslyWrong = battleStepMissed;
   const result = Game.answer(value);
   if (!result) { answerLocked = false; return; }
+
+  if (result.correct) {
+    battleCorrectStreak++;
+    battleStepMissed = false;
+  } else {
+    battleCorrectStreak = 0;
+    battleStepMissed = true;
+  }
+  const supportEvent = resolveSupportEvent({
+    isCorrect: result.correct,
+    wasPreviouslyWrong,
+    correctStreak: battleCorrectStreak,
+  });
+  showSupporterReaction(supportEvent, battleSupporterState);
 
   const state = Game.getState();
 
@@ -318,6 +345,7 @@ function showResultScreen() {
     if (summaryEl) summaryEl.innerHTML = '<div>つぎも やってみよう！</div>';
     const retryBtn = document.getElementById('btn-result-retry');
     if (retryBtn) retryBtn.textContent = '✏ れんしゅうに もどる';
+    renderSupporterOnResult('result-supporter', battleSupporterState);
     showScreen('screen-result');
     Audio.playVictory();
     return;
@@ -347,6 +375,7 @@ function showResultScreen() {
   const retryBtn = document.getElementById('btn-result-retry');
   if (retryBtn) retryBtn.textContent = '▶ もういちど';
 
+  renderSupporterOnResult('result-supporter', battleSupporterState);
   showScreen('screen-result');
   Audio.playVictory();
 }
@@ -756,6 +785,7 @@ function updatePracticeControlsState() {
 function startPracticeQuiz() {
   if (!practiceKanji) return;
   // 1文字だけのpracticeセッション (保存しない)
+  resetBattleSupporterTracking();
   Game.startBattle([practiceKanji], 'practice');
   Renderer.setSVG(document.getElementById(battleSVGId));
   showScreen('screen-battle');
@@ -901,6 +931,7 @@ function showLevelUpOverlay(level) {
 
 // ========== バトル開始 ==========
 function startBattle(kanjiList) {
+  resetBattleSupporterTracking();
   Game.startBattle(kanjiList);
   showScreen('screen-battle');
   initBattleUI();

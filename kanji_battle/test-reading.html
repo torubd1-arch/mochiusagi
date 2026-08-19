@@ -26,6 +26,8 @@
 <script src="js/readingStorage.js"></script>
 <script src="js/game.js"></script>
 <script src="js/readingLogic.js"></script>
+<script src="js/supportersData.js"></script>
+<script src="js/supporterSelector.js"></script>
 
 <script>
 let pass = 0, fail = 0;
@@ -231,6 +233,129 @@ function report() {
   assert('再度不正解でcorrectStreakが0にリセットされる', p.correctStreak === 0 && p.isWeak === true);
 
   localStorage.removeItem(READING_KEY);
+})();
+
+// ================= 応援キャラクター: resolveSupportEvent =================
+(function testResolveSupportEvent() {
+  assert('通常正解で normalCorrect が選ばれる',
+    resolveSupportEvent({ isCorrect: true, wasPreviouslyWrong: false, correctStreak: 1 }) === 'normalCorrect');
+
+  assert('3問連続正解で streakCorrect が選ばれる',
+    resolveSupportEvent({ isCorrect: true, wasPreviouslyWrong: false, correctStreak: 3 }) === 'streakCorrect');
+
+  assert('4問連続正解でも streakCorrect のまま',
+    resolveSupportEvent({ isCorrect: true, wasPreviouslyWrong: false, correctStreak: 4 }) === 'streakCorrect');
+
+  assert('誤答後の再出題正解は、連続数にかかわらず retrySuccess が優先される',
+    resolveSupportEvent({ isCorrect: true, wasPreviouslyWrong: true, correctStreak: 5 }) === 'retrySuccess');
+
+  assert('不正解で incorrect が選ばれる',
+    resolveSupportEvent({ isCorrect: false, wasPreviouslyWrong: true, correctStreak: 5 }) === 'incorrect');
+})();
+
+// ================= 応援キャラクター: readingLogic.recordAnswer との連携 =================
+(function testSupportEventFromRecordAnswer() {
+  const pool = ['a', 'b', 'c', 'd', 'e'].map(id => ({ id, grade: 1, targetKanji: '一', sourceType: 'general', distractors: ['x'], targetReading: 'y' }));
+  const s = createSessionState(pool);
+
+  const q1 = getNextQuestionId(s);
+  const r1 = recordAnswer(s, q1, false); // 不正解 → 再出題キューへ
+  assert('recordAnswer: 不正解直後は wasPreviouslyWrong=false (まだ間違えていない状態からの解答)',
+    r1.wasPreviouslyWrong === false && r1.correctStreak === 0);
+
+  // 不正解を挟んで別の問題に正解 → 連続正解数が積み上がる
+  let streakEvent = null;
+  let q;
+  while ((q = getNextQuestionId(s)) !== null) {
+    const r = recordAnswer(s, q, true); // 再出題された q1 も含めてすべて正解にする
+    if (q === q1) {
+      assert('recordAnswer: 再出題されたq1に正解した際 wasPreviouslyWrong=true',
+        r.wasPreviouslyWrong === true);
+      const ev = resolveSupportEvent({ isCorrect: true, wasPreviouslyWrong: r.wasPreviouslyWrong, correctStreak: r.correctStreak });
+      assert('resolveSupportEvent: q1再挑戦正解は retrySuccess になる', ev === 'retrySuccess');
+    }
+    if (r.correctStreak >= 3) streakEvent = r.correctStreak;
+  }
+  assert('複数正解が続けば correctStreak が3以上に到達する', streakEvent !== null);
+})();
+
+// ================= 応援キャラクター: selectSupportReaction 抽選 =================
+(function testSelectSupportReaction() {
+  // 全キャラクター・全イベントで画像パス/表示名/セリフが揃っている
+  Object.keys(SUPPORTERS).forEach(id => {
+    const c = SUPPORTERS[id];
+    assert(`${id}: displayNameが設定されている`, typeof c.displayName === 'string' && c.displayName.length > 0);
+    assert(`${id}: imageが設定されている`, typeof c.image === 'string' && c.image.length > 0);
+    ['normalCorrect', 'incorrect', 'retrySuccess', 'streakCorrect', 'sessionComplete'].forEach(ev => {
+      assert(`${id}.${ev}: セリフが1件以上ある`, Array.isArray(c.messages[ev]) && c.messages[ev].length > 0);
+    });
+  });
+
+  // 同じキャラクターが3回連続で表示されない (多数回抽選して検証)
+  const state1 = createSupporterState();
+  const idSeq = [];
+  for (let i = 0; i < 300; i++) {
+    const r = selectSupportReaction('normalCorrect', state1);
+    idSeq.push(r.characterId);
+  }
+  let maxRun = 1;
+  let run = 1;
+  for (let i = 1; i < idSeq.length; i++) {
+    run = idSeq[i] === idSeq[i - 1] ? run + 1 : 1;
+    maxRun = Math.max(maxRun, run);
+  }
+  assert('同じキャラクターが3回以上連続で選ばれない', maxRun < 3);
+
+  // 同じセリフが直近10回以内に再表示されない
+  // (候補が窓(10件)より多く残っている限りは回避できるはず。1キャラの持ちセリフが
+  // 3〜4件しかない場合は8.3節の「候補が尽きたら再利用する」規則により重複しうるので、
+  // ここでは候補が十分にある状況(セリフ12件のダミーキャラ)で検証する)
+  const manyLinesState = createSupporterState();
+  const manyLines = Array.from({ length: 12 }, (_, i) => `せりふ${i}`);
+  const keySeq = [];
+  for (let i = 0; i < 200; i++) {
+    const picked = pickMessage('dummy', 'normalCorrect', manyLines, manyLinesState, Math.random);
+    keySeq.push(picked.key);
+  }
+  let dupWithin10 = false;
+  for (let i = 1; i < keySeq.length; i++) {
+    const windowStart = Math.max(0, i - 10);
+    if (keySeq.slice(windowStart, i).includes(keySeq[i])) dupWithin10 = true;
+  }
+  assert('候補が十分にあるとき、同じセリフが直近10回以内に再表示されない', dupWithin10 === false);
+
+  // セリフ候補が枯渇しても(=全キャラの全セリフを使い切っても)例外を投げず継続する
+  const state3 = createSupporterState();
+  let threwOnExhaustion = false;
+  try {
+    for (let i = 0; i < 500; i++) selectSupportReaction('sessionComplete', state3);
+  } catch (e) {
+    threwOnExhaustion = true;
+  }
+  assert('セリフ候補が枯渇しても例外を投げず継続する', threwOnExhaustion === false);
+})();
+
+// ================= 応援キャラクター: フォールバック仕様 =================
+(function testSupporterFallback() {
+  const emptyEventLines = getMessagesForEvent({ messages: { normalCorrect: ['てすと'] } }, 'streakCorrect');
+  assert('イベント用セリフが空 → normalCorrectを使う', emptyEventLines[0] === 'てすと');
+
+  const allEmptyLines = getMessagesForEvent({ messages: {} }, 'streakCorrect');
+  assert('normalCorrectも空 → 共通フォールバックセリフを使う', allEmptyLines[0] === SUPPORTER_FALLBACK_MESSAGE);
+
+  // キャラクターデータの一部が欠落していても例外を投げない
+  const brokenState = createSupporterState();
+  let threwOnBroken = false;
+  const originalPonta = SUPPORTERS.ponta;
+  try {
+    SUPPORTERS.ponta = { displayName: 'ポン太', image: '', alt: '', messages: {} };
+    for (let i = 0; i < 50; i++) selectSupportReaction('incorrect', brokenState);
+  } catch (e) {
+    threwOnBroken = true;
+  } finally {
+    SUPPORTERS.ponta = originalPonta;
+  }
+  assert('キャラクターデータの一部欠落でも例外を投げない', threwOnBroken === false);
 })();
 
 report();

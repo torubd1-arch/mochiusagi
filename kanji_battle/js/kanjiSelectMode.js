@@ -13,6 +13,9 @@ let kanjiSelectSession = null;
 let kanjiSelectAnswerLocked = false;
 let kanjiSelectCancelled = true; // 質問画面が表示されていない間は true
 
+// おうえんキャラクターの抽選状態(重複防止用)。よみかたモードとは独立させる。
+const kanjiSelectSupporterState = createSupporterState();
+
 // ========== セットアップ画面 ==========
 function showKanjiSelectSetup() {
   kanjiSelectCancelled = true;
@@ -249,12 +252,14 @@ async function onKanjiSelectChoiceClick(choiceId, question, choices) {
     }
   });
 
-  const { isFirstAttemptThisSession } = recordAnswer(kanjiSelectSession, question.id, isCorrect);
+  const { isFirstAttemptThisSession, wasPreviouslyWrong, correctStreak } =
+    recordAnswer(kanjiSelectSession, question.id, isCorrect);
   if (isFirstAttemptThisSession) {
     KanjiSelectStorage.recordFirstAttemptOfSession(question.id, isCorrect, new Date().toISOString());
   }
 
-  showYomiCheer(isCorrect);
+  const supportEvent = resolveSupportEvent({ isCorrect, wasPreviouslyWrong, correctStreak });
+  showSupporterReaction(supportEvent, kanjiSelectSupporterState);
 
   if (isCorrect) {
     Audio.playCorrect();
@@ -293,11 +298,13 @@ async function endKanjiSelectSession() {
 
 function renderKanjiSelectResult(summary, stillWeakCount) {
   const el = document.getElementById('kanjiselect-result-summary');
-  if (!el) return;
-  el.innerHTML =
-    `<div>せいかい: ${summary.correctCount} / ${summary.totalAsked} もん</div>
-     <div>おぼえなおした もんだい: ${summary.reLearnedCount} こ</div>
-     <div>まだ れんしゅうすると いい もんだい: ${stillWeakCount} こ</div>`;
+  if (el) {
+    el.innerHTML =
+      `<div>せいかい: ${summary.correctCount} / ${summary.totalAsked} もん</div>
+       <div>おぼえなおした もんだい: ${summary.reLearnedCount} こ</div>
+       <div>まだ れんしゅうすると いい もんだい: ${stillWeakCount} こ</div>`;
+  }
+  renderSupporterOnResult('kanjiselect-result-supporter', kanjiSelectSupporterState);
 }
 
 // ========== 画面遷移・イベント登録 ==========

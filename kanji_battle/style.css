@@ -1676,14 +1676,15 @@ button:focus-visible {
 #btn-yomikata-zukan { background: var(--accent2); color: #fff; }
 #btn-yomikata-title { background: #334; color: var(--text-sub); border: 1px solid var(--border); }
 
-/* ===== よみかたモード: おうえんキャラクター ===== */
+/* ===== おうえんキャラクター (全モード共通) =====
+   問題文・正誤フィードバック・選択肢を隠さないよう、画面下部に寄せて表示する。 */
 #yomikata-cheer-layer {
   position: fixed;
   inset: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding-top: min(6vh, 50px);
+  padding-bottom: min(4vh, 28px);
   pointer-events: none;
   z-index: 1001;
   overflow: hidden;
@@ -1694,16 +1695,38 @@ button:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  max-width: min(86vw, 360px);
   animation: yomi-cheer-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* 連続正解・再挑戦成功は、通常正解より少し大きめの跳ね方にする */
+.yomi-cheer-popup.yomi-cheer-big {
+  animation-name: yomi-cheer-in-big;
+}
+
+/* 不正解: 揺らしたり暗くしたりせず、優しくフェードインする */
+.yomi-cheer-popup.yomi-cheer-wrong {
+  animation-name: yomi-cheer-fade-in;
+  animation-duration: 0.4s;
+  animation-timing-function: ease;
 }
 
 .yomi-cheer-popup.yomi-cheer-out {
   animation: yomi-cheer-out 0.25s ease forwards;
 }
 
+.yomi-cheer-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: min(52vw, 220px);
+  justify-content: center;
+}
+
 .yomi-cheer-img {
-  width: min(78vw, 340px);
-  height: min(78vw, 340px);
+  width: min(52vw, 220px);
+  height: min(52vw, 220px);
   object-fit: contain;
   background: radial-gradient(circle, #fff 62%, transparent 65%);
   border-radius: 50%;
@@ -1711,17 +1734,31 @@ button:focus-visible {
   filter: drop-shadow(0 8px 14px #000a);
 }
 
+.yomi-cheer-name {
+  background: #fff;
+  color: #16213e;
+  font-size: clamp(0.85rem, 3.2vw, 1rem);
+  font-weight: 800;
+  padding: 3px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 6px #0005;
+}
+
+/* 画像読み込み失敗時: こわれた画像アイコンを出さず、表示名バッジのみ見せる */
+.yomi-cheer-noimg .yomi-cheer-img { display: none; }
+
 .yomi-cheer-bubble {
   background: #fff;
   color: #16213e;
-  font-size: clamp(1.2rem, 5.6vw, 1.7rem);
+  font-size: clamp(1.1rem, 5vw, 1.6rem);
   font-weight: 900;
-  padding: 12px 26px;
+  padding: 12px 24px;
   border-radius: 999px;
   box-shadow: 0 4px 0 #0004, 0 6px 14px #0006;
   position: relative;
   text-align: center;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .yomi-cheer-bubble::after {
@@ -1742,13 +1779,70 @@ button:focus-visible {
 
 @keyframes yomi-cheer-in {
   0%   { opacity: 0; transform: scale(0.4) translateY(20px); }
-  70%  { opacity: 1; transform: scale(1.08) translateY(-4px); }
+  70%  { opacity: 1; transform: scale(1.06) translateY(-4px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes yomi-cheer-in-big {
+  0%   { opacity: 0; transform: scale(0.4) translateY(20px); }
+  60%  { opacity: 1; transform: scale(1.14) translateY(-6px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes yomi-cheer-fade-in {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes yomi-cheer-out {
   0%   { opacity: 1; transform: scale(1) translateY(0); }
   100% { opacity: 0; transform: scale(0.7) translateY(-16px); }
+}
+
+/* アニメーション抑制設定を尊重する */
+@media (prefers-reduced-motion: reduce) {
+  .yomi-cheer-popup,
+  .yomi-cheer-popup.yomi-cheer-big,
+  .yomi-cheer-popup.yomi-cheer-wrong,
+  .yomi-cheer-popup.yomi-cheer-out {
+    animation: none !important;
+  }
+}
+
+/* ===== おうえんキャラクター: 結果画面の常設表示 ===== */
+.supporter-static {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.supporter-static-img {
+  width: min(40vw, 140px);
+  height: min(40vw, 140px);
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px #0006);
+}
+
+.supporter-static.yomi-cheer-noimg .supporter-static-img { display: none; }
+
+.supporter-static-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-sub);
+}
+
+.supporter-static-bubble {
+  background: #fff;
+  color: #16213e;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 999px;
+  max-width: min(86vw, 320px);
+  text-align: center;
+  overflow-wrap: break-word;
 }
 
 /* ===== かんじをえらぶモード: せってい画面 =====

@@ -8,49 +8,9 @@ let yomikataSession = null;
 let yomikataAnswerLocked = false;
 let yomikataCancelled = true; // 質問画面が表示されていない間は true
 
-// ========== おうえんキャラクター ==========
-const YOMI_CHEER_CHARACTERS = [
-  { id: 'bear-orange', src: 'assets/cheer-characters/bear-orange.png', name: 'くまさん' },
-  { id: 'penguin-blue', src: 'assets/cheer-characters/penguin-blue.png', name: 'ぺんぎん' },
-  { id: 'bear-beige', src: 'assets/cheer-characters/bear-beige.png', name: 'テディ' },
-  { id: 'newt-spotted', src: 'assets/cheer-characters/newt-spotted.png', name: 'いもり' },
-];
-
-const YOMI_CHEER_LINES_CORRECT = [
-  'すごい！', 'やったね！', 'その ちょうし！', 'かんぺき！', 'たいしたもんだ！', 'ナイス！',
-];
-const YOMI_CHEER_LINES_WRONG = [
-  'だいじょうぶ！', 'つぎ がんばろう！', 'おしかった！', 'いっしょに おぼえよう！', 'ドンマイ！', 'つぎは きっと！',
-];
-
-let yomiCheerTimer = null;
-
-// 正解/不正解のたびにランダムなキャラクター+セリフを目立つ位置に表示する。
-// ゲームの正誤判定そのものには関与しない、純粋な演出。
-function showYomiCheer(isCorrect) {
-  const layer = document.getElementById('yomikata-cheer-layer');
-  if (!layer) return;
-
-  if (yomiCheerTimer) { clearTimeout(yomiCheerTimer); yomiCheerTimer = null; }
-  layer.innerHTML = '';
-
-  const character = YOMI_CHEER_CHARACTERS[Math.floor(Math.random() * YOMI_CHEER_CHARACTERS.length)];
-  const lines = isCorrect ? YOMI_CHEER_LINES_CORRECT : YOMI_CHEER_LINES_WRONG;
-  const line = lines[Math.floor(Math.random() * lines.length)];
-
-  const popup = document.createElement('div');
-  popup.className = 'yomi-cheer-popup' + (isCorrect ? ' yomi-cheer-correct' : ' yomi-cheer-wrong');
-  popup.innerHTML = `
-    <div class="yomi-cheer-bubble">${yomiEscapeHtml(line)}</div>
-    <img class="yomi-cheer-img" src="${character.src}" alt="${yomiEscapeHtml(character.name)}">`;
-  layer.appendChild(popup);
-
-  yomiCheerTimer = setTimeout(() => {
-    popup.classList.add('yomi-cheer-out');
-    setTimeout(() => popup.remove(), 250);
-    yomiCheerTimer = null;
-  }, 1300);
-}
+// おうえんキャラクターの抽選状態(重複防止用)。データ・抽選ロジック・UI描画は
+// js/supportersData.js / js/supporterSelector.js / js/supporterReaction.js を参照。
+const yomikataSupporterState = createSupporterState();
 
 // ========== 文字列ユーティリティ ==========
 function yomiEscapeHtml(s) {
@@ -330,12 +290,14 @@ async function onYomikataChoiceClick(choiceId, question, choices) {
     }
   });
 
-  const { isFirstAttemptThisSession } = recordAnswer(yomikataSession, question.id, isCorrect);
+  const { isFirstAttemptThisSession, wasPreviouslyWrong, correctStreak } =
+    recordAnswer(yomikataSession, question.id, isCorrect);
   if (isFirstAttemptThisSession) {
     ReadingStorage.recordFirstAttemptOfSession(question.id, isCorrect, new Date().toISOString());
   }
 
-  showYomiCheer(isCorrect);
+  const supportEvent = resolveSupportEvent({ isCorrect, wasPreviouslyWrong, correctStreak });
+  showSupporterReaction(supportEvent, yomikataSupporterState);
 
   if (isCorrect) {
     Audio.playCorrect();
@@ -379,11 +341,13 @@ async function endYomikataSession() {
 
 function renderYomikataResult(summary, stillWeakCount) {
   const el = document.getElementById('yomikata-result-summary');
-  if (!el) return;
-  el.innerHTML =
-    `<div>せいかい: ${summary.correctCount} / ${summary.totalAsked} もん</div>
-     <div>おぼえなおした もんだい: ${summary.reLearnedCount} こ</div>
-     <div>まだ れんしゅうすると いい もんだい: ${stillWeakCount} こ</div>`;
+  if (el) {
+    el.innerHTML =
+      `<div>せいかい: ${summary.correctCount} / ${summary.totalAsked} もん</div>
+       <div>おぼえなおした もんだい: ${summary.reLearnedCount} こ</div>
+       <div>まだ れんしゅうすると いい もんだい: ${stillWeakCount} こ</div>`;
+  }
+  renderSupporterOnResult('yomikata-result-supporter', yomikataSupporterState);
 }
 
 // ========== 画面遷移・イベント登録 ==========
