@@ -105,14 +105,22 @@ html, body {
 .btn-title:active { transform: translateY(3px); box-shadow: 0 3px 0 #0004; }
 .btn-title:hover  { filter: brightness(1.1); }
 
-#btn-start    { background: var(--accent);  color: #fff; }
-#btn-practice { background: var(--green);   color: #fff; }
-#btn-zukan    { background: var(--accent2); color: #fff; }
+#btn-start       { background: var(--accent);  color: #fff; }
+#btn-practice    { background: var(--green);   color: #fff; }
+#btn-yomikata    { background: #5b6ee8;        color: #fff; }
+#btn-kanjiselect { background: #9b59b6;        color: #fff; }
+#btn-zukan       { background: var(--accent2); color: #fff; }
 
 .title-footer {
   font-size: 0.75rem;
   color: var(--text-sub);
   text-align: center;
+}
+
+.title-reset-section {
+  margin-top: 4px;
+  display: flex;
+  justify-content: center;
 }
 
 /* ===== バトル画面 ===== */
@@ -969,7 +977,7 @@ html, body {
 @media (min-width: 480px) {
   .battle-field { gap: 16px; padding: 12px 20px; }
   #battle-kanji { font-size: 5rem; }
-  #choices-area { gap: 14px; }
+  #choices-area, #yomikata-choices-area, #kanjiselect-choices-area { gap: 14px; }
   .choice-btn { font-size: 1.3rem; min-height: 90px; }
   #battle-kanji-svg { width: 170px; height: 170px; }
 }
@@ -986,6 +994,9 @@ html, body {
   #battle-kanji-svg { width: 110px; height: 110px; }
   .battle-log-area { min-height: 42px; padding: 6px 12px; }
   .choice-btn { min-height: 65px; padding: 10px 8px; }
+  .yomi-sentence-block { font-size: 1.1rem; padding: 10px; }
+  .kanjiselect-reading-block { font-size: 1.8rem; padding: 14px 10px; }
+  .kanji-choice-btn { min-height: 72px; }
 }
 
 /* ===== きょうのぼうけんバー ===== */
@@ -1522,3 +1533,291 @@ button:focus-visible {
 .evo-stage.evo-stage-reward.captured .evo-reward-icon svg {
   filter: drop-shadow(0 0 6px rgba(245,166,35,0.5));
 }
+
+/* ===== よみかたモード: せってい画面 ===== */
+#screen-yomikata-setup {
+  background: var(--bg);
+  padding: 0;
+}
+
+#yomikata-setup-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.yomi-setup-label {
+  font-size: 0.8rem;
+  color: var(--text-sub);
+  font-weight: 700;
+  margin: 10px 0 4px;
+}
+.yomi-setup-label:first-child { margin-top: 0; }
+
+.yomi-setup-message {
+  min-height: 0;
+}
+
+.yomi-setup-message-title {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--accent2);
+  text-align: center;
+  margin: 18px 0 6px;
+}
+
+.yomi-setup-message-sub {
+  font-size: 0.85rem;
+  color: var(--text-sub);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.yomi-start-btn {
+  width: 100%;
+  margin-top: 18px;
+  background: #5b6ee8;
+  color: #fff;
+}
+
+.grade-tab.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ===== よみかたモード: もんだい画面 ===== */
+#screen-yomikata {
+  background: linear-gradient(180deg, #1a3a6e 0%, #0f2040 60%, #0a1628 100%);
+  padding: 0;
+  gap: 0;
+}
+
+.yomi-question-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px 8px;
+  flex-shrink: 0;
+}
+
+.yomi-sentence-block {
+  font-size: clamp(1.2rem, 5.5vw, 1.7rem);
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.7;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  width: 100%;
+  max-width: 480px;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+}
+
+.yomi-target-highlight {
+  color: var(--accent2);
+  font-weight: 900;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 3px;
+  border-bottom: 2px solid var(--accent2);
+  padding: 0 1px;
+}
+
+.yomi-prompt {
+  font-size: clamp(1rem, 4vw, 1.3rem);
+  font-weight: 800;
+  color: var(--accent2);
+  text-align: center;
+}
+
+.yomi-feedback {
+  min-height: 46px;
+  padding: 6px 16px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-sub);
+}
+.yomi-feedback-correct { color: var(--green); }
+.yomi-feedback-wrong   { color: #ff9999; }
+
+#yomikata-choices-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 10px 12px;
+}
+
+/* ===== よみかたモード: けっか画面 ===== */
+#screen-yomikata-result {
+  background: linear-gradient(160deg, #0f3460, #1a2a50);
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 16px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+#yomikata-result-summary {
+  font-size: 1rem;
+  color: var(--text-sub);
+  text-align: center;
+  line-height: 1.8;
+}
+
+#btn-yomikata-retry { background: var(--accent);  color: #fff; }
+#btn-yomikata-weak  { background: #5b6ee8;        color: #fff; }
+#btn-yomikata-zukan { background: var(--accent2); color: #fff; }
+#btn-yomikata-title { background: #334; color: var(--text-sub); border: 1px solid var(--border); }
+
+/* ===== よみかたモード: おうえんキャラクター ===== */
+#yomikata-cheer-layer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: min(6vh, 50px);
+  pointer-events: none;
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.yomi-cheer-popup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: yomi-cheer-in 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.yomi-cheer-popup.yomi-cheer-out {
+  animation: yomi-cheer-out 0.25s ease forwards;
+}
+
+.yomi-cheer-img {
+  width: min(78vw, 340px);
+  height: min(78vw, 340px);
+  object-fit: contain;
+  background: radial-gradient(circle, #fff 62%, transparent 65%);
+  border-radius: 50%;
+  padding: 4px;
+  filter: drop-shadow(0 8px 14px #000a);
+}
+
+.yomi-cheer-bubble {
+  background: #fff;
+  color: #16213e;
+  font-size: clamp(1.2rem, 5.6vw, 1.7rem);
+  font-weight: 900;
+  padding: 12px 26px;
+  border-radius: 999px;
+  box-shadow: 0 4px 0 #0004, 0 6px 14px #0006;
+  position: relative;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.yomi-cheer-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px 8px 0 8px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+}
+
+.yomi-cheer-correct .yomi-cheer-bubble { color: var(--green); border: 3px solid var(--green); }
+.yomi-cheer-correct .yomi-cheer-bubble::after { border-color: var(--green) transparent transparent transparent; }
+.yomi-cheer-wrong   .yomi-cheer-bubble { color: var(--accent2); border: 3px solid var(--accent2); }
+.yomi-cheer-wrong   .yomi-cheer-bubble::after { border-color: var(--accent2) transparent transparent transparent; }
+
+@keyframes yomi-cheer-in {
+  0%   { opacity: 0; transform: scale(0.4) translateY(20px); }
+  70%  { opacity: 1; transform: scale(1.08) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes yomi-cheer-out {
+  0%   { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(0.7) translateY(-16px); }
+}
+
+/* ===== かんじをえらぶモード: せってい画面 =====
+   よみかたモードのせってい画面(#screen-yomikata-setup)とレイアウトを共有 */
+#screen-kanjiselect-setup {
+  background: var(--bg);
+  padding: 0;
+}
+
+#kanjiselect-setup-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* ===== かんじをえらぶモード: もんだい画面 ===== */
+#screen-kanjiselect {
+  background: linear-gradient(180deg, #1a3a6e 0%, #0f2040 60%, #0a1628 100%);
+  padding: 0;
+  gap: 0;
+}
+
+.kanjiselect-reading-block {
+  font-size: clamp(2rem, 11vw, 3.2rem);
+  font-weight: 900;
+  color: var(--text);
+  text-align: center;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 16px;
+  width: 100%;
+  max-width: 480px;
+  overflow-wrap: anywhere;
+}
+
+#kanjiselect-choices-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 10px 12px;
+}
+
+.kanji-choice-btn {
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  font-weight: 900;
+  min-height: 96px;
+}
+
+/* ===== かんじをえらぶモード: けっか画面 ===== */
+#screen-kanjiselect-result {
+  background: linear-gradient(160deg, #0f3460, #1a2a50);
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 16px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+#kanjiselect-result-summary {
+  font-size: 1rem;
+  color: var(--text-sub);
+  text-align: center;
+  line-height: 1.8;
+}
+
+#btn-kanjiselect-retry { background: var(--accent);  color: #fff; }
+#btn-kanjiselect-weak  { background: #9b59b6;        color: #fff; }
+#btn-kanjiselect-zukan { background: var(--accent2); color: #fff; }
+#btn-kanjiselect-title { background: #334; color: var(--text-sub); border: 1px solid var(--border); }

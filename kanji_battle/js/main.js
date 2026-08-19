@@ -804,16 +804,23 @@ function spawnConfetti(count = 25) {
   }
 }
 
-// ========== ずかんリセット ==========
-function showResetDialog() {
+// ========== リセット確認ダイアログ (ずかん・よみかた共通) ==========
+function showResetDialog(opts = {}) {
+  const {
+    title = 'ずかんリセット',
+    body = 'ほんとうに ずかんを<br>リセットする？',
+    warnText = 'あつめたモンスターや<br>ほし きろくが きえるよ',
+    onConfirm = () => { Storage.resetCollection(); showZukan(); },
+  } = opts;
+
   const overlay = document.createElement('div');
   overlay.className = 'reset-dialog-overlay';
   overlay.innerHTML = `
     <div class="reset-dialog">
-      <div class="reset-dialog-title">ずかんリセット</div>
+      <div class="reset-dialog-title">${title}</div>
       <div class="reset-dialog-body">
-        ほんとうに ずかんを<br>リセットする？<br>
-        <span class="reset-dialog-warn">あつめたモンスターや<br>ほし きろくが きえるよ</span>
+        ${body}<br>
+        <span class="reset-dialog-warn">${warnText}</span>
       </div>
       <div class="reset-dialog-buttons">
         <button class="reset-btn-yes" id="reset-confirm-yes">はい</button>
@@ -824,10 +831,9 @@ function showResetDialog() {
 
   document.getElementById('reset-confirm-yes').addEventListener('click', () => {
     Audio.playSelect();
-    Storage.resetCollection();
+    onConfirm();
     overlay.remove();
     showResetToast();
-    showZukan();
   });
   document.getElementById('reset-confirm-no').addEventListener('click', () => {
     Audio.playSelect();
@@ -1001,6 +1007,14 @@ document.addEventListener('DOMContentLoaded', () => {
     Audio.playSelect();
     showZukan();
   });
+
+  const titleResetBtn = document.getElementById('btn-title-reset');
+  if (titleResetBtn) {
+    titleResetBtn.addEventListener('click', () => {
+      Audio.playSelect();
+      showResetDialog({ onConfirm: () => { Storage.resetCollection(); } });
+    });
+  }
 
   // バトル画面
   document.getElementById('btn-battle-title').addEventListener('click', () => {

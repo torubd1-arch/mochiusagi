@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>よみかたモード - ロジックテスト</title>
+</head>
+<body>
+<h1>よみかたモード テスト (console参照)</h1>
+<div id="out" style="font-family:monospace; white-space:pre-wrap;"></div>
+
+<!-- KANJI_DATA を組み立てるのに必要な依存関係 -->
+<script src="js/data/grade1.js"></script>
+<script src="js/data/grade2.js"></script>
+<script src="js/strokeData/kanjivg_data.js"></script>
+<script src="js/strokeData/kanjivg_data_grade2.js"></script>
+<script src="js/data.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/grade2Characters.js"></script>
+<script src="js/parser.js"></script>
+
+<!-- よみかたモード本体 -->
+<script src="js/data/readingQuestionsGeneral.js"></script>
+<script src="js/data/readingQuestionsTextbook.js"></script>
+<script src="js/readingValidator.js"></script>
+<script src="js/readingData.js"></script>
+<script src="js/readingStorage.js"></script>
+<script src="js/game.js"></script>
+<script src="js/readingLogic.js"></script>
+
+<script>
+let pass = 0, fail = 0;
+const lines = [];
+function assert(name, cond) {
+  if (cond) {
+    pass++;
+    lines.push(`✅ ${name}`);
+  } else {
+    fail++;
+    lines.push(`❌ ${name}`);
+    console.error('FAILED:', name);
+  }
+}
+
+function report() {
+  lines.push('');
+  lines.push(`合計: ${pass + fail} 件 / 成功: ${pass} 件 / 失敗: ${fail} 件`);
+  document.getElementById('out').textContent = lines.join('\n');
+  console.log(lines.join('\n'));
+}
+
+// ================= readingValidator =================
+(function testValidator() {
+  const validKanji = READING_QUESTIONS_GENERAL[0].targetKanji; // 実在の漢字を使う
+  const base = {
+    id: 'test_ok_01', grade: 1, targetKanji: validKanji, targetKanjiId: null,
+    word: 'てすと', sentence: 'てすとです。', targetReading: 'てすと', fullReading: 'てすと',
+    distractors: ['あ', 'い', 'う'], sourceType: 'general', sourceName: 'test', textbookUnit: null, enabled: true,
+  };
+
+  const seen1 = new Set();
+  assert('正常な問題は valid=true', validateReadingQuestionShape(base, seen1).valid === true);
+
+  const seenDup = new Set(['dup_id']);
+  const dupResult = validateReadingQuestionShape({ ...base, id: 'dup_id' }, seenDup);
+  assert('id重複はinvalid', dupResult.valid === false);
+
+  const badKanjiResult = validateReadingQuestionShape({ ...base, id: 'bad_kanji', targetKanji: '假' }, new Set());
+  assert('KANJI_DATAに存在しない漢字はinvalid(フォールバックしない)', badKanjiResult.valid === false);
+
+  const emptyReadingResult = validateReadingQuestionShape({ ...base, id: 'empty_reading', targetReading: '' }, new Set());
+  assert('空のtargetReadingはinvalid', emptyReadingResult.valid === false);
+
+  const dupDistractorResult = validateReadingQuestionShape({ ...base, id: 'dup_distractor', distractors: ['あ', 'あ', 'い'] }, new Set());
+  assert('distractors内の重複はinvalid', dupDistractorResult.valid === false);
+
+  const correctAsDistractorResult = validateReadingQuestionShape({ ...base, id: 'correct_as_distractor', distractors: ['てすと', 'い', 'う'] }, new Set());
+  assert('正解と同じdistractorはinvalid', correctAsDistractorResult.valid === false);
+
+  const tooFewResult = validateReadingQuestionShape({ ...base, id: 'too_few', distractors: [] }, new Set());
+  assert('有効なdistractorが0件はinvalid', tooFewResult.valid === false);
+
+  const badSourceTypeResult = validateReadingQuestionShape({ ...base, id: 'bad_source', sourceType: 'nonsense' }, new Set());
+  assert('不正なsourceTypeはinvalid', badSourceTypeResult.valid === false);
+
+  const badGradeResult = validateReadingQuestionShape({ ...base, id: 'bad_grade', grade: 3 }, new Set());
+  assert('学年3はinvalid(1,2のみ許可)', badGradeResult.valid === false);
+
+  const filtered = validateReadingQuestions([
+    base,
+    { ...base, id: 'bad_kanji_2', targetKanji: '假' },
+  ]);
+  assert('validateReadingQuestionsは不正な問題を除外する', filtered.length === 1 && filtered[0].id === 'test_ok_01');
+
+  assert('実データ READING_QUESTIONS は1件以上ロードされている', READING_QUESTIONS.length > 0);
+})();
+
+// ================= buildSessionPool =================
+(function testPoolBuild() {
+  const emptyResult = buildSessionPool([], { grade: 'all', sourceType: 'all', practiceType: 'normal' }, {});
+  assert('空配列 → reason=no-questions', emptyResult.reason === 'no-questions' && emptyResult.pool.length === 0);
+
+  const oneQuestion = [{ id: 'q1', grade: 1, targetKanji: '一', sourceType: 'general', distractors: ['a', 'b'], targetReading: 'x' }];
+  const oneResult = buildSessionPool(oneQuestion, { grade: 'all', sourceType: 'all', practiceType: 'normal' }, {});
+  assert('1問だけのプールも出題対象になる', oneResult.pool.length === 1 && oneResult.reason === null);
+
+  const weakOnlyEmpty = buildSessionPool(oneQuestion, { grade: 'all', sourceType: 'all', practiceType: 'weakOnly' }, {});
+  assert('にがてだけ選択時、苦手問題0件 → reason=no-weak', weakOnlyEmpty.reason === 'no-weak' && weakOnlyEmpty.pool.length === 0);
+
+  const progressMap = { q1: { isWeak: true } };
+  const weakOnlyWithData = buildSessionPool(oneQuestion, { grade: 'all', sourceType: 'all', practiceType: 'weakOnly' }, progressMap);
+  assert('にがてだけ選択時、苦手問題があれば出題される', weakOnlyWithData.pool.length === 1 && weakOnlyWithData.reason === null);
+
+  // backfill: 20問中5問だけ苦手、baseSize=10 → 10問返るはず(バックフィルで埋まる)
+  const manyQuestions = [];
+  for (let i = 0; i < 20; i++) {
+    manyQuestions.push({ id: `m${i}`, grade: 1, targetKanji: '一', sourceType: 'general', distractors: ['a', 'b'], targetReading: 'x' });
+  }
+  const manyProgress = {};
+  for (let i = 0; i < 5; i++) manyProgress[`m${i}`] = { isWeak: true };
+  const backfillResult = buildSessionPool(manyQuestions, { grade: 'all', sourceType: 'all', practiceType: 'normal' }, manyProgress);
+  assert('バックフィルにより通常モードは目安の10問を満たす', backfillResult.pool.length === 10);
+
+  const gradeFiltered = getEligibleQuestions(manyQuestions, { grade: 2, sourceType: 'all' });
+  assert('学年フィルタ: grade2はgrade1の問題を除外する', gradeFiltered.length === 0);
+})();
+
+// ================= recordAnswer / requeue =================
+(function testRequeue() {
+  // 1問だけ: 不正解でも再出題されず、セッションが終了すること
+  const singlePool = [{ id: 'only1', grade: 1, targetKanji: '一', sourceType: 'general', distractors: ['a'], targetReading: 'x' }];
+  const s1 = createSessionState(singlePool);
+  const id1 = getNextQuestionId(s1);
+  assert('1問プール: 最初の出題が取得できる', id1 === 'only1');
+  recordAnswer(s1, id1, false);
+  const id1b = getNextQuestionId(s1);
+  assert('1問プール: 不正解でも再出題されない(無限ループ防止)', id1b === null);
+
+  // 複数問: 不正解問題が直後に連続表示されない & 最低2問の間隔があく
+  const pool5 = ['a', 'b', 'c', 'd', 'e'].map(id => ({ id, grade: 1, targetKanji: '一', sourceType: 'general', distractors: ['x'], targetReading: 'y' }));
+  const s2 = createSessionState(pool5);
+  const firstId = getNextQuestionId(s2); // 'a'
+  recordAnswer(s2, firstId, false); // aを不正解 → 再出題キューへ
+  const seq = [];
+  let nid;
+  while ((nid = getNextQuestionId(s2)) !== null) {
+    seq.push(nid);
+    if (nid !== firstId) recordAnswer(s2, nid, true);
+    else recordAnswer(s2, nid, true); // 再出題時は正解にしておく
+  }
+  const reappearIndex = seq.indexOf(firstId, 1);
+  assert('再出題は直後(位置0)に来ない', seq[0] !== undefined && seq.filter(x => x === firstId).length >= 2);
+  assert('再出題までに最低2問はさむ', reappearIndex >= 2);
+
+  // appearance cap: 全問不正解でも READING_MAX_APPEARANCES(3) を超えない
+  const pool3 = ['x', 'y', 'z'].map(id => ({ id, grade: 1, targetKanji: '一', sourceType: 'general', distractors: ['a'], targetReading: 'b' }));
+  const s3 = createSessionState(pool3, { cap: 30 });
+  let guard = 0;
+  let qid;
+  while ((qid = getNextQuestionId(s3)) !== null && guard < 200) {
+    recordAnswer(s3, qid, false); // 常に不正解
+    guard++;
+  }
+  const maxAppearances = Math.max(...Object.values(s3.appearanceCount));
+  assert('全問不正解でも1問の出題回数は上限(3)を超えない', maxAppearances <= 3);
+  assert('無限ループにならず有限回で終了する', guard < 200);
+
+  // session cap: 15を超えない
+  assert('セッション総出題数はcapを超えない', s3.totalAsked <= s3.cap);
+})();
+
+// ================= buildChoiceList =================
+(function testChoices() {
+  const q1 = { targetReading: 'こえ', distractors: ['かお', 'おと', 'うた', 'かお'] };
+  const choices1 = buildChoiceList(q1);
+  const texts1 = choices1.map(c => c.text);
+  assert('選択肢に重複テキストがない', new Set(texts1).size === texts1.length);
+  assert('選択肢は最大4件', choices1.length <= 4);
+  assert('正解が1件だけ含まれる', choices1.filter(c => c.correct).length === 1);
+  assert('distractorの重複(かお)は片方のみ採用される', texts1.length === 4); // こえ + かお/おと/うた(重複除去後3種)
+
+  const q2 = { targetReading: 'やま', distractors: [] };
+  const choices2 = buildChoiceList(q2);
+  assert('distractorが0件でも正解1件は表示される(2択未満に縮退)', choices2.length === 1 && choices2[0].correct === true);
+
+  const q3 = { targetReading: 'かわ', distractors: ['やま', 'やま', ''] };
+  const choices3 = buildChoiceList(q3);
+  assert('空文字distractorは除外される', choices3.every(c => c.text !== ''));
+  assert('正解と同じ文字列のdistractorは選択肢に出ない(正解重複除外)', choices3.filter(c => c.text === 'かわ').length === 1);
+})();
+
+// ================= ReadingStorage 自己修復 =================
+(function testStorageSelfHeal() {
+  const KANJI_KEY = 'kanjiBattle_v1';
+  const READING_KEY = 'kanjiBattle_reading_v1';
+
+  // 既存(かきじゅん側)データを退避
+  const savedKanjiData = localStorage.getItem(KANJI_KEY);
+  localStorage.setItem(KANJI_KEY, JSON.stringify({ marker: 'untouched' }));
+
+  localStorage.setItem(READING_KEY, '{this is not valid json');
+  let threw = false;
+  let grade;
+  try {
+    grade = ReadingStorage.getSelectedGrade();
+  } catch (e) {
+    threw = true;
+  }
+  assert('破損したJSONでも例外を投げない', threw === false);
+  assert('破損データから安全なデフォルト値に復帰する', grade === 'all' || grade === 1 || grade === 2);
+  assert('よみかたキーの破損時、かきじゅん側のキーには触れない', localStorage.getItem(KANJI_KEY) === JSON.stringify({ marker: 'untouched' }));
+
+  // 後始末: テスト用データを削除し、既存データを復元
+  localStorage.removeItem(READING_KEY);
+  if (savedKanjiData === null) localStorage.removeItem(KANJI_KEY);
+  else localStorage.setItem(KANJI_KEY, savedKanjiData);
+
+  // recordFirstAttemptOfSession の3連続正解でisWeak解除される確認 (別のクリーンなキーで)
+  localStorage.removeItem(READING_KEY);
+  ReadingStorage.recordFirstAttemptOfSession('streak_test', false, '2026-01-01T00:00:00.000Z');
+  let p = ReadingStorage.getProgress('streak_test');
+  assert('1回目不正解でisWeak=true', p.isWeak === true && p.correctStreak === 0);
+  ReadingStorage.recordFirstAttemptOfSession('streak_test', true, '2026-01-02T00:00:00.000Z');
+  ReadingStorage.recordFirstAttemptOfSession('streak_test', true, '2026-01-03T00:00:00.000Z');
+  p = ReadingStorage.getProgress('streak_test');
+  assert('2連続正解ではまだisWeak=true(3回必要)', p.isWeak === true && p.correctStreak === 2);
+  ReadingStorage.recordFirstAttemptOfSession('streak_test', true, '2026-01-04T00:00:00.000Z');
+  p = ReadingStorage.getProgress('streak_test');
+  assert('3連続正解でisWeak=falseに解除される', p.isWeak === false && p.correctStreak === 3);
+  ReadingStorage.recordFirstAttemptOfSession('streak_test', false, '2026-01-05T00:00:00.000Z');
+  p = ReadingStorage.getProgress('streak_test');
+  assert('再度不正解でcorrectStreakが0にリセットされる', p.correctStreak === 0 && p.isWeak === true);
+
+  localStorage.removeItem(READING_KEY);
+})();
+
+report();
+</script>
+</body>
+</html>

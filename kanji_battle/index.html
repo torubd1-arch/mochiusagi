@@ -26,11 +26,17 @@
   <div class="title-buttons">
     <button class="btn-title" id="btn-start">▶ スタート</button>
     <button class="btn-title" id="btn-practice">✏ れんしゅう</button>
+    <button class="btn-title" id="btn-yomikata">📚 よみかた</button>
+    <button class="btn-title" id="btn-kanjiselect">🀄 かんじを えらぼう</button>
     <button class="btn-title" id="btn-zukan">📖 ずかん</button>
   </div>
 
   <div class="title-footer">
     小学1・2年生の かんじ しゅうろく
+  </div>
+
+  <div class="title-reset-section">
+    <button class="btn-zukan-reset" id="btn-title-reset">ずかんの きろくを リセット</button>
   </div>
 </div>
 
@@ -159,6 +165,92 @@
   <div id="zukan-grid"></div>
 </div>
 
+<!-- ===================== よみかた せってい画面 ===================== -->
+<div id="screen-yomikata-setup" class="screen">
+  <div class="screen-header">
+    <button class="btn-back-small" id="btn-yomikata-setup-back">◀ もどる</button>
+    <h2>よみかた</h2>
+  </div>
+  <div id="yomikata-setup-body"></div>
+</div>
+
+<!-- ===================== よみかた もんだい画面 ===================== -->
+<div id="screen-yomikata" class="screen">
+  <div class="battle-header">
+    <button class="btn-back-small" id="btn-yomikata-back">◀ もどる</button>
+    <span class="battle-progress" id="yomikata-progress-text">もんだい 1</span>
+  </div>
+
+  <div class="yomi-question-area">
+    <div class="yomi-sentence-block" id="yomikata-sentence"></div>
+    <div class="yomi-prompt" id="yomikata-prompt"></div>
+  </div>
+
+  <div class="yomi-feedback" id="yomikata-feedback"></div>
+
+  <div class="battle-quiz-area">
+    <div id="yomikata-choices-area"></div>
+  </div>
+</div>
+
+<!-- ===================== よみかた けっか画面 ===================== -->
+<div id="screen-yomikata-result" class="screen">
+  <div class="result-title">よみかた<br>けっか！</div>
+  <div class="result-sparkle">📚</div>
+
+  <div id="yomikata-result-summary"></div>
+
+  <div class="result-buttons">
+    <button class="btn-result" id="btn-yomikata-retry">▶ もういちど</button>
+    <button class="btn-result" id="btn-yomikata-weak">🎯 にがてを れんしゅう</button>
+    <button class="btn-result" id="btn-yomikata-zukan">📖 ずかんを みる</button>
+    <button class="btn-result" id="btn-yomikata-title">◀ トップへ もどる</button>
+  </div>
+</div>
+
+<!-- ===================== かんじをえらぶ せってい画面 ===================== -->
+<div id="screen-kanjiselect-setup" class="screen">
+  <div class="screen-header">
+    <button class="btn-back-small" id="btn-kanjiselect-setup-back">◀ もどる</button>
+    <h2>かんじを えらぼう</h2>
+  </div>
+  <div id="kanjiselect-setup-body"></div>
+</div>
+
+<!-- ===================== かんじをえらぶ もんだい画面 ===================== -->
+<div id="screen-kanjiselect" class="screen">
+  <div class="battle-header">
+    <button class="btn-back-small" id="btn-kanjiselect-back">◀ もどる</button>
+    <span class="battle-progress" id="kanjiselect-progress-text">もんだい 1</span>
+  </div>
+
+  <div class="yomi-question-area">
+    <div class="kanjiselect-reading-block" id="kanjiselect-reading"></div>
+    <div class="yomi-prompt" id="kanjiselect-prompt"></div>
+  </div>
+
+  <div class="yomi-feedback" id="kanjiselect-feedback"></div>
+
+  <div class="battle-quiz-area">
+    <div id="kanjiselect-choices-area"></div>
+  </div>
+</div>
+
+<!-- ===================== かんじをえらぶ けっか画面 ===================== -->
+<div id="screen-kanjiselect-result" class="screen">
+  <div class="result-title">かんじ<br>けっか！</div>
+  <div class="result-sparkle">🀄</div>
+
+  <div id="kanjiselect-result-summary"></div>
+
+  <div class="result-buttons">
+    <button class="btn-result" id="btn-kanjiselect-retry">▶ もういちど</button>
+    <button class="btn-result" id="btn-kanjiselect-weak">🎯 にがてを れんしゅう</button>
+    <button class="btn-result" id="btn-kanjiselect-zukan">📖 ずかんを みる</button>
+    <button class="btn-result" id="btn-kanjiselect-title">◀ トップへ もどる</button>
+  </div>
+</div>
+
 <!-- ===================== 結果画面 ===================== -->
 <div id="screen-result" class="screen">
   <div class="result-title">やったー！<br>クリア！</div>
@@ -183,6 +275,9 @@
 <!-- ===================== パーティクルレイヤー ===================== -->
 <div id="particle-layer"></div>
 
+<!-- ===================== よみかた おうえんキャラクター ===================== -->
+<div id="yomikata-cheer-layer"></div>
+
 <!-- スクリプト読み込み -->
 <script src="js/data/grade1.js"></script>
 <script src="js/data/grade2.js"></script>
@@ -199,7 +294,18 @@
 <script src="js/evolutions.js"></script>
 <script src="js/render.js"></script>
 <script src="js/game.js"></script>
+<script src="js/data/readingQuestionsGeneral.js"></script>
+<script src="js/data/readingQuestionsTextbook.js"></script>
+<script src="js/readingValidator.js"></script>
+<script src="js/readingData.js"></script>
+<script src="js/kanjiSelectData.js"></script>
+<script src="js/readingStorage.js"></script>
+<script src="js/kanjiSelectStorage.js"></script>
+<script src="js/readingLogic.js"></script>
 <script src="js/main.js"></script>
+<script src="js/learningRewards.js"></script>
+<script src="js/readingMode.js"></script>
+<script src="js/kanjiSelectMode.js"></script>
 
 <!-- タイトル画面のモンスターを動的生成 -->
 <script>
