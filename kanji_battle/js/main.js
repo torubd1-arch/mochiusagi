@@ -797,6 +797,25 @@ function delay(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+// 誤答時、解説文をじっくり読めるよう「つぎへ」ボタンを押すまで待つ。
+// containerId の中身は完了後に空にする(呼び出し側で残す必要はない)。
+function waitForNextTap(containerId) {
+  return new Promise(resolve => {
+    const area = document.getElementById(containerId);
+    if (!area) { resolve(); return; }
+    area.innerHTML = '';
+    const btn = document.createElement('button');
+    btn.className = 'yomi-next-btn';
+    btn.textContent = 'つぎへ ▶';
+    btn.addEventListener('click', () => {
+      Audio.playSelect();
+      area.innerHTML = '';
+      resolve();
+    }, { once: true });
+    area.appendChild(btn);
+  });
+}
+
 function starsText(n) {
   return '★'.repeat(n) + '☆'.repeat(3 - n);
 }

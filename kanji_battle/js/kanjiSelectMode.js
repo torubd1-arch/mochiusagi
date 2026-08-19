@@ -214,6 +214,8 @@ function renderKanjiSelectQuestion(question) {
   if (promptEl) promptEl.textContent = 'は どの かんじ？';
 
   setKanjiSelectFeedback('', '');
+  const nextArea = document.getElementById('kanjiselect-next-area');
+  if (nextArea) nextArea.innerHTML = '';
 
   const choices = buildKanjiChoiceList(question);
   renderKanjiSelectChoices(choices, question);
@@ -272,7 +274,7 @@ async function onKanjiSelectChoiceClick(choiceId, question, choices) {
   } else {
     Audio.playWrong();
     setKanjiSelectFeedback(`おしい！「${question.targetReading}」は「${question.targetKanji}」だよ。`, 'yomi-feedback-wrong');
-    await delay(1800);
+    await waitForNextTap('kanjiselect-next-area');
     if (kanjiSelectCancelled) return;
   }
 

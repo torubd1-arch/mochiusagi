@@ -252,6 +252,8 @@ function renderYomikataQuestion(question) {
   if (promptEl) promptEl.textContent = `「${quotedTerm}」の よみかたは？`;
 
   setYomikataFeedback('', '');
+  const nextArea = document.getElementById('yomikata-next-area');
+  if (nextArea) nextArea.innerHTML = '';
 
   const choices = buildChoiceList(question);
   renderYomikataChoices(choices, question);
@@ -313,7 +315,7 @@ async function onYomikataChoiceClick(choiceId, question, choices) {
       ? `（ぜんぶ よむと「${question.fullReading}」）`
       : '';
     setYomikataFeedback(`おしい！「${yomiGetQuotedTerm(question)}」は「${question.targetReading}」と よむよ。${fullNote}`, 'yomi-feedback-wrong');
-    await delay(1800);
+    await waitForNextTap('yomikata-next-area');
     if (yomikataCancelled) return;
   }
 
