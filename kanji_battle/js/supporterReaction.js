@@ -8,6 +8,9 @@
 
 let supporterPopupTimer = null;
 
+// セリフ(ポップアップ)の表示時間。元の1300msの1.2倍。
+const SUPPORTER_POPUP_DURATION_MS = 1560;
+
 function supporterEscapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -50,7 +53,7 @@ function renderSupporterPopup(reaction, eventType) {
     popup.classList.add('yomi-cheer-out');
     setTimeout(() => popup.remove(), 250);
     supporterPopupTimer = null;
-  }, 1300);
+  }, SUPPORTER_POPUP_DURATION_MS);
 }
 
 // eventType: 'normalCorrect'|'incorrect'|'retrySuccess'|'streakCorrect'
