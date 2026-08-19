@@ -520,7 +520,7 @@ function showZukan(gradeFilter = 'all') {
   // 学年フィルタタブバー
   const tabBar = document.createElement('div');
   tabBar.className = 'grade-tab-bar';
-  [['all', 'すべて'], [1, '1年'], [2, '2年']].forEach(([val, label]) => {
+  [['all', 'すべて'], [1, '1年'], [2, '2年'], [3, '3年']].forEach(([val, label]) => {
     const tab = document.createElement('button');
     tab.className = 'grade-tab' + (gradeFilter === val ? ' active' : '');
     tab.textContent = label;
@@ -684,7 +684,7 @@ function showPracticeSelect(gradeFilter) {
   // 学年タブバー
   const tabBar = document.createElement('div');
   tabBar.className = 'grade-tab-bar';
-  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん']].forEach(([val, label]) => {
+  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん']].forEach(([val, label]) => {
     const tab = document.createElement('button');
     tab.className = 'grade-tab' + (activeFilter === val ? ' active' : '');
     tab.textContent = label;
@@ -986,13 +986,15 @@ async function startBossIntro() {
   await triggerEmergencyTelop();
 
   // ボス選択: 未捕獲を優先、全捕獲ならランダム
+  // その学年にボスが1体もない場合は全学年から選ぶ(通常バトルへのフォールバックもあるため二重の安全策)
   const gradeMode = Storage.getGradeMode();
-  const pool = BOSS_LIST.filter(b => gradeMode === 'all' || b.grade === gradeMode);
+  let pool = BOSS_LIST.filter(b => gradeMode === 'all' || b.grade === gradeMode);
+  if (pool.length === 0) pool = BOSS_LIST;
   const uncaptured = pool.filter(b => !Storage.isBossCaptured(b.id));
   const candidates = uncaptured.length > 0 ? uncaptured : pool;
-  const boss = candidates[Math.floor(Math.random() * candidates.length)];
+  const boss = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : null;
 
-  const kanjiData = KANJI_DATA.find(k => k.char === boss.char);
+  const kanjiData = boss ? KANJI_DATA.find(k => k.char === boss.char) : null;
   if (!kanjiData) {
     // フォールバック: 通常バトル
     const list = weightedSample(getCharactersByGrade(), 5);

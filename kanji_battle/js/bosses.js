@@ -7,4 +7,6 @@ const BOSS_LIST = [
   { id:'boss_頭', char:'頭', name:'おうのくび',    variant:4, color:'#c0392b', grade:2, hp:6 },
   { id:'boss_親', char:'親', name:'たいしょう',    variant:3, color:'#2c3e50', grade:2, hp:6 },
   { id:'boss_曜', char:'曜', name:'せいどうりゅう', variant:4, color:'#f5a623', grade:2, hp:7 },
+  { id:'boss_悪', char:'悪', name:'あくのだいおう',  variant:3, color:'#4a148c', grade:3, hp:8 },
+  { id:'boss_神', char:'神', name:'かみなりのかみさま', variant:4, color:'#37474f', grade:3, hp:8 },
 ];

@@ -11,11 +11,22 @@
 <!-- KANJI_DATA を組み立てるのに必要な依存関係 -->
 <script src="js/data/grade1.js"></script>
 <script src="js/data/grade2.js"></script>
+<script src="js/data/grade3.js"></script>
 <script src="js/strokeData/kanjivg_data.js"></script>
 <script src="js/strokeData/kanjivg_data_grade2.js"></script>
+<script src="js/strokeData/_g3_batch1.js"></script>
+<script src="js/strokeData/_g3_batch2.js"></script>
+<script src="js/strokeData/_g3_batch3.js"></script>
+<script src="js/strokeData/_g3_batch4.js"></script>
+<script src="js/strokeData/_g3_batch5.js"></script>
 <script src="js/data.js"></script>
 <script src="js/characters.js"></script>
 <script src="js/grade2Characters.js"></script>
+<script src="js/data/_g3char_batch1.js"></script>
+<script src="js/data/_g3char_batch2.js"></script>
+<script src="js/data/_g3char_batch3.js"></script>
+<script src="js/data/_g3char_batch4.js"></script>
+<script src="js/data/_g3char_batch5.js"></script>
 <script src="js/parser.js"></script>
 
 <!-- よみかたモード本体 -->
@@ -84,8 +95,8 @@ function report() {
   const badSourceTypeResult = validateReadingQuestionShape({ ...base, id: 'bad_source', sourceType: 'nonsense' }, new Set());
   assert('不正なsourceTypeはinvalid', badSourceTypeResult.valid === false);
 
-  const badGradeResult = validateReadingQuestionShape({ ...base, id: 'bad_grade', grade: 3 }, new Set());
-  assert('学年3はinvalid(1,2のみ許可)', badGradeResult.valid === false);
+  const badGradeResult = validateReadingQuestionShape({ ...base, id: 'bad_grade', grade: 4 }, new Set());
+  assert('学年4はinvalid(1,2,3のみ許可)', badGradeResult.valid === false);
 
   const filtered = validateReadingQuestions([
     base,

@@ -11,6 +11,9 @@ function resolveStrokeDataForKanji(char) {
   if (typeof KANJIVG_DATA_GRADE2 !== 'undefined' && KANJIVG_DATA_GRADE2[char]) {
     return { source: 'grade2', data: KANJIVG_DATA_GRADE2[char] };
   }
+  if (typeof KANJIVG_DATA_GRADE3 !== 'undefined' && KANJIVG_DATA_GRADE3[char]) {
+    return { source: 'grade3', data: KANJIVG_DATA_GRADE3[char] };
+  }
   return null;
 }
 
@@ -20,6 +23,7 @@ function validateStrokeDataMapping() {
   const sources = [];
   if (typeof KANJIVG_DATA !== 'undefined')       sources.push(['grade1', KANJIVG_DATA]);
   if (typeof KANJIVG_DATA_GRADE2 !== 'undefined') sources.push(['grade2', KANJIVG_DATA_GRADE2]);
+  if (typeof KANJIVG_DATA_GRADE3 !== 'undefined') sources.push(['grade3', KANJIVG_DATA_GRADE3]);
 
   sources.forEach(([grade, data]) => {
     Object.entries(data).forEach(([char, entry]) => {
@@ -96,10 +100,11 @@ function validateKanjiData() {
   // grade別カウント
   const g1 = KANJI_DATA.filter(k => k.grade === 1);
   const g2 = KANJI_DATA.filter(k => k.grade === 2);
-  const missing = [...GRADE1_KANJI, ...GRADE2_KANJI].filter(
+  const g3 = KANJI_DATA.filter(k => k.grade === 3);
+  const missing = [...GRADE1_KANJI, ...GRADE2_KANJI, ...(typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI : [])].filter(
     c => !KANJI_DATA.find(k => k.char === c)
   );
-  console.log(`[KanjiLoadAudit] grade1=${g1.length}/80 grade2=${g2.length}/${GRADE2_KANJI.length} total=${KANJI_DATA.length}`);
+  console.log(`[KanjiLoadAudit] grade1=${g1.length}/80 grade2=${g2.length}/${GRADE2_KANJI.length} grade3=${g3.length}/${typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI.length : 0} total=${KANJI_DATA.length}`);
   if (missing.length > 0) {
     console.warn(`[KanjiLoadAudit] missing=${JSON.stringify(missing)}`);
   }
