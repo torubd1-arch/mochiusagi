@@ -11,4 +11,6 @@ const BOSS_LIST = [
   { id:'boss_神', char:'神', name:'かみなりのかみさま', variant:4, color:'#37474f', grade:3, hp:8 },
   { id:'boss_熊', char:'熊', name:'もりのくまおう',  variant:2, color:'#5d4037', grade:4, hp:9 },
   { id:'boss_戦', char:'戦', name:'いくさがみ',    variant:4, color:'#b71c1c', grade:4, hp:9 },
+  { id:'boss_暴', char:'暴', name:'ぼうそうおに',   variant:3, color:'#d84315', grade:5, hp:10 },
+  { id:'boss_毒', char:'毒', name:'どくりゅうおう', variant:1, color:'#6a1b9a', grade:5, hp:10 },
 ];

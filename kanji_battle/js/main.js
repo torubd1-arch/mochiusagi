@@ -520,7 +520,7 @@ function showZukan(gradeFilter = 'all') {
   // 学年フィルタタブバー
   const tabBar = document.createElement('div');
   tabBar.className = 'grade-tab-bar';
-  [['all', 'すべて'], [1, '1年'], [2, '2年'], [3, '3年'], [4, '4年']].forEach(([val, label]) => {
+  [['all', 'すべて'], [1, '1年'], [2, '2年'], [3, '3年'], [4, '4年'], [5, '5年']].forEach(([val, label]) => {
     const tab = document.createElement('button');
     tab.className = 'grade-tab' + (gradeFilter === val ? ' active' : '');
     tab.textContent = label;
@@ -684,7 +684,7 @@ function showPracticeSelect(gradeFilter) {
   // 学年タブバー
   const tabBar = document.createElement('div');
   tabBar.className = 'grade-tab-bar';
-  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん'], [4, '4ねん']].forEach(([val, label]) => {
+  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん'], [4, '4ねん'], [5, '5ねん']].forEach(([val, label]) => {
     const tab = document.createElement('button');
     tab.className = 'grade-tab' + (activeFilter === val ? ' active' : '');
     tab.textContent = label;

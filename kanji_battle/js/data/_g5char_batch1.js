@@ -40,4 +40,5 @@ const GRADE5_CHARACTERS_BATCH1 = [
   { char: '型', reading: 'かた',     enemyName: 'かたやぶりスライム',     enemyVariant: 0, enemyColor: '#dc7633' },
   { char: '基', reading: 'もと',     enemyName: 'きばんゴースト',         enemyVariant: 1, enemyColor: '#6e4b3a' },
   { char: '堂', reading: 'どう',     enemyName: 'どうどうゴーレム',       enemyVariant: 2, enemyColor: '#b7950b' },
+  { char: '報', reading: 'むくいる', enemyName: 'しらせバット',           enemyVariant: 3, enemyColor: '#2874a6' },
 ];
