@@ -50,7 +50,7 @@ function renderKanjiSelectSetupBody() {
 
   const gradeBar = document.createElement('div');
   gradeBar.className = 'grade-tab-bar';
-  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん']].forEach(([val, label]) => {
+  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん'], [4, '4ねん']].forEach(([val, label]) => {
     const tab = document.createElement('button');
     tab.className = 'grade-tab' + (grade === val ? ' active' : '');
     tab.textContent = label;

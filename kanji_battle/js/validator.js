@@ -14,6 +14,9 @@ function resolveStrokeDataForKanji(char) {
   if (typeof KANJIVG_DATA_GRADE3 !== 'undefined' && KANJIVG_DATA_GRADE3[char]) {
     return { source: 'grade3', data: KANJIVG_DATA_GRADE3[char] };
   }
+  if (typeof KANJIVG_DATA_GRADE4 !== 'undefined' && KANJIVG_DATA_GRADE4[char]) {
+    return { source: 'grade4', data: KANJIVG_DATA_GRADE4[char] };
+  }
   return null;
 }
 
@@ -24,6 +27,7 @@ function validateStrokeDataMapping() {
   if (typeof KANJIVG_DATA !== 'undefined')       sources.push(['grade1', KANJIVG_DATA]);
   if (typeof KANJIVG_DATA_GRADE2 !== 'undefined') sources.push(['grade2', KANJIVG_DATA_GRADE2]);
   if (typeof KANJIVG_DATA_GRADE3 !== 'undefined') sources.push(['grade3', KANJIVG_DATA_GRADE3]);
+  if (typeof KANJIVG_DATA_GRADE4 !== 'undefined') sources.push(['grade4', KANJIVG_DATA_GRADE4]);
 
   sources.forEach(([grade, data]) => {
     Object.entries(data).forEach(([char, entry]) => {
@@ -101,10 +105,13 @@ function validateKanjiData() {
   const g1 = KANJI_DATA.filter(k => k.grade === 1);
   const g2 = KANJI_DATA.filter(k => k.grade === 2);
   const g3 = KANJI_DATA.filter(k => k.grade === 3);
-  const missing = [...GRADE1_KANJI, ...GRADE2_KANJI, ...(typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI : [])].filter(
-    c => !KANJI_DATA.find(k => k.char === c)
-  );
-  console.log(`[KanjiLoadAudit] grade1=${g1.length}/80 grade2=${g2.length}/${GRADE2_KANJI.length} grade3=${g3.length}/${typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI.length : 0} total=${KANJI_DATA.length}`);
+  const g4 = KANJI_DATA.filter(k => k.grade === 4);
+  const missing = [
+    ...GRADE1_KANJI, ...GRADE2_KANJI,
+    ...(typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI : []),
+    ...(typeof GRADE4_KANJI !== 'undefined' ? GRADE4_KANJI : []),
+  ].filter(c => !KANJI_DATA.find(k => k.char === c));
+  console.log(`[KanjiLoadAudit] grade1=${g1.length}/80 grade2=${g2.length}/${GRADE2_KANJI.length} grade3=${g3.length}/${typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI.length : 0} grade4=${g4.length}/${typeof GRADE4_KANJI !== 'undefined' ? GRADE4_KANJI.length : 0} total=${KANJI_DATA.length}`);
   if (missing.length > 0) {
     console.warn(`[KanjiLoadAudit] missing=${JSON.stringify(missing)}`);
   }

@@ -24,8 +24,8 @@ function validateReadingQuestionShape(q, seenIds) {
     reasons.push(`id "${q.id}" が重複しています`);
   }
 
-  if (q.grade !== 1 && q.grade !== 2 && q.grade !== 3) {
-    reasons.push(`grade(${q.grade})が対応範囲外です(1・2・3のみ)`);
+  if (q.grade !== 1 && q.grade !== 2 && q.grade !== 3 && q.grade !== 4) {
+    reasons.push(`grade(${q.grade})が対応範囲外です(1・2・3・4のみ)`);
   }
 
   if (!q.targetKanji || typeof q.targetKanji !== 'string') {
