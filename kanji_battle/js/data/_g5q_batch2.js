@@ -103,7 +103,7 @@ const READING_QUESTIONS_GRADE5_BATCH2 = [
   },
   {
     id: 'g5_属_しょ属_01', grade: 5, targetKanji: '属', targetKanjiId: null,
-    word: 'しょ属', sentence: 'やきゅう部にしょ属する。',
+    word: 'しょ属', sentence: 'なかまにしょ属する。',
     targetReading: 'ぞく', fullReading: 'しょぞく',
     distractors: ['か', 'し', 'じ'],
     sourceType: 'general', sourceName: '学年相当の一般語彙(教科書出典未確認)', textbookUnit: null,
