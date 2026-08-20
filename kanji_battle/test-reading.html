@@ -14,6 +14,7 @@
 <script src="js/data/grade3.js"></script>
 <script src="js/data/grade4.js"></script>
 <script src="js/data/grade5.js"></script>
+<script src="js/data/grade6.js"></script>
 <script src="js/strokeData/kanjivg_data.js"></script>
 <script src="js/strokeData/kanjivg_data_grade2.js"></script>
 <script src="js/strokeData/_g3_batch1.js"></script>
@@ -31,6 +32,11 @@
 <script src="js/strokeData/_g5_batch3.js"></script>
 <script src="js/strokeData/_g5_batch4.js"></script>
 <script src="js/strokeData/_g5_batch5.js"></script>
+<script src="js/strokeData/_g6_batch1.js"></script>
+<script src="js/strokeData/_g6_batch2.js"></script>
+<script src="js/strokeData/_g6_batch3.js"></script>
+<script src="js/strokeData/_g6_batch4.js"></script>
+<script src="js/strokeData/_g6_batch5.js"></script>
 <script src="js/data.js"></script>
 <script src="js/characters.js"></script>
 <script src="js/grade2Characters.js"></script>
@@ -49,6 +55,11 @@
 <script src="js/data/_g5char_batch3.js"></script>
 <script src="js/data/_g5char_batch4.js"></script>
 <script src="js/data/_g5char_batch5.js"></script>
+<script src="js/data/_g6char_batch1.js"></script>
+<script src="js/data/_g6char_batch2.js"></script>
+<script src="js/data/_g6char_batch3.js"></script>
+<script src="js/data/_g6char_batch4.js"></script>
+<script src="js/data/_g6char_batch5.js"></script>
 <script src="js/parser.js"></script>
 
 <!-- よみかたモード本体 -->
@@ -132,8 +143,8 @@ function report() {
   const badSourceTypeResult = validateReadingQuestionShape({ ...base, id: 'bad_source', sourceType: 'nonsense' }, new Set());
   assert('不正なsourceTypeはinvalid', badSourceTypeResult.valid === false);
 
-  const badGradeResult = validateReadingQuestionShape({ ...base, id: 'bad_grade', grade: 6 }, new Set());
-  assert('学年6はinvalid(1,2,3,4,5のみ許可)', badGradeResult.valid === false);
+  const badGradeResult = validateReadingQuestionShape({ ...base, id: 'bad_grade', grade: 7 }, new Set());
+  assert('学年7はinvalid(1,2,3,4,5,6のみ許可)', badGradeResult.valid === false);
 
   const filtered = validateReadingQuestions([
     base,

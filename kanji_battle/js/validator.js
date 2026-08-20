@@ -20,6 +20,9 @@ function resolveStrokeDataForKanji(char) {
   if (typeof KANJIVG_DATA_GRADE5 !== 'undefined' && KANJIVG_DATA_GRADE5[char]) {
     return { source: 'grade5', data: KANJIVG_DATA_GRADE5[char] };
   }
+  if (typeof KANJIVG_DATA_GRADE6 !== 'undefined' && KANJIVG_DATA_GRADE6[char]) {
+    return { source: 'grade6', data: KANJIVG_DATA_GRADE6[char] };
+  }
   return null;
 }
 
@@ -32,6 +35,7 @@ function validateStrokeDataMapping() {
   if (typeof KANJIVG_DATA_GRADE3 !== 'undefined') sources.push(['grade3', KANJIVG_DATA_GRADE3]);
   if (typeof KANJIVG_DATA_GRADE4 !== 'undefined') sources.push(['grade4', KANJIVG_DATA_GRADE4]);
   if (typeof KANJIVG_DATA_GRADE5 !== 'undefined') sources.push(['grade5', KANJIVG_DATA_GRADE5]);
+  if (typeof KANJIVG_DATA_GRADE6 !== 'undefined') sources.push(['grade6', KANJIVG_DATA_GRADE6]);
 
   sources.forEach(([grade, data]) => {
     Object.entries(data).forEach(([char, entry]) => {
@@ -111,13 +115,15 @@ function validateKanjiData() {
   const g3 = KANJI_DATA.filter(k => k.grade === 3);
   const g4 = KANJI_DATA.filter(k => k.grade === 4);
   const g5 = KANJI_DATA.filter(k => k.grade === 5);
+  const g6 = KANJI_DATA.filter(k => k.grade === 6);
   const missing = [
     ...GRADE1_KANJI, ...GRADE2_KANJI,
     ...(typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI : []),
     ...(typeof GRADE4_KANJI !== 'undefined' ? GRADE4_KANJI : []),
     ...(typeof GRADE5_KANJI !== 'undefined' ? GRADE5_KANJI : []),
+    ...(typeof GRADE6_KANJI !== 'undefined' ? GRADE6_KANJI : []),
   ].filter(c => !KANJI_DATA.find(k => k.char === c));
-  console.log(`[KanjiLoadAudit] grade1=${g1.length}/80 grade2=${g2.length}/${GRADE2_KANJI.length} grade3=${g3.length}/${typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI.length : 0} grade4=${g4.length}/${typeof GRADE4_KANJI !== 'undefined' ? GRADE4_KANJI.length : 0} grade5=${g5.length}/${typeof GRADE5_KANJI !== 'undefined' ? GRADE5_KANJI.length : 0} total=${KANJI_DATA.length}`);
+  console.log(`[KanjiLoadAudit] grade1=${g1.length}/80 grade2=${g2.length}/${GRADE2_KANJI.length} grade3=${g3.length}/${typeof GRADE3_KANJI !== 'undefined' ? GRADE3_KANJI.length : 0} grade4=${g4.length}/${typeof GRADE4_KANJI !== 'undefined' ? GRADE4_KANJI.length : 0} grade5=${g5.length}/${typeof GRADE5_KANJI !== 'undefined' ? GRADE5_KANJI.length : 0} grade6=${g6.length}/${typeof GRADE6_KANJI !== 'undefined' ? GRADE6_KANJI.length : 0} total=${KANJI_DATA.length}`);
   if (missing.length > 0) {
     console.warn(`[KanjiLoadAudit] missing=${JSON.stringify(missing)}`);
   }

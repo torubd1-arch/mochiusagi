@@ -3,7 +3,7 @@
 
 const GRADE6_CHARACTERS_BATCH2 = [
   { char: '宗', reading: 'しゅう', enemyName: 'しゅうきょうゴースト', enemyVariant: 0, enemyColor: '#6a4c93' },
-  { char: '宙', reading: 'ちゅう', enemyName: 'うちゅうドラゴン', enemyVariant: 1, enemyColor: '#1a1a4e' },
+  { char: '宙', reading: 'ちゅう', enemyName: 'そらとぶドラゴン', enemyVariant: 1, enemyColor: '#1a1a4e' },
   { char: '宝', reading: 'たから', enemyName: 'たからばこゴーレム', enemyVariant: 2, enemyColor: '#d4af37' },
   { char: '宣', reading: 'せん', enemyName: 'せんげんバット', enemyVariant: 3, enemyColor: '#c0392b' },
   { char: '密', reading: 'みつ', enemyName: 'ひみつスライム', enemyVariant: 4, enemyColor: '#2d5016' },

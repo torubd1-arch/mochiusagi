@@ -5,7 +5,7 @@ const GRADE6_CHARACTERS_BATCH4 = [
   { char: '砂', reading: 'すな',         enemyName: 'すなじごくゴーレム',     enemyVariant: 0, enemyColor: '#d2b48c' },
   { char: '磁', reading: 'じ',           enemyName: 'じりょくドラゴン',       enemyVariant: 1, enemyColor: '#7f8c8d' },
   { char: '私', reading: 'わたし',       enemyName: 'わたくしゴースト',       enemyVariant: 2, enemyColor: '#8e44ad' },
-  { char: '秘', reading: 'ひ',           enemyName: 'ひみつスライム',         enemyVariant: 3, enemyColor: '#4a235a' },
+  { char: '秘', reading: 'ひ',           enemyName: 'なぞなぞスライム',       enemyVariant: 3, enemyColor: '#4a235a' },
   { char: '穀', reading: 'こく',         enemyName: 'こくもつゴーレム',       enemyVariant: 4, enemyColor: '#d4ac0d' },
   { char: '穴', reading: 'あな',         enemyName: 'あなぐらバット',         enemyVariant: 0, enemyColor: '#212f3d' },
   { char: '窓', reading: 'まど',         enemyName: 'まどガラスドラゴン',     enemyVariant: 1, enemyColor: '#85c1e9' },
