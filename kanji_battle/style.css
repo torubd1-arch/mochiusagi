@@ -1365,6 +1365,65 @@ html, body {
   color: var(--text);
 }
 
+/* ===== ユーザー(プロフィール)選択 ===== */
+.profile-bar-section {
+  margin-bottom: 14px;
+}
+.profile-bar-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  padding: 0 4px 6px;
+}
+.profile-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+.profile-chip {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  color: var(--text-sub);
+  font-size: 0.85rem;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.profile-chip.active {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #fff;
+}
+.profile-chip:hover:not(.active) {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+.profile-chip-add {
+  font-weight: 900;
+  color: var(--accent2);
+  border-style: dashed;
+}
+
+/* ===== ユーザー追加ダイアログの入力欄 ===== */
+.profile-name-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 1rem;
+  text-align: center;
+  box-sizing: border-box;
+}
+.profile-name-input:focus {
+  outline: none;
+  border-color: var(--accent2);
+}
+
 /* 練習モード結果 */
 .result-practice-msg {
   font-size: 1.4rem;

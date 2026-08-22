@@ -265,14 +265,14 @@ function report() {
 
   localStorage.setItem(READING_KEY, '{this is not valid json');
   let threw = false;
-  let grade;
+  let sourceType;
   try {
-    grade = ReadingStorage.getSelectedGrade();
+    sourceType = ReadingStorage.getSelectedSourceType();
   } catch (e) {
     threw = true;
   }
   assert('破損したJSONでも例外を投げない', threw === false);
-  assert('破損データから安全なデフォルト値に復帰する', grade === 'all' || grade === 1 || grade === 2);
+  assert('破損データから安全なデフォルト値に復帰する', sourceType === 'all');
   assert('よみかたキーの破損時、かきじゅん側のキーには触れない', localStorage.getItem(KANJI_KEY) === JSON.stringify({ marker: 'untouched' }));
 
   // 後始末: テスト用データを削除し、既存データを復元

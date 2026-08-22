@@ -899,6 +899,75 @@ function showResetToast() {
   setTimeout(() => toast.remove(), 2200);
 }
 
+// ========== ユーザー(プロフィール)選択 ==========
+// 同じ端末を家族で共有していても、きろく(進捗)が混ざらないように
+// タイトル画面でユーザーを切り替えられるようにする。切り替え・追加後は
+// 各画面のキャッシュ状態を作り直す代わりにページ全体を再読み込みする。
+function renderTitleProfileBar() {
+  const bar = document.getElementById('title-profile-bar');
+  if (!bar) return;
+  bar.innerHTML = '';
+
+  const activeId = Profiles.getActiveProfileId();
+  Profiles.getProfiles().forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'profile-chip' + (p.id === activeId ? ' active' : '');
+    btn.textContent = p.name;
+    btn.addEventListener('click', () => {
+      if (p.id === activeId) return;
+      Audio.playSelect();
+      Profiles.setActiveProfileId(p.id);
+      location.reload();
+    });
+    bar.appendChild(btn);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'profile-chip profile-chip-add';
+  addBtn.textContent = '＋';
+  addBtn.addEventListener('click', () => {
+    Audio.playSelect();
+    showAddProfileDialog();
+  });
+  bar.appendChild(addBtn);
+}
+
+function showAddProfileDialog() {
+  const overlay = document.createElement('div');
+  overlay.className = 'reset-dialog-overlay';
+  overlay.innerHTML = `
+    <div class="reset-dialog">
+      <div class="reset-dialog-title">あたらしい ユーザー</div>
+      <div class="reset-dialog-body">なまえを にゅうりょくしてね</div>
+      <input type="text" class="profile-name-input" id="profile-name-input" maxlength="10" placeholder="なまえ">
+      <div class="reset-dialog-buttons">
+        <button class="reset-btn-yes" id="profile-add-confirm">つくる</button>
+        <button class="reset-btn-no"  id="profile-add-cancel">キャンセル</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const input = document.getElementById('profile-name-input');
+  input.focus();
+
+  function confirmAdd() {
+    const name = input.value.trim();
+    if (!name) { input.focus(); return; }
+    Audio.playSelect();
+    Profiles.addProfile(name);
+    overlay.remove();
+    location.reload();
+  }
+
+  document.getElementById('profile-add-confirm').addEventListener('click', confirmAdd);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') confirmAdd(); });
+  document.getElementById('profile-add-cancel').addEventListener('click', () => {
+    Audio.playSelect();
+    overlay.remove();
+  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
 // ========== プレイヤーUI更新 (LV・XP・セッション進捗) ==========
 function updatePlayerUI() {
   // LV / XPバー
@@ -1021,6 +1090,9 @@ function goToPractice() {
 
 // ========== イベント登録 ==========
 document.addEventListener('DOMContentLoaded', () => {
+
+  // タイトルユーザー(プロフィール)バー初期化
+  renderTitleProfileBar();
 
   // タイトル学年タブ初期化
   function initTitleGradeTabs() {

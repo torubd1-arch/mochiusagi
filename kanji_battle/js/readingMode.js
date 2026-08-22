@@ -68,7 +68,7 @@ function renderYomikataSetupBody() {
   if (!body) return;
   body.innerHTML = '';
 
-  const grade = ReadingStorage.getSelectedGrade();
+  const grade = Storage.getGradeMode();
   let sourceType = ReadingStorage.getSelectedSourceType();
   const practiceType = ReadingStorage.getSelectedPracticeType();
 
@@ -77,26 +77,6 @@ function renderYomikataSetupBody() {
     sourceType = 'all';
     ReadingStorage.setSelectedSourceType('all');
   }
-
-  // --- 学年 ---
-  const gradeLabel = document.createElement('div');
-  gradeLabel.className = 'yomi-setup-label';
-  gradeLabel.textContent = 'がくねん';
-  body.appendChild(gradeLabel);
-
-  const gradeBar = document.createElement('div');
-  gradeBar.className = 'grade-tab-bar';
-  [['all', 'ぜんぶ'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん'], [4, '4ねん'], [5, '5ねん'], [6, '6ねん']].forEach(([val, label]) => {
-    const tab = document.createElement('button');
-    tab.className = 'grade-tab' + (grade === val ? ' active' : '');
-    tab.textContent = label;
-    tab.addEventListener('click', () => {
-      ReadingStorage.setSelectedGrade(val);
-      renderYomikataSetupBody();
-    });
-    gradeBar.appendChild(tab);
-  });
-  body.appendChild(gradeBar);
 
   // --- 問題の種類 ---
   const typeLabel = document.createElement('div');
@@ -200,7 +180,7 @@ function clearYomikataSetupMessage() {
 
 // ========== セッション開始 ==========
 function startYomikataSession() {
-  const grade = ReadingStorage.getSelectedGrade();
+  const grade = Storage.getGradeMode();
   const sourceType = ReadingStorage.getSelectedSourceType();
   const practiceType = ReadingStorage.getSelectedPracticeType();
   const progressMap = ReadingStorage.getAllProgress();

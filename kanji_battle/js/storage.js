@@ -1,11 +1,20 @@
 // js/storage.js - LocalStorage 管理
 
 const Storage = (() => {
-  const KEY = 'kanjiBattle_v1';
+  const BASE_KEY = 'kanjiBattle_v1';
+
+  // プロフィールごとにデータを分離する。Profilesが未読み込みの環境
+  // (テストハーネス等)では、従来どおり素のキーにフォールバックする。
+  function currentKey() {
+    if (typeof Profiles !== 'undefined' && Profiles.keyFor) {
+      return Profiles.keyFor(BASE_KEY);
+    }
+    return BASE_KEY;
+  }
 
   function load() {
     try {
-      const raw = localStorage.getItem(KEY);
+      const raw = localStorage.getItem(currentKey());
       if (!raw) return defaultData();
       return JSON.parse(raw);
     } catch (e) {
@@ -33,7 +42,7 @@ const Storage = (() => {
 
   function save(data) {
     try {
-      localStorage.setItem(KEY, JSON.stringify(data));
+      localStorage.setItem(currentKey(), JSON.stringify(data));
     } catch (e) {}
   }
 
@@ -155,7 +164,7 @@ const Storage = (() => {
 
     // 全データリセット
     resetAll() {
-      localStorage.removeItem(KEY);
+      localStorage.removeItem(currentKey());
     },
 
     // 学年モード取得/設定

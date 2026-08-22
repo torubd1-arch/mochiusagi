@@ -8,8 +8,8 @@
 
 let supporterPopupTimer = null;
 
-// セリフ(ポップアップ)の表示時間。元の1300ms→1560ms→さらに1.2倍。
-const SUPPORTER_POPUP_DURATION_MS = 1872;
+// セリフ(ポップアップ)の表示時間。元の1300ms→1560ms→1.2倍(1872ms)→さらに1.5倍。
+const SUPPORTER_POPUP_DURATION_MS = 2808;
 
 function supporterEscapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

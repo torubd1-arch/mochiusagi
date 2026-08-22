@@ -4,12 +4,20 @@
 // storage.js を踏襲している。
 
 const ReadingStorage = (() => {
-  const KEY = 'kanjiBattle_reading_v1';
+  const BASE_KEY = 'kanjiBattle_reading_v1';
+
+  // プロフィールごとにデータを分離する。Profilesが未読み込みの環境
+  // (テストハーネス等)では、従来どおり素のキーにフォールバックする。
+  function currentKey() {
+    if (typeof Profiles !== 'undefined' && Profiles.keyFor) {
+      return Profiles.keyFor(BASE_KEY);
+    }
+    return BASE_KEY;
+  }
 
   function defaultData() {
     return {
       version: 1,
-      selectedGrade: null,          // null = 未設定(初回に Storage.getGradeMode() から継承)
       selectedSourceType: 'all',    // 'all' | 'textbook' | 'general'
       selectedPracticeType: 'normal', // 'normal' | 'weakOnly'
       progress: {},                 // { questionId: {attempts,correct,wrong,correctStreak,isWeak,lastAnsweredAt} }
@@ -18,7 +26,7 @@ const ReadingStorage = (() => {
 
   function load() {
     try {
-      const raw = localStorage.getItem(KEY);
+      const raw = localStorage.getItem(currentKey());
       if (!raw) return defaultData();
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed !== 'object') return defaultData();
@@ -26,7 +34,6 @@ const ReadingStorage = (() => {
       const d = defaultData();
       return {
         version: typeof parsed.version === 'number' ? parsed.version : d.version,
-        selectedGrade: parsed.selectedGrade !== undefined ? parsed.selectedGrade : d.selectedGrade,
         selectedSourceType: parsed.selectedSourceType || d.selectedSourceType,
         selectedPracticeType: parsed.selectedPracticeType || d.selectedPracticeType,
         progress: (parsed.progress && typeof parsed.progress === 'object') ? parsed.progress : {},
@@ -39,30 +46,13 @@ const ReadingStorage = (() => {
 
   function save(data) {
     try {
-      localStorage.setItem(KEY, JSON.stringify(data));
+      localStorage.setItem(currentKey(), JSON.stringify(data));
     } catch (e) {}
   }
 
   return {
     getData() {
       return load();
-    },
-
-    // 学年選択取得。初回のみ既存の Storage.getGradeMode() から継承する。
-    getSelectedGrade() {
-      const d = load();
-      if (d.selectedGrade === null || d.selectedGrade === undefined) {
-        const seeded = (typeof Storage !== 'undefined' && Storage.getGradeMode) ? Storage.getGradeMode() : 'all';
-        d.selectedGrade = seeded;
-        save(d);
-        return seeded;
-      }
-      return d.selectedGrade;
-    },
-    setSelectedGrade(mode) {
-      const d = load();
-      d.selectedGrade = mode;
-      save(d);
     },
 
     getSelectedSourceType() { return load().selectedSourceType || 'all'; },
