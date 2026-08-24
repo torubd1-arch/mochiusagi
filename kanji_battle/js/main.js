@@ -1140,6 +1140,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const titlePrivacyBtn = document.getElementById('btn-title-privacy');
+  if (titlePrivacyBtn) {
+    titlePrivacyBtn.addEventListener('click', () => {
+      Audio.playSelect();
+      showScreen('screen-privacy');
+    });
+  }
+
   // バトル画面
   document.getElementById('btn-battle-title').addEventListener('click', () => {
     Audio.playSelect();
@@ -1194,6 +1202,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ずかん
   document.getElementById('btn-zukan-back').addEventListener('click', () => {
+    Audio.playSelect();
+    showScreen('screen-title');
+  });
+
+  // プライバシーポリシー
+  document.getElementById('btn-privacy-back').addEventListener('click', () => {
     Audio.playSelect();
     showScreen('screen-title');
   });

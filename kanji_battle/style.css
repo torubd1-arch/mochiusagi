@@ -543,6 +543,54 @@ html, body {
   background: var(--bg);
 }
 
+/* ===== プライバシーポリシー画面 ===== */
+#screen-privacy {
+  background: var(--bg);
+}
+
+.privacy-body {
+  padding: 18px 20px 40px;
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 0.9rem;
+}
+
+.privacy-updated {
+  color: var(--text-sub);
+  font-size: 0.78rem;
+  margin: 0 0 18px;
+}
+
+.privacy-body h3 {
+  font-size: 0.95rem;
+  color: var(--accent2);
+  margin: 22px 0 8px;
+}
+
+.privacy-body h3:first-of-type {
+  margin-top: 0;
+}
+
+.privacy-body p {
+  margin: 0 0 10px;
+  color: var(--text-sub);
+}
+
+.privacy-body ul {
+  margin: 0 0 10px;
+  padding-left: 1.2em;
+  color: var(--text-sub);
+}
+
+.privacy-body li {
+  margin-bottom: 6px;
+}
+
+.privacy-todo {
+  color: var(--accent2);
+  opacity: 0.85;
+}
+
 #zukan-grid {
   display: flex;
   flex-direction: column;

@@ -76,8 +76,8 @@ const SUPPORTERS = {
 
   ponta: {
     displayName: 'ポン太',
-    image: 'assets/cheer-characters/bear-orange.png',
-    alt: 'ガッツポーズで応援する黄色いポン太',
+    image: 'assets/cheer-characters/tanuki-brown.png',
+    alt: 'みどりのハチマキをしめて、ガッツポーズで応援するたぬきのポン太',
     messages: {
       normalCorrect: [
         'ナイス！いい はんだん！',
