@@ -51,6 +51,12 @@ function yomiHighlightTarget(text, targetChar) {
   return escaped.split(targetChar).join(`<span class="yomi-target-highlight">${targetChar}</span>`);
 }
 
+// 購入状態に応じて出題対象を絞り込む(全機能購入済みならREADING_QUESTIONSをそのまま返す)。
+function getEntitledReadingQuestions() {
+  if (EntitlementService.hasFullAccess()) return READING_QUESTIONS;
+  return READING_QUESTIONS.filter(q => EntitlementService.canUseKanji(q.targetKanji));
+}
+
 // ========== セットアップ画面 ==========
 function showYomikataSetup() {
   yomikataCancelled = true;
@@ -60,7 +66,7 @@ function showYomikataSetup() {
 }
 
 function yomiCountForSourceType(grade, sourceType) {
-  return getEligibleQuestions(READING_QUESTIONS, { grade, sourceType }).length;
+  return getEligibleQuestions(getEntitledReadingQuestions(), { grade, sourceType }).length;
 }
 
 function renderYomikataSetupBody() {
@@ -185,7 +191,7 @@ function startYomikataSession() {
   const practiceType = ReadingStorage.getSelectedPracticeType();
   const progressMap = ReadingStorage.getAllProgress();
 
-  const { pool, reason } = buildSessionPool(READING_QUESTIONS, { grade, sourceType, practiceType }, progressMap);
+  const { pool, reason } = buildSessionPool(getEntitledReadingQuestions(), { grade, sourceType, practiceType }, progressMap);
 
   if (reason || pool.length === 0) {
     showYomikataSetup();

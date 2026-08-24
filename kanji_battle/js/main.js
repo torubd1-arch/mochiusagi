@@ -7,7 +7,9 @@ const practiceSVGId = 'practice-kanji-svg';
 // ========== 学年フィルタ ==========
 function getCharactersByGrade() {
   const m = Storage.getGradeMode();
-  return m === 'all' ? KANJI_DATA : KANJI_DATA.filter(k => k.grade === m);
+  const pool = m === 'all' ? KANJI_DATA : KANJI_DATA.filter(k => k.grade === m);
+  if (EntitlementService.hasFullAccess()) return pool;
+  return pool.filter(k => EntitlementService.canUseKanji(k.char));
 }
 
 // ========== Weighted random サンプリング (苦手漢字優先) ==========
@@ -447,10 +449,15 @@ function showEvolutionOverlay(chain) {
 function renderEvolutionChain(chain) {
   const unlocked = Storage.isEvolutionUnlocked(chain.id);
   const complete  = Storage.isChainComplete(chain.id);
+  const paidLocked = !unlocked && !EntitlementService.hasFullAccess() &&
+    !chain.chars.some(c => EntitlementService.canUseKanji(c));
 
   const wrap = document.createElement('div');
-  wrap.className = 'evo-chain-card' + (unlocked ? ' unlocked' : '');
+  wrap.className = 'evo-chain-card' + (unlocked ? ' unlocked' : '') + (paidLocked ? ' paid-locked' : '');
   if (complete) wrap.classList.add('complete');
+  if (paidLocked) {
+    wrap.addEventListener('click', () => showLockNotice('screen-zukan'));
+  }
 
   const header = document.createElement('div');
   header.className = 'evo-chain-header';
@@ -506,6 +513,11 @@ function renderEvolutionChain(chain) {
     const badge = document.createElement('div');
     badge.className = 'evo-chain-complete-badge';
     badge.textContent = '✦ COMPLETE';
+    wrap.appendChild(badge);
+  } else if (paidLocked) {
+    const badge = document.createElement('div');
+    badge.className = 'evo-chain-paidlock-badge';
+    badge.textContent = '🔒 こうにゅうで かいほう';
     wrap.appendChild(badge);
   }
   return wrap;
@@ -585,8 +597,9 @@ function showZukan(gradeFilter = 'all') {
   filteredData.forEach(k => {
     const stars = Storage.getStars(k.char);
     const captured = Storage.isCleared(k.char);
+    const paidLocked = !captured && !EntitlementService.canUseKanji(k.char);
     const card = document.createElement('div');
-    card.className = 'zukan-card' + (captured ? ' captured' : ' locked');
+    card.className = 'zukan-card' + (captured ? ' captured' : paidLocked ? ' paid-locked' : ' locked');
 
     if (captured) {
       card.innerHTML = `
@@ -596,6 +609,12 @@ function showZukan(gradeFilter = 'all') {
         <div class="zukan-monster-name">${k.enemyName}</div>
         <div class="zukan-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>`;
       card.addEventListener('click', () => startPractice(k));
+    } else if (paidLocked) {
+      card.innerHTML = `
+        <div class="zukan-monster-unknown paid-lock-icon">🔒</div>
+        <div class="zukan-char">？</div>
+        <div class="zukan-monster-name">？？？</div>`;
+      card.addEventListener('click', () => showLockNotice('screen-zukan'));
     } else {
       card.innerHTML = `
         <div class="zukan-monster-unknown">？</div>
@@ -616,8 +635,9 @@ function showZukan(gradeFilter = 'all') {
   const filteredBoss = BOSS_LIST.filter(b => gradeFilter === 'all' || b.grade === gradeFilter);
   filteredBoss.forEach(boss => {
     const captured = Storage.isBossCaptured(boss.id);
+    const paidLocked = !captured && !EntitlementService.canUseKanji(boss.char);
     const card = document.createElement('div');
-    card.className = 'boss-zukan-card' + (captured ? ' captured' : ' locked');
+    card.className = 'boss-zukan-card' + (captured ? ' captured' : paidLocked ? ' paid-locked' : ' locked');
     if (captured) {
       const kData = KANJI_DATA.find(k => k.char === boss.char);
       card.innerHTML = `
@@ -626,6 +646,12 @@ function showZukan(gradeFilter = 'all') {
         <div class="boss-name">${boss.name}</div>
         <div class="boss-badge">★ BOSS</div>`;
       if (kData) card.addEventListener('click', () => startPractice(kData));
+    } else if (paidLocked) {
+      card.innerHTML = `
+        <div class="boss-monster-unknown paid-lock-icon">🔒</div>
+        <div class="boss-char">？</div>
+        <div class="boss-name">？？？</div>`;
+      card.addEventListener('click', () => showLockNotice('screen-zukan'));
     } else {
       card.innerHTML = `
         <div class="boss-monster-unknown">？</div>
@@ -706,10 +732,13 @@ function showPracticeSelect(gradeFilter) {
       grid.appendChild(h);
       lastCount = k.strokeCount;
     }
+    const paidLocked = !EntitlementService.canUseKanji(k.char);
     const btn = document.createElement('button');
-    btn.className = 'practice-select-btn';
-    btn.innerHTML = `<span class="psb-char">${k.char}</span><span class="psb-count">${k.strokeCount}</span>`;
-    btn.title = k.reading;
+    btn.className = 'practice-select-btn' + (paidLocked ? ' paid-locked' : '');
+    btn.innerHTML = paidLocked
+      ? `<span class="psb-char">${k.char}</span><span class="psb-lock-icon">🔒</span>`
+      : `<span class="psb-char">${k.char}</span><span class="psb-count">${k.strokeCount}</span>`;
+    btn.title = paidLocked ? 'おうちのひとと いっしょに みてね' : k.reading;
     btn.addEventListener('click', () => startPractice(k));
     grid.appendChild(btn);
   });
@@ -718,6 +747,11 @@ function showPracticeSelect(gradeFilter) {
 }
 
 function startPractice(kanji) {
+  if (!EntitlementService.canUseKanji(kanji.char)) {
+    Audio.playSelect();
+    showLockNotice(document.querySelector('.screen.active')?.id || 'screen-title');
+    return;
+  }
   practiceKanji = kanji;
   practiceStep  = 0;
   practiceMode  = 'view';

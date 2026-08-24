@@ -24,8 +24,14 @@ function showKanjiSelectSetup() {
   showScreen('screen-kanjiselect-setup');
 }
 
+// 購入状態に応じて出題対象を絞り込む(全機能購入済みならKANJI_SELECT_QUESTIONSをそのまま返す)。
+function getEntitledKanjiSelectQuestions() {
+  if (EntitlementService.hasFullAccess()) return KANJI_SELECT_QUESTIONS;
+  return KANJI_SELECT_QUESTIONS.filter(q => EntitlementService.canUseKanji(q.targetKanji));
+}
+
 function kanjiSelectCountForSourceType(grade, sourceType) {
-  return getEligibleQuestions(KANJI_SELECT_QUESTIONS, { grade, sourceType }).length;
+  return getEligibleQuestions(getEntitledKanjiSelectQuestions(), { grade, sourceType }).length;
 }
 
 function renderKanjiSelectSetupBody() {
@@ -149,7 +155,7 @@ function startKanjiSelectSession() {
   const practiceType = KanjiSelectStorage.getSelectedPracticeType();
   const progressMap = KanjiSelectStorage.getAllProgress();
 
-  const { pool, reason } = buildSessionPool(KANJI_SELECT_QUESTIONS, { grade, sourceType, practiceType }, progressMap);
+  const { pool, reason } = buildSessionPool(getEntitledKanjiSelectQuestions(), { grade, sourceType, practiceType }, progressMap);
 
   if (reason || pool.length === 0) {
     showKanjiSelectSetup();
