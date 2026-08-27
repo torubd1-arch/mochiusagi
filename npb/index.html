@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>プロ野球 試合結果・速報ビューア</title>
+  <meta name="description" content="NPB一軍公式戦の当日速報と指定日の試合結果を、新聞の野球結果欄のように一覧で確認できるビューア。">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">プロ野球 試合結果・速報</h1>
+    <div id="date-nav"></div>
+  </header>
+
+  <main class="app-main" id="games" aria-live="polite">
+    <p class="empty-note">読み込み中…</p>
+  </main>
+
+  <!-- domUtils / statsService / cacheService: どのコンポーネントからも参照される基礎ユーティリティ -->
+  <script src="src/components/domUtils.js"></script>
+  <script src="src/services/statsService.js"></script>
+  <script src="src/services/cacheService.js"></script>
+
+  <!-- providers: データ取得元。将来ここを NpbProvider 等に差し替える -->
+  <script src="src/providers/BaseballDataProvider.js"></script>
+  <script src="src/data/sampleData.js"></script>
+  <script src="src/providers/MockProvider.js"></script>
+  <script src="src/providers/NpbProvider.js"></script>
+
+  <!-- services: providerの生データを画面用に組み立てる -->
+  <script src="src/services/gameService.js"></script>
+
+  <!-- components: 純粋な描画関数群（依存順） -->
+  <script src="src/components/HomeRunBadge.js"></script>
+  <script src="src/components/BattingTable.js"></script>
+  <script src="src/components/PitchingTable.js"></script>
+  <script src="src/components/TeamSection.js"></script>
+  <script src="src/components/GameCard.js"></script>
+  <script src="src/components/DateSelector.js"></script>
+
+  <script src="src/app.js"></script>
+</body>
+</html>

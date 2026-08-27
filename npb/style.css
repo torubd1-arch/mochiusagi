@@ -1,0 +1,308 @@
+/* プロ野球 試合結果・速報ビューア
+   方針: 白背景・黒文字・薄い罫線・写真/広告/派手な演出なし。新聞＋現代的なWeb UI。 */
+
+* , *::before, *::after { box-sizing: border-box; }
+
+:root {
+  --text: #1a1a1a;
+  --text-sub: #555;
+  --line: #d8d8d8;
+  --line-strong: #222;
+  --bg: #ffffff;
+  --bg-sub: #fafafa;
+  --live: #c62828;
+  --win: #c62828;
+  --loss: #1565c0;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line-strong);
+  padding: 8px 12px 10px;
+}
+
+.app-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ── 日付ナビゲーション ── */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.nav-btn {
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--text);
+}
+.nav-btn:active { opacity: 0.5; }
+
+.date-label {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 4px;
+}
+
+.date-picker-input {
+  /* ネイティブの日付ピッカーを、透明な1x1要素として重ねて showPicker() で呼び出す */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.date-sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text-sub);
+}
+
+.today-btn {
+  border: 1px solid var(--line);
+  background: var(--bg-sub);
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: var(--text);
+}
+.today-btn.is-active {
+  border-color: var(--line-strong);
+  font-weight: 700;
+}
+
+.refresh-btn {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--text-sub);
+  padding: 2px 6px;
+}
+.refresh-btn:active { transform: rotate(90deg); }
+
+/* ── 全体レイアウト ── */
+.app-main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 10px 8px 60px;
+}
+
+.empty-note, .error-note {
+  text-align: center;
+  color: var(--text-sub);
+  padding: 40px 12px;
+  font-size: 0.9rem;
+}
+.empty-hint { text-align: center; font-size: 0.85rem; color: var(--text-sub); }
+.link-btn {
+  border: none;
+  background: none;
+  color: var(--loss);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* PC幅が十分あるときは2カラム表示 */
+@media (min-width: 1180px) {
+  .app-main {
+    max-width: 1580px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 760px));
+    justify-content: center;
+    gap: 0 40px;
+    align-content: start;
+  }
+}
+
+/* ── 試合カード ── */
+.game-card {
+  border-bottom: 3px double var(--line-strong);
+  padding: 14px 2px 20px;
+}
+.game-card:first-child { padding-top: 4px; }
+
+.score-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+.team-score { display: inline-flex; align-items: baseline; gap: 8px; }
+.score-num { font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.score-sep { color: var(--text-sub); font-weight: 400; }
+
+.game-status { text-align: center; margin-top: 2px; }
+.status-badge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.status-badge.status-live { color: var(--live); }
+.status-badge.status-finished { color: var(--text-sub); font-weight: 400; }
+.status-badge.status-scheduled { color: var(--text-sub); font-weight: 400; }
+.status-detail { font-size: 0.8rem; color: var(--text-sub); margin-left: 6px; }
+
+/* ── チームセクション ── */
+.team-section { margin-top: 10px; }
+.team-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-left: 4px solid var(--line-strong);
+  padding-left: 6px;
+}
+.stat-block { margin-top: 6px; }
+.stat-label {
+  margin: 0 0 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-sub);
+  letter-spacing: 0.05em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ── 打者テーブル ── */
+.batting-table, .pitching-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  table-layout: fixed;
+}
+.batting-table th, .batting-table td,
+.pitching-table th, .pitching-table td {
+  padding: 3px 2px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.batting-table thead th, .pitching-table thead th {
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--text-sub);
+  font-weight: 400;
+  font-size: 0.72rem;
+  padding-bottom: 4px;
+}
+
+.batting-table .col-order { width: 9%; text-align: left; }
+.batting-table .col-name { width: 24%; text-align: left; }
+.batting-table .col-avg { width: 15%; }
+.batting-table .col-ops { width: 15%; }
+.batting-table .col-num { width: 8%; }
+.batting-table .col-hr { width: 13%; text-align: center; }
+
+.pitching-table .col-name { width: 30%; text-align: left; }
+.pitching-table .col-era { width: 12%; }
+.pitching-table .col-num { width: 9.7%; }
+
+.sub-row td { color: var(--text-sub); }
+.sub-row .col-name { padding-left: 12px; }
+.sub-note {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.68rem;
+  color: var(--text-sub);
+}
+
+/* ── HRバッジ: このアプリで最重要のUI ── */
+.hr-cell { display: inline-flex; align-items: center; position: relative; }
+.hr-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--line-strong);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.hr-badge.hit-today {
+  background: var(--line-strong);
+  color: #fff;
+  border-color: var(--line-strong);
+}
+.hr-multi {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--live);
+  background: #fff;
+  border-radius: 6px;
+  padding: 0 2px;
+}
+
+/* ── 投手 勝敗/H/S バッジ ── */
+.decision-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-right: 3px;
+}
+.decision-badge.decision-win { color: var(--win); }
+.decision-badge.decision-loss { color: var(--loss); }
+.decision-badge.decision-save,
+.decision-badge.decision-hold { color: var(--text-sub); }
+
+/* ── 狭い画面ではERA・打率打点等の優先度を下げて省略 ── */
+@media (max-width: 360px) {
+  .pitching-table .col-era { display: none; }
+}
+
+/* PC: 少し余白を持たせて読みやすく */
+@media (min-width: 700px) {
+  .batting-table, .pitching-table { font-size: 0.88rem; }
+  .app-title { font-size: 1.15rem; }
+}
