@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>実データ接続デモ（1試合）</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="app-header">
+    <h1 class="app-title">実データ接続デモ（1試合のみ）</h1>
+    <p style="text-align:center;font-size:0.78rem;color:var(--text-sub);margin:4px 0 0;">
+      データ提供元: <a href="https://github.com/armstjc/Nippon-Baseball-Data-Repository" target="_blank" rel="noopener">
+      armstjc/Nippon-Baseball-Data-Repository</a>（MITライセンス）／
+      本ページはMockProviderを使う index.html とは独立しています。
+    </p>
+  </header>
+
+  <main class="app-main" id="games" aria-live="polite">
+    <p class="empty-note">読み込み中…</p>
+  </main>
+
+  <!-- 依存順は index.html と同じ -->
+  <script src="src/components/domUtils.js"></script>
+  <script src="src/services/statsService.js"></script>
+  <script src="src/services/cacheService.js"></script>
+  <script src="src/providers/BaseballDataProvider.js"></script>
+
+  <!-- 実データ用パーサー + Provider -->
+  <script src="src/parsers/npb/gameStatsCsvParser.js"></script>
+  <script src="src/providers/NpbProvider.js"></script>
+
+  <script src="src/services/gameService.js"></script>
+
+  <script src="src/components/HomeRunBadge.js"></script>
+  <script src="src/components/BattingTable.js"></script>
+  <script src="src/components/PitchingTable.js"></script>
+  <script src="src/components/TeamSection.js"></script>
+  <script src="src/components/GameCard.js"></script>
+
+  <script>
+    (function () {
+      var provider = new NPB.NpbProvider();
+      var gamesEl = document.getElementById("games");
+      NPB.gameService.getGamesForDate(provider, "2026-09-06", { forceRefresh: true })
+        .then(function (games) {
+          if (games.length === 0) {
+            gamesEl.innerHTML = '<p class="empty-note">この日の実データはありません。</p>';
+            return;
+          }
+          gamesEl.innerHTML = games.map(NPB.components.renderGameCard).join("");
+        })
+        .catch(function (e) {
+          console.error(e);
+          gamesEl.innerHTML = '<p class="error-note">実データの取得に失敗しました: ' + e.message + '</p>';
+        });
+    })();
+  </script>
+</body>
+</html>
