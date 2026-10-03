@@ -1,5 +1,21 @@
 # iPhoneアプリ版 実装計画 (無料体験版 + 買い切り課金)
 
+## 進捗 (2026-10-03 時点)
+
+- フェーズ2: 実施済み(アイコン・起動画面・実機確認は未)。`ios-app/` に Capacitor 8 の
+  iOSプロジェクト。`npm run sync` で `kanji_battle/` をコピーし、BUILD_MODE を
+  `ios-free`(`js/config/buildConfigIOSApp.js`)に差し替える。
+- フェーズ3: 実施済み。
+  - `ios-app/ios/App/App/KanjiStorePlugin.swift` … StoreKit 2 ブリッジ
+    (getEntitlements / purchase / restore / getProductInfo、`Transaction.updates` の購読)。
+    商品IDは `io.github.torubd1arch.kanjibattle.fullversion`(この1か所のみ)。
+  - `ios-app/web/nativeIAPBridge.js` … 上記を `window.NativeIAPBridge` として公開(アプリ版にのみ同梱)。
+  - `ios-app/ios/App/App/KanjiBattle.storekit` … ローカルテスト用の商品定義(テスト価格 ¥600)。
+    共有スキーム `App` に設定済みで、Xcode から ⌘R で起動すると自動で使われる。
+  - シミュレータで、ブリッジ接続・購入状態の取得(free)・商品情報(¥600)の取得までを確認済み。
+    購入シートの操作を伴う購入/復元/キャンセル等の確認はフェーズ4前に手動で行う。
+- 未着手: Bundle ID・商品IDの正式決定、Apple Developer Program 登録、App Store Connect での商品登録。
+
 このドキュメントは、Mac / Apple Developer Program 登録後に着手する作業をまとめたものです。
 今回のセッションでは、この計画に基づく **土台のみ** を実装しています。実際の決済処理・
 StoreKitとの接続・アプリのネイティブビルドは今回のスコープ外です(下記「今回やらないこと」参照)。
