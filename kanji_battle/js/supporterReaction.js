@@ -15,6 +15,20 @@ function supporterEscapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// セリフを、ことばの途中で改行されないHTMLにする。
+// セリフはひらがなの分かち書きなので、スペースと「、。！？」の直後だけを改行位置とし、
+// それ以外(ことばの途中)では改行させない。
+function supporterMessageHtml(message) {
+  return String(message).split(/(\s+)/).map(part => {
+    if (/^\s+$/.test(part)) return ' ';
+    // 後読み(?<=)は iOS 16.3 以前のWebViewで構文エラーになるため使わない
+    return part.replace(/([、。！？!?])/g, '$1\n').split('\n')
+      .filter(Boolean)
+      .map(phrase => `<span class="supporter-phrase">${supporterEscapeHtml(phrase)}</span>`)
+      .join('<wbr>');
+  }).join('');
+}
+
 function attachSupporterImgFallback(img, wrapEl) {
   if (!img || !wrapEl) return;
   img.addEventListener('error', () => {
@@ -40,7 +54,7 @@ function renderSupporterPopup(reaction, eventType) {
     (isWrong ? ' yomi-cheer-wrong' : ' yomi-cheer-correct') +
     (isBig ? ' yomi-cheer-big' : '');
   popup.innerHTML = `
-    <div class="yomi-cheer-bubble">${supporterEscapeHtml(reaction.message)}</div>
+    <div class="yomi-cheer-bubble">${supporterMessageHtml(reaction.message)}</div>
     <div class="yomi-cheer-figure">
       <img class="yomi-cheer-img" src="${supporterEscapeHtml(reaction.image)}" alt="${supporterEscapeHtml(reaction.alt || reaction.displayName)}">
       <div class="yomi-cheer-name">${supporterEscapeHtml(reaction.displayName)}</div>
@@ -78,7 +92,7 @@ function renderSupporterOnResult(containerId, state) {
       <div class="supporter-static">
         <img class="supporter-static-img" src="${supporterEscapeHtml(reaction.image)}" alt="${supporterEscapeHtml(reaction.alt || reaction.displayName)}">
         <div class="supporter-static-name">${supporterEscapeHtml(reaction.displayName)}</div>
-        <div class="supporter-static-bubble">${supporterEscapeHtml(reaction.message)}</div>
+        <div class="supporter-static-bubble">${supporterMessageHtml(reaction.message)}</div>
       </div>`;
     attachSupporterImgFallback(
       container.querySelector('.supporter-static-img'),

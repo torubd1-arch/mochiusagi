@@ -2180,6 +2180,11 @@ button:focus-visible {
   overflow-wrap: break-word;
 }
 
+/* セリフはことば(分かち書き)の途中で改行しない。2行になるときは行の長さをそろえる */
+.supporter-phrase { white-space: nowrap; }
+.yomi-cheer-bubble,
+.supporter-static-bubble { text-wrap: balance; }
+
 .yomi-cheer-bubble::after {
   content: '';
   position: absolute;
