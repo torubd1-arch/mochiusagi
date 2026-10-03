@@ -2314,32 +2314,10 @@ button:focus-visible {
 #btn-kanjiselect-title { background: #334; color: var(--text-sub); border: 1px solid var(--border); }
 
 /* ===== 有料ロック表示 (無料体験版で未購入の範囲) =====
-   「まだ出会っていない(locked)」とは見た目を変え、鍵アイコンで
-   「ここには何かあるが購入が必要」だと分かるようにする。 */
-.zukan-card.paid-locked,
-.boss-zukan-card.paid-locked {
-  opacity: 0.65;
-  cursor: pointer;
-  border-style: dashed;
-}
-.zukan-card.paid-locked:hover,
-.boss-zukan-card.paid-locked:hover { transform: translateY(-2px); }
-
-.paid-lock-icon { color: var(--accent2); }
-
+   かんじじてんでは鍵アイコンで「購入が必要」だと分かるようにする。
+   ずかんの未発見カードは有料範囲でも通常の「？」表示のまま(購入の案内は出さない)。 */
 .practice-select-btn.paid-locked {
   opacity: 0.65;
   border-style: dashed;
 }
 .psb-lock-icon { display: block; font-size: 14px; margin-top: 2px; }
-
-.evo-chain-card.paid-locked {
-  opacity: 0.65;
-  cursor: pointer;
-  border-style: dashed;
-}
-.evo-chain-paidlock-badge {
-  font-size: 10px; font-weight: 900; color: var(--accent2);
-  background: rgba(155,89,182,0.15); border-radius: 8px;
-  padding: 2px 8px; margin-top: 4px; text-align: center;
-}
