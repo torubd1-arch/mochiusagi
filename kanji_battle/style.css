@@ -38,11 +38,14 @@ html, body {
 /* ===== タイトル画面 ===== */
 #screen-title {
   align-items: center;
-  justify-content: center;
   background: linear-gradient(160deg, #0f3460 0%, #1a1a6e 50%, #0f3460 100%);
   gap: 20px;
   padding: 20px;
 }
+/* 縦中央寄せ。justify-content: center だと画面より高いときに上端が
+   スクロールで見えなくなるため、先頭・末尾の auto マージンで寄せる */
+#screen-title > :first-child { margin-top: auto; }
+#screen-title > :last-child  { margin-bottom: auto; }
 
 .title-stars {
   font-size: 2.2rem;

@@ -142,6 +142,14 @@ function refreshTitleGradeLocks() {
     if (lockIcon) lockIcon.hidden = !locked;
     tab.classList.toggle('grade-tab-locked', locked);
   });
+
+  // 保存されている学年(初期値は'ぜんぶ')が遊べない場合は、無料の学年を選び直す
+  if (!EntitlementService.canUseGrade(Storage.getGradeMode())) {
+    Storage.setGradeMode(FREE_GRADE);
+    document.querySelectorAll('#title-grade-tabs .grade-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.grade === String(FREE_GRADE));
+    });
+  }
 }
 
 // ========== 初期化 ==========
