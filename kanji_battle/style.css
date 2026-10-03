@@ -1,4 +1,4 @@
-/* style.css - かんじバトル しょきゅうへん */
+/* style.css - かんじバトル */
 
 /* ===== リセット・基本設定 ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -63,7 +63,7 @@ html, body {
 }
 
 .title-main {
-  font-size: clamp(1.6rem, 6vw, 2.8rem);
+  font-size: clamp(2rem, 9vw, 3rem);
   font-weight: 900;
   color: var(--accent2);
   text-shadow: var(--pixel-shadow), 0 0 20px #f5a62355;
@@ -72,9 +72,11 @@ html, body {
 }
 
 .title-sub {
-  font-size: clamp(0.8rem, 3vw, 1.1rem);
-  color: var(--text-sub);
-  letter-spacing: 0.15em;
+  font-size: clamp(1.05rem, 4.6vw, 1.4rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.12em;
+  text-shadow: 2px 2px 0 #000, 0 0 12px #e9456099;
 }
 
 .title-monster {
