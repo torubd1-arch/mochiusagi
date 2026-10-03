@@ -994,6 +994,7 @@ function renderTitleProfileBar() {
     bar.appendChild(btn);
   });
 
+  if (!Profiles.canAddProfile()) return;
   const addBtn = document.createElement('button');
   addBtn.className = 'profile-chip profile-chip-add';
   addBtn.textContent = '＋';
@@ -1010,8 +1011,8 @@ function showAddProfileDialog() {
   overlay.innerHTML = `
     <div class="reset-dialog">
       <div class="reset-dialog-title">あたらしい ユーザー</div>
-      <div class="reset-dialog-body">なまえを にゅうりょくしてね</div>
-      <input type="text" class="profile-name-input" id="profile-name-input" maxlength="10" placeholder="なまえ">
+      <div class="reset-dialog-body">なまえを にゅうりょくしてね（${Profiles.MAX_NAME_LENGTH}もじまで）</div>
+      <input type="text" class="profile-name-input" id="profile-name-input" maxlength="${Profiles.MAX_NAME_LENGTH}" placeholder="なまえ">
       <div class="reset-dialog-buttons">
         <button class="reset-btn-yes" id="profile-add-confirm">つくる</button>
         <button class="reset-btn-no"  id="profile-add-cancel">キャンセル</button>
