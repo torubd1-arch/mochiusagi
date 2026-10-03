@@ -926,10 +926,16 @@ function spawnConfetti(count = 25) {
 }
 
 // ========== リセット確認ダイアログ (ずかん・よみかた共通) ==========
+function escapeResetDialogHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function showResetDialog(opts = {}) {
+  // ずかんの記録はプレイヤーごとなので、誰の記録を消すのかを明示する
+  const playerName = escapeResetDialogHtml(Profiles.getActiveProfile().name);
   const {
     title = 'ずかんリセット',
-    body = 'ほんとうに ずかんを<br>リセットする？',
+    body = `ほんとうに<br><span class="reset-dialog-player">${playerName}</span> の<br>ずかんを リセットする？`,
     warnText = 'あつめたモンスターや<br>ほし きろくが きえるよ',
     onConfirm = () => { Storage.resetCollection(); showZukan(); },
   } = opts;
