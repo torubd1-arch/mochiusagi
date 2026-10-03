@@ -930,12 +930,14 @@ function escapeResetDialogHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// target: 消す記録の名前(HTML可)。記録はプレイヤーごとなので、本文には
+// 「誰の」記録を消すのかを必ずプレイヤー名で明示する。
 function showResetDialog(opts = {}) {
-  // ずかんの記録はプレイヤーごとなので、誰の記録を消すのかを明示する
   const playerName = escapeResetDialogHtml(Profiles.getActiveProfile().name);
   const {
     title = 'ずかんリセット',
-    body = `ほんとうに<br><span class="reset-dialog-player">${playerName}</span> の<br>ずかんを リセットする？`,
+    target = 'ずかん',
+    body = `ほんとうに<br><span class="reset-dialog-player">${playerName}</span> の<br>${target}を リセットする？`,
     warnText = 'あつめたモンスターや<br>ほし きろくが きえるよ',
     onConfirm = () => { Storage.resetCollection(); showZukan(); },
   } = opts;
