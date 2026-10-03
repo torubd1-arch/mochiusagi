@@ -152,12 +152,12 @@ function renderYomikataSetupBody() {
   resetSection.className = 'zukan-reset-section';
   const resetBtn = document.createElement('button');
   resetBtn.className = 'btn-zukan-reset';
-  resetBtn.textContent = 'よみかたの きろくを リセット';
+  resetBtn.textContent = 'よみかたバトルの きろくを リセット';
   resetBtn.addEventListener('click', () => {
     showResetDialog({
-      title: 'よみかたリセット',
-      body: 'ほんとうに よみかたの<br>きろくを リセットする？',
-      warnText: 'にがてもんだいの きろくが<br>きえるよ（かきじゅん・ずかんは きえません）',
+      title: 'よみかたバトル リセット',
+      body: 'ほんとうに よみかたバトルの<br>きろくを リセットする？',
+      warnText: 'にがてもんだいの きろくが<br>きえるよ（かきじゅんバトル・ずかんは きえません）',
       onConfirm: () => {
         ReadingStorage.resetReadingProgress();
         renderYomikataSetupBody();
