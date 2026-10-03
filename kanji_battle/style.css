@@ -1,4 +1,4 @@
-/* style.css - かんじバトル しょきゅうへん */
+/* style.css - かんじバトル */
 
 /* ===== リセット・基本設定 ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,14 +38,19 @@ html, body {
 /* ===== タイトル画面 ===== */
 #screen-title {
   align-items: center;
-  justify-content: center;
   background: linear-gradient(160deg, #0f3460 0%, #1a1a6e 50%, #0f3460 100%);
-  gap: 20px;
-  padding: 20px;
+  /* スクロールなしで最下部のボタンまで収まるよう、間隔は画面の高さに合わせて縮める */
+  gap: clamp(4px, 1vh, 20px);
+  padding: clamp(10px, 2vh, 20px) 16px;
 }
+/* 縦中央寄せ。justify-content: center だと画面より高いときに上端が
+   スクロールで見えなくなるため、先頭・末尾の auto マージンで寄せる */
+#screen-title > :first-child { margin-top: auto; }
+#screen-title > :last-child  { margin-bottom: auto; }
 
 .title-stars {
-  font-size: 2.2rem;
+  font-size: clamp(1.2rem, 2.6vh, 2.2rem);
+  line-height: 1.2;
   letter-spacing: 0.3em;
   color: var(--accent2);
   text-shadow: 0 0 10px #f5a62388;
@@ -58,7 +63,7 @@ html, body {
 }
 
 .title-main {
-  font-size: clamp(1.6rem, 6vw, 2.8rem);
+  font-size: clamp(2rem, 9vw, 3rem);
   font-weight: 900;
   color: var(--accent2);
   text-shadow: var(--pixel-shadow), 0 0 20px #f5a62355;
@@ -67,13 +72,15 @@ html, body {
 }
 
 .title-sub {
-  font-size: clamp(0.8rem, 3vw, 1.1rem);
-  color: var(--text-sub);
-  letter-spacing: 0.15em;
+  font-size: clamp(1.05rem, 4.6vw, 1.4rem);
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.12em;
+  text-shadow: 2px 2px 0 #000, 0 0 12px #e9456099;
 }
 
 .title-monster {
-  width: min(180px, 40vw);
+  width: min(180px, 40vw, 12vh);
   animation: float 3s ease-in-out infinite;
 }
 
@@ -85,8 +92,12 @@ html, body {
 .title-buttons {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: clamp(6px, 1.1vh, 14px);
   width: min(300px, 80vw);
+}
+.title-buttons .btn-title {
+  font-size: clamp(1.1rem, 2.6vh, 1.4rem);
+  padding: clamp(6px, 1.1vh, 16px) 20px;
 }
 
 .btn-title {
@@ -118,9 +129,41 @@ html, body {
 }
 
 .title-reset-section {
-  margin-top: 4px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  gap: 8px;
+}
+.title-reset-section .btn-zukan-reset { padding: 7px 14px; }
+
+/* タイトル画面の だれが あそぶ？ は見出しとボタンを横1列に */
+#screen-title .profile-bar-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0;
+}
+#screen-title .profile-bar-label { padding: 0; }
+
+/* タイトル画面の学年タブは 4列×2段 */
+#screen-title .grade-tab-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: min(340px, 100%);
+  margin-bottom: 0;
+  padding: 0;
+}
+#screen-title .grade-tab {
+  padding: 5px 2px;
+  white-space: nowrap;
+}
+
+/* iPhone SE など高さの低い画面では、飾りの星を省いて収める */
+@media (max-height: 700px) {
+  .title-stars { display: none; }
 }
 
 /* ===== バトル画面 ===== */

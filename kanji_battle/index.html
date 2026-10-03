@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>かんじバトル しょきゅうへん</title>
+  <title>かんじバトル</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
 
   <div class="title-monster" id="title-monster-svg"></div>
 
-  <div class="title-main">かんじバトル<br>しょきゅうへん</div>
+  <div class="title-main">かんじバトル</div>
   <div class="title-sub">もじモンスターを たおせ！</div>
 
   <div class="profile-bar-section">
@@ -33,9 +33,9 @@
   </div>
 
   <div class="title-buttons">
-    <button class="btn-title" id="btn-start">▶ かきじゅん</button>
-    <button class="btn-title" id="btn-yomikata">📚 よみかた</button>
-    <button class="btn-title" id="btn-kanjiselect">🀄 かんじを えらぼう</button>
+    <button class="btn-title" id="btn-start">▶ かきじゅんバトル</button>
+    <button class="btn-title" id="btn-yomikata">📚 よみかたバトル</button>
+    <button class="btn-title" id="btn-kanjiselect">🀄 かんじバトル</button>
     <button class="btn-title" id="btn-practice">✏ かんじじてん</button>
     <button class="btn-title" id="btn-zukan">📖 モンスターずかん</button>
   </div>
@@ -46,8 +46,6 @@
 
   <div class="title-reset-section">
     <button class="btn-zukan-reset" id="btn-title-reset">ずかんの きろくを リセット</button>
-  </div>
-  <div class="title-reset-section">
     <button class="btn-zukan-reset" id="btn-title-privacy">プライバシーポリシー</button>
   </div>
 </div>
@@ -194,7 +192,7 @@
     <p>あそんだ記録は、この端末(ブラウザ)の中だけに保存されます。他のサーバーへコピーされたり、外部と共有されたりすることはありません。保存される内容は以下のとおりです。</p>
     <ul>
       <li>ずかんのクリア状況・獲得したほしの数・経験値・れんしゅうのミス回数など、ゲームの進み具合</li>
-      <li>よみかた・かんじをえらぶモードの正解/不正解のきろく</li>
+      <li>よみかたバトル・かんじバトルの正解/不正解のきろく</li>
       <li>えらんでいる学年・もんだいの種類などの設定</li>
       <li>「だれが あそぶ？」で作成したユーザー(プロフィール)の表示名 ※保護者の方が自由に入力する名前です。実際のお名前を入力しない運用を推奨します</li>
     </ul>
@@ -255,8 +253,8 @@
     <h3>無料で できること</h3>
     <ul>
       <li>1年生の かんじ <span id="purchase-free-kanji-count">10</span>字(<span id="purchase-free-kanji-list">木・林・森・一・二・三・人・大・力・水</span>)</li>
-      <li>かきじゅん・かんじじてん</li>
-      <li>よみかたモード・かんじをえらぶモード</li>
+      <li>かきじゅんバトル・かんじじてん</li>
+      <li>よみかたバトル・かんじバトル</li>
       <li>対象の かんじに かんれんする モンスターの図鑑・進化</li>
       <li>対象範囲内でのボス登場</li>
       <li>応援キャラクター</li>
@@ -321,7 +319,7 @@
 <div id="screen-yomikata-setup" class="screen">
   <div class="screen-header">
     <button class="btn-back-small" id="btn-yomikata-setup-back">◀ もどる</button>
-    <h2>よみかた</h2>
+    <h2>よみかたバトル</h2>
   </div>
   <div id="yomikata-setup-body"></div>
 </div>
@@ -350,7 +348,7 @@
 
 <!-- ===================== よみかた けっか画面 ===================== -->
 <div id="screen-yomikata-result" class="screen">
-  <div class="result-title">よみかた<br>けっか！</div>
+  <div class="result-title">よみかたバトル<br>けっか！</div>
   <div class="result-sparkle">📚</div>
 
   <div id="yomikata-result-summary"></div>
@@ -368,7 +366,7 @@
 <div id="screen-kanjiselect-setup" class="screen">
   <div class="screen-header">
     <button class="btn-back-small" id="btn-kanjiselect-setup-back">◀ もどる</button>
-    <h2>かんじを えらぼう</h2>
+    <h2>かんじバトル</h2>
   </div>
   <div id="kanjiselect-setup-body"></div>
 </div>
@@ -397,7 +395,7 @@
 
 <!-- ===================== かんじをえらぶ けっか画面 ===================== -->
 <div id="screen-kanjiselect-result" class="screen">
-  <div class="result-title">かんじ<br>けっか！</div>
+  <div class="result-title">かんじバトル<br>けっか！</div>
   <div class="result-sparkle">🀄</div>
 
   <div id="kanjiselect-result-summary"></div>

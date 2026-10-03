@@ -116,12 +116,12 @@ function renderKanjiSelectSetupBody() {
   resetSection.className = 'zukan-reset-section';
   const resetBtn = document.createElement('button');
   resetBtn.className = 'btn-zukan-reset';
-  resetBtn.textContent = 'かんじをえらぶの きろくを リセット';
+  resetBtn.textContent = 'かんじバトルの きろくを リセット';
   resetBtn.addEventListener('click', () => {
     showResetDialog({
-      title: 'かんじをえらぶ リセット',
-      body: 'ほんとうに かんじをえらぶの<br>きろくを リセットする？',
-      warnText: 'にがてもんだいの きろくが<br>きえるよ（かきじゅん・よみかた・ずかんは きえません）',
+      title: 'かんじバトル リセット',
+      body: 'ほんとうに かんじバトルの<br>きろくを リセットする？',
+      warnText: 'にがてもんだいの きろくが<br>きえるよ（かきじゅんバトル・よみかたバトル・<br>ずかんは きえません）',
       onConfirm: () => {
         KanjiSelectStorage.resetKanjiSelectProgress();
         renderKanjiSelectSetupBody();
