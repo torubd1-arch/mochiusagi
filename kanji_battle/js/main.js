@@ -451,15 +451,11 @@ function showEvolutionOverlay(chain) {
 function renderEvolutionChain(chain) {
   const unlocked = Storage.isEvolutionUnlocked(chain.id);
   const complete  = Storage.isChainComplete(chain.id);
-  const paidLocked = !unlocked && !EntitlementService.hasFullAccess() &&
-    !chain.chars.some(c => EntitlementService.canUseKanji(c));
 
+  // ずかんの 🔒/？ は「まだ見つけていない」の意味なので、有料範囲でも購入の案内は出さない
   const wrap = document.createElement('div');
-  wrap.className = 'evo-chain-card' + (unlocked ? ' unlocked' : '') + (paidLocked ? ' paid-locked' : '');
+  wrap.className = 'evo-chain-card' + (unlocked ? ' unlocked' : '');
   if (complete) wrap.classList.add('complete');
-  if (paidLocked) {
-    wrap.addEventListener('click', () => showLockNotice('screen-zukan'));
-  }
 
   const header = document.createElement('div');
   header.className = 'evo-chain-header';
@@ -516,11 +512,6 @@ function renderEvolutionChain(chain) {
     badge.className = 'evo-chain-complete-badge';
     badge.textContent = '✦ COMPLETE';
     wrap.appendChild(badge);
-  } else if (paidLocked) {
-    const badge = document.createElement('div');
-    badge.className = 'evo-chain-paidlock-badge';
-    badge.textContent = '🔒 こうにゅうで かいほう';
-    wrap.appendChild(badge);
   }
   return wrap;
 }
@@ -550,7 +541,7 @@ function showZukan(gradeFilter = 'all', { restoreScroll = false } = {}) {
   // 学年フィルタタブバー
   const tabBar = document.createElement('div');
   tabBar.className = 'grade-tab-bar';
-  [['all', 'すべて'], [1, '1年'], [2, '2年'], [3, '3年'], [4, '4年'], [5, '5年'], [6, '6年']].forEach(([val, label]) => {
+  [['all', 'すべて'], [1, '1ねん'], [2, '2ねん'], [3, '3ねん'], [4, '4ねん'], [5, '5ねん'], [6, '6ねん']].forEach(([val, label]) => {
     const tab = document.createElement('button');
     tab.className = 'grade-tab' + (gradeFilter === val ? ' active' : '');
     tab.textContent = label;
@@ -642,9 +633,8 @@ function showZukan(gradeFilter = 'all', { restoreScroll = false } = {}) {
   filteredData.forEach(k => {
     const stars = Storage.getStars(k.char);
     const captured = Storage.isCleared(k.char);
-    const paidLocked = !captured && !EntitlementService.canUseKanji(k.char);
     const card = document.createElement('div');
-    card.className = 'zukan-card' + (captured ? ' captured' : paidLocked ? ' paid-locked' : ' locked');
+    card.className = 'zukan-card' + (captured ? ' captured' : ' locked');
 
     if (captured) {
       card.innerHTML = `
@@ -654,12 +644,6 @@ function showZukan(gradeFilter = 'all', { restoreScroll = false } = {}) {
         <div class="zukan-monster-name">${k.enemyName}</div>
         <div class="zukan-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>`;
       card.addEventListener('click', () => startPractice(k, 'zukan'));
-    } else if (paidLocked) {
-      card.innerHTML = `
-        <div class="zukan-monster-unknown paid-lock-icon">🔒</div>
-        <div class="zukan-char">？</div>
-        <div class="zukan-monster-name">？？？</div>`;
-      card.addEventListener('click', () => showLockNotice('screen-zukan'));
     } else {
       card.innerHTML = `
         <div class="zukan-monster-unknown">？</div>
@@ -681,9 +665,8 @@ function showZukan(gradeFilter = 'all', { restoreScroll = false } = {}) {
   const filteredBoss = BOSS_LIST.filter(b => gradeFilter === 'all' || b.grade === gradeFilter);
   filteredBoss.forEach(boss => {
     const captured = Storage.isBossCaptured(boss.id);
-    const paidLocked = !captured && !EntitlementService.canUseKanji(boss.char);
     const card = document.createElement('div');
-    card.className = 'boss-zukan-card' + (captured ? ' captured' : paidLocked ? ' paid-locked' : ' locked');
+    card.className = 'boss-zukan-card' + (captured ? ' captured' : ' locked');
     if (captured) {
       const kData = KANJI_DATA.find(k => k.char === boss.char);
       card.innerHTML = `
@@ -692,12 +675,6 @@ function showZukan(gradeFilter = 'all', { restoreScroll = false } = {}) {
         <div class="boss-name">${boss.name}</div>
         <div class="boss-badge">★ BOSS</div>`;
       if (kData) card.addEventListener('click', () => startPractice(kData, 'zukan'));
-    } else if (paidLocked) {
-      card.innerHTML = `
-        <div class="boss-monster-unknown paid-lock-icon">🔒</div>
-        <div class="boss-char">？</div>
-        <div class="boss-name">？？？</div>`;
-      card.addEventListener('click', () => showLockNotice('screen-zukan'));
     } else {
       card.innerHTML = `
         <div class="boss-monster-unknown">？</div>
