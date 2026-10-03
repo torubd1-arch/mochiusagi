@@ -33,11 +33,11 @@
   </div>
 
   <div class="title-buttons">
-    <button class="btn-title" id="btn-start">▶ スタート</button>
-    <button class="btn-title" id="btn-practice">✏ れんしゅう</button>
+    <button class="btn-title" id="btn-start">▶ かきじゅん</button>
     <button class="btn-title" id="btn-yomikata">📚 よみかた</button>
     <button class="btn-title" id="btn-kanjiselect">🀄 かんじを えらぼう</button>
-    <button class="btn-title" id="btn-zukan">📖 ずかん</button>
+    <button class="btn-title" id="btn-practice">✏ かんじじてん</button>
+    <button class="btn-title" id="btn-zukan">📖 モンスターずかん</button>
   </div>
 
   <div class="title-footer">
@@ -131,20 +131,20 @@
   </div>
 </div>
 
-<!-- ===================== れんしゅう選択画面 ===================== -->
+<!-- ===================== かんじじてん(れんしゅう)選択画面 ===================== -->
 <div id="screen-practice-select" class="screen">
   <div class="screen-header">
     <button class="btn-back-small" id="btn-practice-select-back">◀ もどる</button>
-    <h2>れんしゅう — かんじを えらぼう</h2>
+    <h2>かんじじてん — かんじを えらぼう</h2>
   </div>
   <div id="practice-select-grid"></div>
 </div>
 
-<!-- ===================== れんしゅうモード画面 ===================== -->
+<!-- ===================== かんじじてん(れんしゅうモード)画面 ===================== -->
 <div id="screen-practice" class="screen">
   <div class="screen-header">
     <button class="btn-back-small" id="btn-practice-back">◀ もどる</button>
-    <h2>れんしゅうモード</h2>
+    <h2>かんじじてん</h2>
   </div>
 
   <div class="practice-body">
@@ -168,11 +168,12 @@
   </div>
 </div>
 
-<!-- ===================== ずかん画面 ===================== -->
+<!-- ===================== モンスターずかん画面 ===================== -->
 <div id="screen-zukan" class="screen">
   <div class="screen-header">
     <button class="btn-back-small" id="btn-zukan-back">◀ もどる</button>
-    <h2>ずかん</h2>
+    <h2>モンスターずかん</h2>
+    <button class="btn-back-small btn-scroll-top" id="btn-zukan-top">▲ うえへ</button>
   </div>
   <div id="zukan-grid"></div>
 </div>
@@ -254,7 +255,7 @@
     <h3>無料で できること</h3>
     <ul>
       <li>1年生の かんじ <span id="purchase-free-kanji-count">10</span>字(<span id="purchase-free-kanji-list">木・林・森・一・二・三・人・大・力・水</span>)</li>
-      <li>書き順れんしゅう・れんしゅうモード</li>
+      <li>かきじゅん・かんじじてん</li>
       <li>よみかたモード・かんじをえらぶモード</li>
       <li>対象の かんじに かんれんする モンスターの図鑑・進化</li>
       <li>対象範囲内でのボス登場</li>
@@ -358,7 +359,7 @@
   <div class="result-buttons">
     <button class="btn-result" id="btn-yomikata-retry">▶ もういちど</button>
     <button class="btn-result" id="btn-yomikata-weak">🎯 にがてを れんしゅう</button>
-    <button class="btn-result" id="btn-yomikata-zukan">📖 ずかんを みる</button>
+    <button class="btn-result" id="btn-yomikata-zukan">📖 モンスターずかんを みる</button>
     <button class="btn-result" id="btn-yomikata-title">◀ トップへ もどる</button>
   </div>
 </div>
@@ -405,7 +406,7 @@
   <div class="result-buttons">
     <button class="btn-result" id="btn-kanjiselect-retry">▶ もういちど</button>
     <button class="btn-result" id="btn-kanjiselect-weak">🎯 にがてを れんしゅう</button>
-    <button class="btn-result" id="btn-kanjiselect-zukan">📖 ずかんを みる</button>
+    <button class="btn-result" id="btn-kanjiselect-zukan">📖 モンスターずかんを みる</button>
     <button class="btn-result" id="btn-kanjiselect-title">◀ トップへ もどる</button>
   </div>
 </div>

@@ -346,7 +346,9 @@ function showResultScreen() {
     const summaryEl = document.getElementById('result-summary');
     if (summaryEl) summaryEl.innerHTML = '<div>つぎも やってみよう！</div>';
     const retryBtn = document.getElementById('btn-result-retry');
-    if (retryBtn) retryBtn.textContent = '✏ れんしゅうに もどる';
+    if (retryBtn) retryBtn.textContent = practiceReturnTo === 'zukan'
+      ? '📖 モンスターずかんに もどる'
+      : '✏ かんじじてんに もどる';
     renderSupporterOnResult('result-supporter', battleSupporterState);
     showScreen('screen-result');
     Audio.playVictory();
@@ -524,9 +526,25 @@ function renderEvolutionChain(chain) {
 }
 
 // ========== ずかん画面 ==========
-function showZukan(gradeFilter = 'all') {
+let zukanGradeFilter = 'all'; // かんじじてんから もどるときに 学年タブを復元する
+let zukanScrollTop   = 0;     // かんじじてんへ 移る直前の スクロール位置
+
+// ずかんは #zukan-grid が スクロールする
+function getZukanScroller() {
+  return document.getElementById('zukan-grid');
+}
+
+function scrollZukanTo(top, smooth = false) {
+  const behavior = smooth ? 'smooth' : 'auto';
+  getZukanScroller()?.scrollTo({ top, behavior });
+  // 画面サイズによって .screen 側が スクロールしている場合も 先頭へ
+  if (top === 0) document.getElementById('screen-zukan')?.scrollTo({ top: 0, behavior });
+}
+
+function showZukan(gradeFilter = 'all', { restoreScroll = false } = {}) {
   const grid = document.getElementById('zukan-grid');
   if (!grid) return;
+  zukanGradeFilter = gradeFilter;
   grid.innerHTML = '';
 
   // 学年フィルタタブバー
@@ -540,6 +558,27 @@ function showZukan(gradeFilter = 'all') {
     tabBar.appendChild(tab);
   });
   grid.appendChild(tabBar);
+
+  // セクションへの ジャンプリンク (画面下部の セクションへ すぐ いけるように)
+  const nav = document.createElement('div');
+  nav.className = 'zukan-jump-nav';
+  const jumpTargets = [['zukan-sec-monsters', '👾 モンスター'], ['zukan-sec-boss', '⚡ ボスモンスター']];
+  if (EVOLUTION_CHAINS.length > 0) jumpTargets.push(['zukan-sec-evo', '✦ しんかチェーン']);
+  jumpTargets.forEach(([targetId, label]) => {
+    const btn = document.createElement('button');
+    btn.className = 'zukan-jump-btn';
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      Audio.playSelect();
+      const target = document.getElementById(targetId);
+      const scroller = getZukanScroller();
+      if (!target || !scroller) return;
+      const top = target.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+      scroller.scrollTo({ top: Math.max(0, top - 8), behavior: 'smooth' });
+    });
+    nav.appendChild(btn);
+  });
+  grid.appendChild(nav);
 
   // フィルタ済み漢字リスト
   const filteredData = KANJI_DATA.filter(k => gradeFilter === 'all' || k.grade === gradeFilter);
@@ -583,13 +622,19 @@ function showZukan(gradeFilter = 'all') {
         <div class="weak-char">${char}</div>
         <div class="weak-reading">${kData.reading}</div>
         <div class="weak-count">✕ ${count}</div>`;
-      card.addEventListener('click', () => startPractice(kData));
+      card.addEventListener('click', () => startPractice(kData, 'zukan'));
       weakGrid.appendChild(card);
     });
     grid.appendChild(weakGrid);
   }
 
   // モンスターカードグリッド
+  const monstersTitle = document.createElement('div');
+  monstersTitle.className = 'zukan-section-title';
+  monstersTitle.id = 'zukan-sec-monsters';
+  monstersTitle.textContent = '👾 モンスター';
+  grid.appendChild(monstersTitle);
+
   const monstersGrid = document.createElement('div');
   monstersGrid.className = 'zukan-monsters-grid';
   grid.appendChild(monstersGrid);
@@ -608,7 +653,7 @@ function showZukan(gradeFilter = 'all') {
         <div class="zukan-reading">${k.reading}</div>
         <div class="zukan-monster-name">${k.enemyName}</div>
         <div class="zukan-stars">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>`;
-      card.addEventListener('click', () => startPractice(k));
+      card.addEventListener('click', () => startPractice(k, 'zukan'));
     } else if (paidLocked) {
       card.innerHTML = `
         <div class="zukan-monster-unknown paid-lock-icon">🔒</div>
@@ -627,6 +672,7 @@ function showZukan(gradeFilter = 'all') {
   // ボスセクション
   const bossTitle = document.createElement('div');
   bossTitle.className = 'zukan-section-title boss-section-title';
+  bossTitle.id = 'zukan-sec-boss';
   bossTitle.textContent = '⚡ ボスモンスター';
   grid.appendChild(bossTitle);
 
@@ -645,7 +691,7 @@ function showZukan(gradeFilter = 'all') {
         <div class="boss-char">${boss.char}</div>
         <div class="boss-name">${boss.name}</div>
         <div class="boss-badge">★ BOSS</div>`;
-      if (kData) card.addEventListener('click', () => startPractice(kData));
+      if (kData) card.addEventListener('click', () => startPractice(kData, 'zukan'));
     } else if (paidLocked) {
       card.innerHTML = `
         <div class="boss-monster-unknown paid-lock-icon">🔒</div>
@@ -666,6 +712,7 @@ function showZukan(gradeFilter = 'all') {
   if (EVOLUTION_CHAINS.length > 0) {
     const evoTitle = document.createElement('div');
     evoTitle.className = 'zukan-section-title';
+    evoTitle.id = 'zukan-sec-evo';
     evoTitle.textContent = '✦ しんかチェーン';
     grid.appendChild(evoTitle);
 
@@ -687,6 +734,8 @@ function showZukan(gradeFilter = 'all') {
   grid.appendChild(resetSection);
 
   showScreen('screen-zukan');
+  // かんじじてんから もどったときは 元の位置へ、それ以外は 先頭から
+  scrollZukanTo(restoreScroll ? zukanScrollTop : 0);
 }
 
 // ========== れんしゅうモード ==========
@@ -695,6 +744,7 @@ let practiceStep  = 0;
 let practiceMode  = 'view'; // 'view' | 'quiz'
 let isPlayingAll  = false;  // 「ぜんぶ みる」再生中フラグ
 let practiceGradeFilter = 'all'; // 学年フィルタ状態を保持
+let practiceReturnTo = 'select'; // もどる先: 'select'(かんじじてん一覧) | 'zukan'(モンスターずかん)
 
 function showPracticeSelect(gradeFilter) {
   // 引数がある場合は保存、ない場合は前回の値を継続使用
@@ -746,12 +796,14 @@ function showPracticeSelect(gradeFilter) {
   showScreen('screen-practice-select');
 }
 
-function startPractice(kanji) {
+function startPractice(kanji, returnTo = 'select') {
   if (!EntitlementService.canUseKanji(kanji.char)) {
     Audio.playSelect();
     showLockNotice(document.querySelector('.screen.active')?.id || 'screen-title');
     return;
   }
+  practiceReturnTo = returnTo;
+  if (returnTo === 'zukan') zukanScrollTop = getZukanScroller()?.scrollTop || 0;
   practiceKanji = kanji;
   practiceStep  = 0;
   practiceMode  = 'view';
@@ -807,6 +859,15 @@ async function practicePlayAll() {
 
   isPlayingAll = false;
   updatePracticeControlsState();
+}
+
+// かんじじてん画面から 呼び出し元 (かんじじてん一覧 or モンスターずかん) へ もどる
+function returnFromPractice() {
+  if (practiceReturnTo === 'zukan') {
+    showZukan(zukanGradeFilter, { restoreScroll: true });
+  } else {
+    showPracticeSelect(); // 引数なし → 前回フィルタを維持
+  }
 }
 
 // ========== れんしゅうコントロールの活性/非活性を更新 ==========
@@ -1222,22 +1283,28 @@ document.addEventListener('DOMContentLoaded', () => {
     startPracticeQuiz();
   });
 
-  // 上部「◀ もどる」ボタン (screen-header内)
+  // 上部「◀ もどる」ボタン (screen-header内) — 呼び出し元へ もどる
   document.getElementById('btn-practice-back').addEventListener('click', () => {
     Audio.playSelect();
-    showPracticeSelect(); // 引数なし → 前回フィルタを維持
+    returnFromPractice();
   });
 
-  // 下部「もどる」ボタン (practice-controls内) — 独自IDで修正
+  // 下部「もどる」ボタン (practice-controls内) — 呼び出し元へ もどる
   document.getElementById('btn-practice-back-body').addEventListener('click', () => {
     Audio.playSelect();
-    showPracticeSelect(); // 引数なし → 前回フィルタを維持
+    returnFromPractice();
   });
 
   // ずかん
   document.getElementById('btn-zukan-back').addEventListener('click', () => {
     Audio.playSelect();
     showScreen('screen-title');
+  });
+
+  // ずかん: いちばんうえへ もどる
+  document.getElementById('btn-zukan-top').addEventListener('click', () => {
+    Audio.playSelect();
+    scrollZukanTo(0, true);
   });
 
   // プライバシーポリシー
@@ -1251,7 +1318,7 @@ document.addEventListener('DOMContentLoaded', () => {
     Audio.playSelect();
     const st = Game.getState();
     if (st?.mode === 'practice') {
-      showPracticeSelect();
+      returnFromPractice();
       return;
     }
     if (Storage.shouldSpawnBoss()) {
