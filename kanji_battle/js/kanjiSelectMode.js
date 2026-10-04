@@ -120,8 +120,8 @@ function renderKanjiSelectSetupBody() {
   resetBtn.addEventListener('click', () => {
     showResetDialog({
       title: 'かんじバトル リセット',
-      body: 'ほんとうに かんじバトルの<br>きろくを リセットする？',
-      warnText: 'にがてもんだいの きろくが<br>きえるよ（かきじゅんバトル・よみかたバトル・<br>ずかんは きえません）',
+      target: 'かんじバトルの<br>きろく',
+      warnText: 'にがてもんだいの きろくが<br>きえるよ<br>（かきじゅんバトル・よみかたバトル・<br>ずかんは きえません）',
       onConfirm: () => {
         KanjiSelectStorage.resetKanjiSelectProgress();
         renderKanjiSelectSetupBody();

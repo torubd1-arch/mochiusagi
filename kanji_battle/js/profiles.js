@@ -10,6 +10,10 @@ const Profiles = (() => {
   // プロフィール導入前に使われていた素のキー。初回のみ、最初のプロフィールへ
   // 中身をそのままコピーして引き継ぐ(既存の記録を消さないため)。
   const LEGACY_BASE_KEYS = ['kanjiBattle_v1', 'kanjiBattle_reading_v1', 'kanjiBattle_kanjiSelect_v1'];
+  // プレイヤーの最大人数と、なまえの最大文字数。
+  // 上限導入前に作られた4人目以降・9文字以上のなまえは、記録を消さないためそのまま残す。
+  const MAX_PROFILES = 3;
+  const MAX_NAME_LENGTH = 8;
 
   function makeId() {
     return 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -57,6 +61,8 @@ const Profiles = (() => {
   }
 
   return {
+    MAX_PROFILES,
+    MAX_NAME_LENGTH,
     getProfiles() {
       return ensureInitialized().profiles;
     },
@@ -74,10 +80,15 @@ const Profiles = (() => {
       save(data);
       return true;
     },
-    // name: 表示名(前後の空白を除去し、10文字までに切り詰める)
+    canAddProfile() {
+      return ensureInitialized().profiles.length < MAX_PROFILES;
+    },
+    // name: 表示名(前後の空白を除去し、MAX_NAME_LENGTH 文字までに切り詰める)。
+    // すでに MAX_PROFILES 人いるときは追加しない。
     addProfile(name) {
       const data = ensureInitialized();
-      const trimmed = String(name || '').trim().slice(0, 10);
+      if (data.profiles.length >= MAX_PROFILES) return null;
+      const trimmed = Array.from(String(name || '').trim()).slice(0, MAX_NAME_LENGTH).join('');
       if (!trimmed) return null;
       const id = makeId();
       data.profiles.push({ id, name: trimmed });

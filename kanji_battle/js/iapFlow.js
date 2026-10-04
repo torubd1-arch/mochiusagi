@@ -100,6 +100,11 @@ async function showPurchaseScreen() {
   } else {
     setPurchaseStatus('');
   }
+
+  // 価格は StoreKit から取得できたときだけ差し替える(取れなければ案内文のまま)
+  const price = await EntitlementService.getDisplayPrice();
+  const priceEl = document.getElementById('purchase-price');
+  if (price && priceEl) priceEl.textContent = price;
 }
 
 async function handlePurchaseBuy() {
@@ -143,8 +148,11 @@ function refreshTitleGradeLocks() {
     tab.classList.toggle('grade-tab-locked', locked);
   });
 
-  // 保存されている学年(初期値は'ぜんぶ')が遊べない場合は、無料の学年を選び直す
-  if (!EntitlementService.canUseGrade(Storage.getGradeMode())) {
+  // 保存されている学年(初期値は'ぜんぶ')が遊べない場合は、無料の学年を選び直す。
+  // 確認中(unknown)は購入済みの人の選択を消さないよう、未購入と確定してから行う。
+  const status = EntitlementService.getEntitlementStatus();
+  const confirmedNotFull = status === 'free' || status === 'unavailable';
+  if (confirmedNotFull && !EntitlementService.canUseGrade(Storage.getGradeMode())) {
     Storage.setGradeMode(FREE_GRADE);
     document.querySelectorAll('#title-grade-tabs .grade-tab').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.grade === String(FREE_GRADE));

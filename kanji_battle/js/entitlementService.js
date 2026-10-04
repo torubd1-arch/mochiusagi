@@ -12,16 +12,17 @@
 //   unavailable : 購入情報を取得できない(ネットワーク不通・ブリッジ未実装など)
 //
 // 重要: このファイルはLocalStorageに「購入済みフラグ」を書き込まない。
-// 最終的な購入判定は、将来接続するStoreKitの検証済みトランザクション
-// (window.NativeIAPBridge、まだ実装されていない)にのみ基づく。
-// window.NativeIAPBridge が存在しない環境(現状のWeb版・このプレビュー環境)
+// 最終的な購入判定は、StoreKitの検証済みトランザクション
+// (window.NativeIAPBridge)にのみ基づく。
+// window.NativeIAPBridge が存在しない環境(Web版・ios-preview.html)
 // では、購入を「成功した」ことには絶対にしない。
 //
-// window.NativeIAPBridge の想定インターフェース(将来、iOS側のネイティブ
-// ブリッジがこの形で window に注入する想定。今回は実装しない):
+// window.NativeIAPBridge のインターフェース(iOSアプリ版では
+// ios-app/web/nativeIAPBridge.js が KanjiStorePlugin.swift をこの形で公開する):
 //   getEntitlements() => Promise<{ verified: boolean, status: 'full'|'free' }>
 //   purchase()        => Promise<{ verified: boolean, status: 'full'|'pending'|'cancelled'|'failed' }>
 //   restore()         => Promise<{ verified: boolean, status: 'full'|'free'|'failed' }>
+//   getProductInfo()  => Promise<{ displayPrice: string, displayName: string }>  (任意)
 
 const EntitlementService = (() => {
   const UNAVAILABLE_MESSAGE = 'この機能は iPhoneアプリ版で ご利用いただけます。';
@@ -151,6 +152,19 @@ const EntitlementService = (() => {
     return (typeof FREE_GRADE !== 'undefined') && grade === FREE_GRADE;
   }
 
+  // 購入画面に表示する価格(StoreKitがローカライズ済みの文字列)。取得できなければ null。
+  // 価格はJS側に一切ハードコードしない。
+  async function getDisplayPrice() {
+    const bridge = getBridge();
+    if (!bridge || typeof bridge.getProductInfo !== 'function') return null;
+    try {
+      const info = await bridge.getProductInfo();
+      return (info && typeof info.displayPrice === 'string') ? info.displayPrice : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // UIが購入状態の変化を検知して再描画するための購読。
   // (画面を再読み込みしなくてもロック解除できるようにするため)
   function onStatusChange(fn) {
@@ -177,6 +191,7 @@ const EntitlementService = (() => {
     purchaseFullVersion,
     restorePurchases,
     refreshEntitlements,
+    getDisplayPrice,
     onStatusChange,
     _setDevStatus,
   };

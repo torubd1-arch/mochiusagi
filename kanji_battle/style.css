@@ -130,16 +130,32 @@ html, body {
 }
 .title-reset-section .btn-zukan-reset { padding: 7px 14px; }
 
-/* タイトル画面の だれが あそぶ？ は見出しとボタンを横1列に */
+/* タイトル画面の だれが あそぶ？ は、プレイヤー(最大3人・8文字)と＋を3列に並べて1段に収める */
 #screen-title .profile-bar-section {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px;
+  width: min(340px, 100%);
   margin-bottom: 0;
 }
 #screen-title .profile-bar-label { padding: 0; }
+#screen-title .profile-bar {
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+}
+#screen-title .profile-chip {
+  flex: 0 1 calc((100% - 12px) / 3);
+  min-width: 0;
+  padding: 5px 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* タイトル画面の学年タブは 4列×2段 */
 #screen-title .grade-tab-bar {
@@ -1577,6 +1593,12 @@ html, body {
   color: var(--text-sub);
 }
 
+.reset-dialog-player {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--accent2);
+}
+
 .reset-dialog-buttons {
   display: flex;
   gap: 12px;
@@ -2157,6 +2179,11 @@ button:focus-visible {
   max-width: 100%;
   overflow-wrap: break-word;
 }
+
+/* セリフはことば(分かち書き)の途中で改行しない。2行になるときは行の長さをそろえる */
+.supporter-phrase { white-space: nowrap; }
+.yomi-cheer-bubble,
+.supporter-static-bubble { text-wrap: balance; }
 
 .yomi-cheer-bubble::after {
   content: '';

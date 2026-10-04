@@ -156,8 +156,8 @@ function renderYomikataSetupBody() {
   resetBtn.addEventListener('click', () => {
     showResetDialog({
       title: 'よみかたバトル リセット',
-      body: 'ほんとうに よみかたバトルの<br>きろくを リセットする？',
-      warnText: 'にがてもんだいの きろくが<br>きえるよ（かきじゅんバトル・ずかんは きえません）',
+      target: 'よみかたバトルの<br>きろく',
+      warnText: 'にがてもんだいの きろくが<br>きえるよ<br>（かきじゅんバトル・<br>ずかんは きえません）',
       onConfirm: () => {
         ReadingStorage.resetReadingProgress();
         renderYomikataSetupBody();

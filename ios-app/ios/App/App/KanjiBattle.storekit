@@ -1,0 +1,49 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "ja",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "6B3F2D10",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "600",
+      "familyShareable" : false,
+      "internalID" : "6B3F2D11",
+      "localizations" : [
+        {
+          "description" : "すべての学年・すべての漢字で遊べるようになります",
+          "displayName" : "全機能",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "io.github.torubd1arch.kanjibattle.fullversion",
+      "referenceName" : "全機能(買い切り)",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "",
+    "_locale" : "ja",
+    "_storefront" : "JPN",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}
