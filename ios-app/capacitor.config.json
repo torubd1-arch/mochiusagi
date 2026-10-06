@@ -1,9 +1,0 @@
-{
-  "appId": "io.github.torubd1arch.kanjibattle",
-  "appName": "かんじバトル",
-  "webDir": "www",
-  "backgroundColor": "#0f3460",
-  "ios": {
-    "contentInset": "automatic"
-  }
-}
