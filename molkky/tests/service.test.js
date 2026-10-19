@@ -100,6 +100,36 @@ test('No.24〜25 次のゲーム：同じ構成で全員0点、新しい順番�
   assert.equal(ctl.canUndo(), false);
 });
 
+test('投擲前のゲーム開始の取り消し：第1ゲームは対戦ごと、第2ゲームはそのゲームだけ削除', async () => {
+  const { store, session, game, ctl } = await setup({ A: ['A1'], B: ['B1'] });
+  // 第1ゲーム：対戦ごと消え、進行中の対戦はなくなる
+  const r1 = await Svc.cancelGameStart(store, session, game);
+  assert.equal(r1.session, null);
+  assert.deepEqual(await store.getAll(), { sessions: [], games: [], throws: [] });
+  assert.equal(await Svc.findActiveSession(store), null);
+  assert.ok(ctl);
+
+  // 第2ゲーム：前ゲームの記録は残る
+  const s2 = await setup({ A: ['A1'], B: ['B1'] });
+  await feed(s2.ctl, [S(10), MISS, S(10), MISS, S(10), MISS]);
+  const next = await Svc.startNextGame(s2.store, s2.ctl.session, L.defaultOrder(s2.session.teams, s2.ctl.game));
+  const r2 = await Svc.cancelGameStart(s2.store, next.session, next.game);
+  assert.deepEqual(r2.session.gameIds, [s2.game.id]);
+  assert.equal(await s2.store.getGame(next.game.id), undefined);
+  assert.equal((await s2.store.getGame(s2.game.id)).status, 'completed');
+  assert.equal((await s2.store.listThrows(s2.game.id)).length, 6);
+  // 取り消し後は同じ番号のゲームを開始し直せる
+  const again = await Svc.startNextGame(s2.store, r2.session, L.defaultOrder(s2.session.teams, s2.ctl.game));
+  assert.equal(again.game.gameNumber, 2);
+});
+
+test('投擲があるゲームは開始を取り消せない', async () => {
+  const { store, session, game, ctl } = await setup();
+  await feed(ctl, [S(1)]);
+  await assert.rejects(() => Svc.cancelGameStart(store, session, game));
+  assert.equal((await store.listThrows(game.id)).length, 1);
+});
+
 test('前ゲームが未完了なら次のゲームは開始できない', async () => {
   const { store, session } = await setup();
   await assert.rejects(() => Svc.startNextGame(store, session, L.defaultOrder(session.teams)), Svc.ServiceError);
