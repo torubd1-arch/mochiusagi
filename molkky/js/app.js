@@ -6,7 +6,7 @@ import * as B from './backup.js';
 import * as F from './format.js';
 import { IdbStore, MemoryStore, describeStorageError } from './store.js';
 
-const APP_VERSION = '1.1.1';
+const APP_VERSION = '1.1.2';
 const RULES_CHECKED = '2026-10-19';
 
 // 投擲者から見た初期配置（画面上が奥）。x はボタン中心の横位置（単位間隔）
@@ -351,7 +351,7 @@ function screenOrder() {
       o.mode === 'new'
         ? backButton('チーム設定', () => go('setup'))
         : backButton('前のゲーム結果', backToPrevResult)),
-    h('p', null, '上から順に投げます。≡ の部分を上下にスワイプするか、▲▼で入れ替えてください。チーム内の選手の順番も変えられます。'),
+    h('p', null, '上から順に投げます。右端の ≡ を上下にスワイプするか、▲▼で入れ替えてください。チーム内の選手の順番も変えられます。'),
     o.previousResultOrder && h('p', { class: 'small muted' }, '初期値は前のゲームの結果が悪い順（記録点の低い順）です。'),
     h('div', { class: 'stack' }, o.teamOrder.map((tid, i) => {
       const t = teamsById.get(tid);
@@ -360,14 +360,8 @@ function screenOrder() {
         'section',
         { class: 'card order-team', style: teamColor(teamIndex.get(tid)), 'data-sort-item': tid },
         h('div', { class: 'order-head' },
-          h('div', {
-            class: 'drag-zone', 'aria-hidden': 'true',
-            onpointerdown: (e) => startDrag(e, (ids) => { o.teamOrder = ids; }),
-          },
-          h('span', { class: 'drag-handle' }, '≡'),
-          h('span', { class: 'order-num' }, String(i + 1)),
-          h('span', { class: 'order-name' }, t.name)),
-          h('span', { class: 'sr-only' }, `${i + 1}番目 ${t.name}`),
+          h('span', { class: 'order-num', 'aria-hidden': 'true' }, String(i + 1)),
+          h('span', { class: 'order-name' }, h('span', { class: 'sr-only' }, `${i + 1}番目 `), t.name),
           h('button', {
             class: 'icon-btn', type: 'button', disabled: i === 0, 'aria-label': `${t.name}を上へ`, 'data-fk': `tu-${tid}`,
             onclick: () => { o.teamOrder = L.moveItem(o.teamOrder, i, -1); render(); },
@@ -376,18 +370,12 @@ function screenOrder() {
             class: 'icon-btn', type: 'button', disabled: i === o.teamOrder.length - 1, 'aria-label': `${t.name}を下へ`, 'data-fk': `td-${tid}`,
             onclick: () => { o.teamOrder = L.moveItem(o.teamOrder, i, 1); render(); },
           }, '▼'),
+          dragHandle((ids) => { o.teamOrder = ids; }),
         ),
         h('ol', { class: 'order-members' },
           members.map((mid, j) =>
             h('li', { 'data-sort-item': mid },
-              members.length > 1
-                ? h('div', {
-                  class: 'drag-zone grow',
-                  onpointerdown: (e) => startDrag(e, (ids) => { o.memberOrders[tid] = ids; }),
-                },
-                h('span', { class: 'drag-handle', 'aria-hidden': 'true' }, '≡'),
-                h('span', { class: 'mname' }, `${j + 1}. ${memberName(t, mid)}`))
-                : h('span', { class: 'mname' }, `${j + 1}. ${memberName(t, mid)}`),
+              h('span', { class: 'mname' }, `${j + 1}. ${memberName(t, mid)}`),
               members.length > 1 && [
                 h('button', {
                   class: 'icon-btn', type: 'button', disabled: j === 0, 'aria-label': `${memberName(t, mid)}を上へ`, 'data-fk': `mu-${mid}`,
@@ -397,6 +385,7 @@ function screenOrder() {
                   class: 'icon-btn', type: 'button', disabled: j === members.length - 1, 'aria-label': `${memberName(t, mid)}を下へ`, 'data-fk': `md-${mid}`,
                   onclick: () => { o.memberOrders[tid] = L.moveItem(members, j, 1); render(); },
                 }, '▼'),
+                dragHandle((ids) => { o.memberOrders[tid] = ids; }),
               ],
             ),
           ),
@@ -406,6 +395,14 @@ function screenOrder() {
     h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'button', onclick: startGameFromOrder }, 'この順番で開始'),
     o.mode === 'next' && h('p', { class: 'small muted' }, '開始すると前のゲームは確定し、編集できなくなります。全チーム0点・ミス0回から始まります。'),
   );
+}
+
+/** 右端の並べ替え用つまみ（≡）。上下にスワイプして順番を変える */
+function dragHandle(commit) {
+  return h('span', {
+    class: 'drag-handle', 'aria-hidden': 'true', title: '上下にスワイプして並べ替え',
+    onpointerdown: (e) => startDrag(e, commit),
+  }, '≡');
 }
 
 /**
@@ -471,9 +468,43 @@ async function startGameFromOrder() {
   ui.notice = null;
   ui.saveError = null;
   ui.order = null;
-  ui.draft = null;
+  // ui.draft は「戻る」で第1ゲームの順番決めからチーム設定へ戻るときのために残す
   announce(`第${result.game.gameNumber}ゲーム開始`);
   go('play');
+}
+
+/** 投擲前なら、開始したゲームを取り消して順番決めの画面に戻る */
+async function backToOrderFromPlay() {
+  const ctl = ui.ctl;
+  if (!ctl || ctl.throws.length > 0 || !ctl.canInput()) return;
+  const { session, game } = ctl;
+  const r = await guarded(() => Svc.cancelGameStart(ui.store, session, game));
+  if (!r) return;
+  const order = { teamOrder: [...game.teamOrder], memberOrders: JSON.parse(JSON.stringify(game.memberOrders)) };
+  ui.selected = new Set();
+  ui.notice = null;
+  ui.saveError = null;
+  if (!r.session) {
+    // 第1ゲーム：対戦は未作成に戻る。チーム設定の入力内容も残す
+    ui.activeSession = null;
+    ui.ctl = null;
+    const draftMatches = ui.draft && ui.draft.teams.map((t) => t.id).join() === session.teams.map((t) => t.id).join();
+    if (!draftMatches) {
+      ui.draft = {
+        name: session.name,
+        teams: session.teams.map((t) => ({ id: t.id, name: t.name, members: t.members.map((m) => ({ id: m.id, name: m.name })) })),
+      };
+    }
+    ui.order = { mode: 'new', gameNumber: 1, name: session.name, teams: session.teams, ...order };
+  } else {
+    // 第2ゲーム以降：前ゲーム（終了済み）の操作に戻す
+    const bundle = await Svc.loadSessionBundle(ui.store, session.id);
+    const prev = bundle.games[bundle.games.length - 1];
+    ui.activeSession = r.session;
+    ui.ctl = new Svc.GameController(ui.store, r.session, prev, bundle.throwsByGame[prev.id]);
+    ui.order = { mode: 'next', gameNumber: game.gameNumber, name: session.name, teams: session.teams, previousResultOrder: true, ...order };
+  }
+  go('order');
 }
 
 async function backToPrevResult() {
@@ -604,7 +635,9 @@ function screenPlay() {
     h('section', { class: 'recent' },
       h('div', { class: 'recent-text' }, last ? `直近：${F.describeThrow(last, lookup)}` : 'まだ投擲はありません'),
       h('div', { class: 'recent-actions' },
-        h('button', { class: 'btn btn-sm', type: 'button', disabled: !ctl.canUndo(), onclick: undoLast }, '1投戻す'),
+        ctl.throws.length === 0
+          ? h('button', { class: 'btn btn-sm', type: 'button', disabled: locked, onclick: backToOrderFromPlay }, '← 戻る')
+          : h('button', { class: 'btn btn-sm', type: 'button', disabled: !ctl.canUndo(), onclick: undoLast }, '1投戻す'),
         h('button', { class: 'btn btn-sm', type: 'button', onclick: () => openGameDetail(ctl.session.id, game.id, 'play') }, 'スコア表'),
         h('button', { class: 'btn btn-sm', type: 'button', onclick: () => openSessionDetail(ctl.session.id, 'play') }, '対戦の記録'),
       ),
