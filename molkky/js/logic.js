@@ -243,11 +243,19 @@ export function finalizeTeams(draftTeams) {
   });
 }
 
-/** ゲーム開始時点の順番（前ゲームがあればその順、なければ登録順） */
+/**
+ * ゲーム開始時点の順番。前ゲームがあれば結果の悪い順（記録点の低い順、同点は前ゲームの順）、
+ * なければ登録順。チーム内の選手順は前ゲームを引き継ぐ。
+ */
 export function defaultOrder(teams, prevGame) {
   if (prevGame) {
+    const recorded = new Map((prevGame.results ?? []).map((r) => [r.teamId, r.finalRecordedScore]));
+    const teamOrder = prevGame.teamOrder
+      .map((id, i) => ({ id, i, score: recorded.get(id) ?? 0 }))
+      .sort((a, b) => a.score - b.score || a.i - b.i)
+      .map((x) => x.id);
     return {
-      teamOrder: [...prevGame.teamOrder],
+      teamOrder,
       memberOrders: Object.fromEntries(Object.entries(prevGame.memberOrders).map(([k, v]) => [k, [...v]])),
     };
   }

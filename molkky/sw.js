@@ -1,7 +1,7 @@
 // オフライン用のService Worker。
 // 新しい版は待機状態にとどめ、利用者が「更新する」を押したときだけ切り替える（ゲーム中に強制リロードしない）。
 // 配信ファイルを変更したら CACHE_VERSION を上げること。
-const CACHE_VERSION = 'molkky-v1.0.0';
+const CACHE_VERSION = 'molkky-v1.1.0';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
+  './img/hero.jpg',
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,8 +1,8 @@
 {
   "name": "molkky-score",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "モルック スコア記録Webアプリ",
+  "description": "モルとも（モルック計算ツール）",
   "type": "module",
   "scripts": {
     "test": "node --test \"tests/*.test.js\"",
