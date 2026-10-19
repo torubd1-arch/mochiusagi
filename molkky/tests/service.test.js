@@ -79,9 +79,9 @@ test('No.24〜25 次のゲーム：同じ構成で全員0点、新しい順番�
   assert.equal(ctl.game.status, 'completed');
   const before = JSON.stringify(await store.listThrows(ctl.game.id));
 
+  // 初期値は前ゲームの結果が悪い順（失格したBが先、勝ったAが後）
   const order = L.defaultOrder(session.teams, ctl.game);
-  assert.deepEqual(order.teamOrder, ['A', 'B']);
-  order.teamOrder = L.moveItem(order.teamOrder, 1, -1);
+  assert.deepEqual(order.teamOrder, ['B', 'A']);
   order.memberOrders.A = L.moveItem(order.memberOrders.A, 1, -1);
   const next = await Svc.startNextGame(store, ctl.session, order);
   assert.equal(next.game.gameNumber, 2);

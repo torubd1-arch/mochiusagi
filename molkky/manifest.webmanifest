@@ -1,7 +1,7 @@
 {
-  "name": "モルック スコア",
-  "short_name": "モルック",
-  "description": "モルックの得点を1台で記録するアプリ",
+  "name": "モルとも｜モルック計算ツール",
+  "short_name": "モルとも",
+  "description": "モルックの得点を1台で記録する計算ツール",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",

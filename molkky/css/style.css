@@ -159,8 +159,18 @@ button, .btn {
 .badge-ok { color: var(--accent); background: var(--accent-soft); }
 
 /* ── ホーム ── */
-.home-hero { text-align: center; padding: 16px 0 8px; }
-.home-hero .logo { font-size: 2.6rem; line-height: 1; }
+.home-hero { text-align: center; padding: 8px 0 4px; }
+.hero-img {
+  display: block;
+  width: min(100%, 420px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 10px;
+  border-radius: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+.hero-title { font-size: 2.4rem; font-weight: 900; letter-spacing: 0.08em; color: var(--accent); }
+.hero-sub { margin: 2px 0 0; font-size: 1.05rem; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; }
 
 /* ── フォーム ── */
 label.field { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
@@ -195,6 +205,21 @@ input[type="text"]:focus { border-color: var(--accent); }
 .order-members { margin: 8px 0 0 44px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .order-members li { display: flex; align-items: center; gap: 6px; }
 .order-members .mname { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.drag-zone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  touch-action: none; /* ここでのスワイプはページスクロールではなく並べ替えに使う */
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.drag-handle { flex: none; width: 28px; text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--muted); }
+.dragging { opacity: 0.9; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); outline: 3px solid var(--sel-ring); position: relative; z-index: 2; background: var(--surface); }
+.dragging .drag-zone { cursor: grabbing; }
 
 /* ── 得点入力 ── */
 .scoreboard {
@@ -303,6 +328,8 @@ input[type="text"]:focus { border-color: var(--accent); }
   padding-top: 10px;
 }
 .recent-text { font-size: 0.9rem; overflow-wrap: anywhere; }
+.recent-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.recent-actions .btn { padding: 6px 4px; }
 
 /* ── 結果・表 ── */
 .winner {

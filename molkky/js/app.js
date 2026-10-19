@@ -6,7 +6,7 @@ import * as B from './backup.js';
 import * as F from './format.js';
 import { IdbStore, MemoryStore, describeStorageError } from './store.js';
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const RULES_CHECKED = '2026-10-19';
 
 // 投擲者から見た初期配置（画面上が奥）。x はボタン中心の横位置（単位間隔）
@@ -188,7 +188,11 @@ function screenHome() {
   return h(
     'main',
     { class: 'stack' },
-    h('div', { class: 'home-hero' }, h('div', { class: 'logo', 'aria-hidden': 'true' }, '🎳'), h('h1', null, 'モルック スコア'), h('p', { class: 'muted small' }, '1台で全チームの得点を記録')),
+    h('div', { class: 'home-hero' },
+      h('img', { class: 'hero-img', src: 'img/hero.jpg', width: '720', height: '720', alt: '7・12・1の番号が付いたスキットルとモルック' }),
+      h('h1', { class: 'hero-title' }, 'モルとも'),
+      h('p', { class: 'hero-sub' }, 'モルック計算ツール'),
+    ),
     storageWarningBanner(),
     updateBanner(),
     s &&
@@ -346,16 +350,23 @@ function screenOrder() {
       o.mode === 'new'
         ? backButton('チーム設定', () => go('setup'))
         : backButton('前のゲーム結果', backToPrevResult)),
-    h('p', null, '上から順に投げます。▲▼で入れ替えてください。チーム内の選手の順番も変えられます。'),
-    o.teamOrder.map((tid, i) => {
+    h('p', null, '上から順に投げます。≡ の部分を上下にスワイプするか、▲▼で入れ替えてください。チーム内の選手の順番も変えられます。'),
+    o.previousResultOrder && h('p', { class: 'small muted' }, '初期値は前のゲームの結果が悪い順（記録点の低い順）です。'),
+    h('div', { class: 'stack' }, o.teamOrder.map((tid, i) => {
       const t = teamsById.get(tid);
       const members = o.memberOrders[tid];
       return h(
         'section',
-        { class: 'card order-team', style: teamColor(teamIndex.get(tid)) },
+        { class: 'card order-team', style: teamColor(teamIndex.get(tid)), 'data-sort-item': tid },
         h('div', { class: 'order-head' },
-          h('span', { class: 'order-num', 'aria-hidden': 'true' }, String(i + 1)),
-          h('span', { class: 'order-name' }, t.name),
+          h('div', {
+            class: 'drag-zone', 'aria-hidden': 'true',
+            onpointerdown: (e) => startDrag(e, (ids) => { o.teamOrder = ids; }),
+          },
+          h('span', { class: 'drag-handle' }, '≡'),
+          h('span', { class: 'order-num' }, String(i + 1)),
+          h('span', { class: 'order-name' }, t.name)),
+          h('span', { class: 'sr-only' }, `${i + 1}番目 ${t.name}`),
           h('button', {
             class: 'icon-btn', type: 'button', disabled: i === 0, 'aria-label': `${t.name}を上へ`, 'data-fk': `tu-${tid}`,
             onclick: () => { o.teamOrder = L.moveItem(o.teamOrder, i, -1); render(); },
@@ -367,8 +378,15 @@ function screenOrder() {
         ),
         h('ol', { class: 'order-members' },
           members.map((mid, j) =>
-            h('li', null,
-              h('span', { class: 'mname' }, `${j + 1}. ${memberName(t, mid)}`),
+            h('li', { 'data-sort-item': mid },
+              members.length > 1
+                ? h('div', {
+                  class: 'drag-zone grow',
+                  onpointerdown: (e) => startDrag(e, (ids) => { o.memberOrders[tid] = ids; }),
+                },
+                h('span', { class: 'drag-handle', 'aria-hidden': 'true' }, '≡'),
+                h('span', { class: 'mname' }, `${j + 1}. ${memberName(t, mid)}`))
+                : h('span', { class: 'mname' }, `${j + 1}. ${memberName(t, mid)}`),
               members.length > 1 && [
                 h('button', {
                   class: 'icon-btn', type: 'button', disabled: j === 0, 'aria-label': `${memberName(t, mid)}を上へ`, 'data-fk': `mu-${mid}`,
@@ -383,10 +401,54 @@ function screenOrder() {
           ),
         ),
       );
-    }),
+    })),
     h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'button', onclick: startGameFromOrder }, 'この順番で開始'),
     o.mode === 'next' && h('p', { class: 'small muted' }, '開始すると前のゲームは確定し、編集できなくなります。全チーム0点・ミス0回から始まります。'),
   );
+}
+
+/**
+ * 指やマウスで上下にドラッグして並べ替える。[data-sort-item] の要素を、同じ親の中で移動する。
+ * 離したときに新しい順番（data-sort-item の配列）を commit に渡して再描画する。
+ */
+function startDrag(e, commit) {
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const zone = e.currentTarget;
+  const item = zone.closest('[data-sort-item]');
+  const list = item.parentElement;
+  e.preventDefault();
+  item.classList.add('dragging');
+  const move = (ev) => {
+    const y = ev.clientY;
+    let before = null;
+    for (const s of list.children) {
+      if (s === item) continue;
+      const r = s.getBoundingClientRect();
+      if (y < r.top + r.height / 2) {
+        before = s;
+        break;
+      }
+    }
+    if (before !== item.nextElementSibling) list.insertBefore(item, before);
+    // 画面端では自動でスクロール
+    if (y < 60) window.scrollBy(0, -12);
+    else if (y > window.innerHeight - 60) window.scrollBy(0, 12);
+  };
+  // 要素をDOM内で移動するとポインターキャプチャが外れるため、windowで受け取る
+  const pointerId = e.pointerId;
+  const onMove = (ev) => ev.pointerId === pointerId && move(ev);
+  const end = (ev) => {
+    if (ev.pointerId !== pointerId) return;
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', end);
+    window.removeEventListener('pointercancel', end);
+    item.classList.remove('dragging');
+    commit([...list.children].map((c) => c.dataset.sortItem));
+    render();
+  };
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', end);
+  window.addEventListener('pointercancel', end);
 }
 
 async function startGameFromOrder() {
@@ -526,8 +588,11 @@ function screenPlay() {
         title: pins.length ? '選択を解除してから押してください' : null,
         onclick: () => decide({ type: 'miss' }),
       }, 'ミス（0点）', ui.restoredType === 'miss' && h('span', { class: 'restored-tag' }, '取消前')),
-      h('button', { class: 'btn', type: 'button', disabled: locked, 'data-fk': 'ff', onclick: confirmFootFault },
-        '踏み越え', ui.restoredType === 'footFault' && h('span', { class: 'restored-tag' }, '取消前')),
+      h('button', {
+        class: 'btn', type: 'button', disabled: locked, 'data-fk': 'invert',
+        title: '選択中の番号と未選択の番号を入れ替えます',
+        onclick: invertSelection,
+      }, '選択反転'),
       h('button', {
         class: 'btn', type: 'button', disabled: locked || pins.length === 0, 'data-fk': 'clear',
         onclick: () => { ui.selected.clear(); render(); },
@@ -537,9 +602,10 @@ function screenPlay() {
     // 7. 直近と取り消し
     h('section', { class: 'recent' },
       h('div', { class: 'recent-text' }, last ? `直近：${F.describeThrow(last, lookup)}` : 'まだ投擲はありません'),
-      h('div', { class: 'row' },
-        h('button', { class: 'btn btn-sm grow', type: 'button', disabled: !ctl.canUndo(), onclick: undoLast }, '1投戻す'),
-        h('button', { class: 'btn btn-sm grow', type: 'button', onclick: () => openGameDetail(ctl.session.id, game.id, 'play') }, '履歴・スコア表'),
+      h('div', { class: 'recent-actions' },
+        h('button', { class: 'btn btn-sm', type: 'button', disabled: !ctl.canUndo(), onclick: undoLast }, '1投戻す'),
+        h('button', { class: 'btn btn-sm', type: 'button', onclick: () => openGameDetail(ctl.session.id, game.id, 'play') }, 'スコア表'),
+        h('button', { class: 'btn btn-sm', type: 'button', onclick: () => openSessionDetail(ctl.session.id, 'play') }, '対戦の記録'),
       ),
     ),
   );
@@ -613,25 +679,12 @@ function handleSaveResult(r) {
   }
 }
 
-async function confirmFootFault() {
-  const ctl = ui.ctl;
-  if (!ctl.canInput()) return;
-  const pv = ctl.preview({ type: 'footFault' });
-  if (!pv) return;
-  const r = pv.record;
-  const pins = [...ui.selected].sort((a, b) => a - b);
-  const lines = [
-    '踏み越え（フォルト）として0点で記録します。',
-    pins.length ? `選択中の番号（${pins.join('・')}）は無効になります。` : null,
-    r.eliminatedAfter
-      ? { text: `3回連続ミスのため失格（記録点0）になります。`, cls: 'danger-line' }
-      : pv.outcome.footFaultReset
-        ? { text: `投擲前が37点以上のため、累計 ${r.scoreBefore} → 25点になります。`, cls: 'strong' }
-        : { text: `累計は${r.scoreBefore}点のままです。`, cls: 'strong' },
-    `連続ミス ${r.missesAfter - 1} → ${r.missesAfter}`,
-  ];
-  const ok = await dialog({ title: '踏み越えを記録しますか？', lines, ok: '踏み越えを記録', danger: true });
-  if (ok) await decide({ type: 'footFault' });
+/** 選択中と未選択を入れ替える（倒れなかったピンを選ぶほうが早いとき用） */
+function invertSelection() {
+  if (!ui.ctl.canInput()) return;
+  ui.selected = new Set(L.PIN_NUMBERS.filter((n) => !ui.selected.has(n)));
+  ui.restoredType = null;
+  render();
 }
 
 async function undoLast() {
@@ -769,6 +822,7 @@ function goNextGame() {
     gameNumber: s.gameIds.length + 1,
     name: s.name,
     teams: s.teams,
+    previousResultOrder: true,
     ...L.defaultOrder(s.teams, ctl.game),
   };
   go('order');
@@ -834,16 +888,18 @@ function screenSessionDetail() {
   const { bundle, from } = ui.view;
   const { session, games } = bundle;
   const summary = L.summarizeSession(session, games);
-  const back = from === 'history' ? () => openHistory() : goHome;
+  const fromPlay = from === 'play';
+  const back = fromPlay ? () => go('play') : from === 'history' ? () => openHistory() : goHome;
+  const backLabel = fromPlay ? '入力に戻る' : from === 'history' ? '一覧' : 'ホーム';
   return h(
     'main',
     { class: 'stack' },
-    topbar('対戦の記録', backButton(from === 'history' ? '一覧' : 'ホーム', back)),
+    topbar('対戦の記録', backButton(backLabel, back)),
     h('div', null,
       h('h2', null, session.name),
       h('p', { class: 'small muted' }, `${F.formatDateTime(session.createdAt)} 開始`, session.endedAt ? `／${F.formatDateTime(session.endedAt)} 終了` : '', `／${F.SESSION_STATUS_LABEL[session.status]}`),
     ),
-    session.status === 'inProgress' &&
+    session.status === 'inProgress' && !fromPlay &&
       h('button', { class: 'btn btn-primary btn-block', type: 'button', onclick: resumeActive }, 'この対戦を再開'),
     h('h3', null, 'チーム別集計'),
     summaryTable(summary),
@@ -869,7 +925,9 @@ function screenSessionDetail() {
         ),
       ),
     h('button', { class: 'btn btn-block', type: 'button', onclick: () => exportCsv(bundle) }, 'CSVで書き出す'),
-    h('button', { class: 'btn btn-block btn-ghost', type: 'button', style: 'color:var(--danger);border-color:var(--danger)', onclick: () => removeSession(session) }, 'この対戦を削除'),
+    fromPlay
+      ? h('button', { class: 'btn btn-primary btn-lg btn-block', type: 'button', onclick: back }, '入力に戻る')
+      : h('button', { class: 'btn btn-block btn-ghost', type: 'button', style: 'color:var(--danger);border-color:var(--danger)', onclick: () => removeSession(session) }, 'この対戦を削除'),
   );
 }
 
@@ -929,7 +987,7 @@ function screenGameDetail() {
       `／投擲順：${game.teamOrder.map((id) => lookup.team(id)).join(' → ')}`,
     ),
     h('h3', null, 'スコアシート'),
-    h('p', { class: 'small muted' }, '「ー」はミス・踏み越え（0点）。投擲回はそのチームの何投目かを表します。'),
+    h('p', { class: 'small muted' }, '「ー」はミス（0点）。投擲回はそのチームの何投目かを表します。'),
     h('div', { class: 'table-wrap' },
       h('table', { class: 'sheet' },
         h('thead', null,
@@ -987,7 +1045,7 @@ function screenSettings() {
       h('p', { class: 'small muted' }, '取り込みは全件成功か全件失敗のどちらかです。同じ対戦がすでにある場合は上書きの確認を行います。'),
     ),
     rulesSection(),
-    h('p', { class: 'small muted center' }, `モルック スコア Ver.${APP_VERSION}`),
+    h('p', { class: 'small muted center' }, `モルとも Ver.${APP_VERSION}`),
   );
 }
 
@@ -1043,7 +1101,6 @@ function rulesSection() {
     ['得点後の合計がちょうど50', 'その場で勝利・ゲーム終了'],
     ['得点後の合計が50超', '25点に戻して継続（ミスではないので連続ミスは0に戻る）'],
     ['3回連続で0点', '失格。そのゲームの記録点は0'],
-    ['踏み越え（フォルト）', '0点ミス扱い。投擲前が37点以上なら25点に戻す。3連続ミス目なら失格を優先'],
     ['他チームがすべて失格', '残る1チームの記録点を50として終了'],
   ];
   const links = [
@@ -1062,7 +1119,7 @@ function rulesSection() {
     ),
     h('p', { class: 'small' }, '1ターンは1投で、ミスでも次のチームへ移ります。各チームに手番が回るたびに、チーム内の次の選手が投げます。失格チームは以降とばします。'),
     h('p', { class: 'small' }, '倒れたピンのうち「得点として数えるピン」の判断は利用者が行ってください（完全に倒れていないピンは通常数えません）。'),
-    h('p', { class: 'small' }, '対象外：投擲順違い、時間超過、ファウル裁定、時間切れ、モルックアウト等の大会の特殊な裁定。大会ルールへの完全対応ではありません。'),
+    h('p', { class: 'small' }, '対象外：踏み越え（フォルト）、投擲順違い、時間超過、ファウル裁定、時間切れ、モルックアウト等の大会の特殊な裁定。大会ルールへの完全対応ではありません。'),
     h('p', { class: 'small' }, '対戦の集計は「勝利数」と「完了ゲームの記録点の合計」を併記する本アプリ独自の方式です。総合優勝の自動認定や同点決着は行いません。公式資料の「セット」は本アプリの「ゲーム」に当たります。'),
     h('h3', null, `参照資料（確認日：${RULES_CHECKED}）`),
     h('ul', { class: 'small' }, links.map(([t, u]) => h('li', null, h('a', { href: u, target: '_blank', rel: 'noopener' }, t)))),

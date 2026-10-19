@@ -243,6 +243,24 @@ test('集計：完了ゲームの記録点のみを合計し、未完了・中�
   assert.deepEqual(rows.map((r) => [r.wins, r.totalPoints, r.completedGames]), [[1, 50, 2], [1, 81, 2]]);
 });
 
+test('次ゲームの順番の初期値は前ゲームの結果が悪い順（同点は前ゲームの順）', () => {
+  const teams = [{ id: 'A', members: [{ id: 'A1' }, { id: 'A2' }] }, { id: 'B', members: [{ id: 'B1' }] }, { id: 'C', members: [{ id: 'C1' }] }, { id: 'D', members: [{ id: 'D1' }] }];
+  const prev = {
+    teamOrder: ['A', 'B', 'C', 'D'],
+    memberOrders: { A: ['A2', 'A1'], B: ['B1'], C: ['C1'], D: ['D1'] },
+    results: [
+      { teamId: 'A', finalRecordedScore: 50 },
+      { teamId: 'B', finalRecordedScore: 31 },
+      { teamId: 'C', finalRecordedScore: 0 },
+      { teamId: 'D', finalRecordedScore: 31 },
+    ],
+  };
+  const o = L.defaultOrder(teams, prev);
+  assert.deepEqual(o.teamOrder, ['C', 'B', 'D', 'A']);
+  assert.deepEqual(o.memberOrders.A, ['A2', 'A1']);
+  assert.deepEqual(L.defaultOrder(teams, null).teamOrder, ['A', 'B', 'C', 'D']);
+});
+
 test('順番の移動と検証', () => {
   assert.deepEqual(L.moveItem(['a', 'b', 'c'], 2, -1), ['a', 'c', 'b']);
   assert.deepEqual(L.moveItem(['a', 'b'], 0, -1), ['a', 'b']);
