@@ -6,7 +6,7 @@ import * as B from './backup.js';
 import * as F from './format.js';
 import { IdbStore, MemoryStore, describeStorageError } from './store.js';
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.1.1';
 const RULES_CHECKED = '2026-10-19';
 
 // 投擲者から見た初期配置（画面上が奥）。x はボタン中心の横位置（単位間隔）
@@ -35,6 +35,7 @@ const ui = {
   endBundle: null,
   historyData: null,
   view: null,
+  swReg: null,
   swWaiting: null,
   applyingUpdate: false,
   busy: false,
@@ -206,7 +207,7 @@ function screenHome() {
     h('button', { class: `btn btn-lg btn-block ${s ? '' : 'btn-primary'}`, type: 'button', onclick: startNewSession }, '新しい対戦'),
     h('button', { class: 'btn btn-block', type: 'button', onclick: openHistory }, '過去の記録'),
     h('button', { class: 'btn btn-block', type: 'button', onclick: () => go('settings') }, '設定・バックアップ・ルール'),
-    h('p', { class: 'small muted center' }, '記録はこの端末のブラウザ内に保存されます。'),
+    h('p', { class: 'small muted center' }, '記録はこの端末のブラウザ内に保存されます。', h('br'), `Ver.${APP_VERSION}`),
   );
 }
 
@@ -1044,6 +1045,12 @@ function screenSettings() {
       ),
       h('p', { class: 'small muted' }, '取り込みは全件成功か全件失敗のどちらかです。同じ対戦がすでにある場合は上書きの確認を行います。'),
     ),
+    h('section', { class: 'card stack' },
+      h('h2', null, 'アプリの更新'),
+      h('p', { class: 'small' }, `現在の版：Ver.${APP_VERSION}`),
+      h('button', { class: 'btn btn-block', type: 'button', onclick: checkForUpdate }, '最新版を確認'),
+      h('p', { class: 'small muted' }, '新しい版があれば切り替えて開き直します。対戦の記録は消えません。'),
+    ),
     rulesSection(),
     h('p', { class: 'small muted center' }, `モルとも Ver.${APP_VERSION}`),
   );
@@ -1129,22 +1136,38 @@ function rulesSection() {
 
 // ───────────── Service Worker（PWA） ─────────────
 
+/** 新しい版が待機中なら知らせる。ホーム画面（未保存の入力がない）ならそのまま切り替える */
+function checkWaitingWorker() {
+  const reg = ui.swReg;
+  if (!reg || !reg.waiting || !navigator.serviceWorker.controller) return false;
+  ui.swWaiting = reg.waiting;
+  if (ui.screen === 'home' && !document.querySelector('.overlay')) {
+    applyUpdate();
+  } else if (['gameEnd', 'history', 'settings'].includes(ui.screen)) {
+    // ゲーム中は描画し直さず、終了画面などで知らせる
+    render();
+  }
+  return true;
+}
+
+function watchInstalling(reg) {
+  const w = reg.installing;
+  if (w) w.addEventListener('statechange', () => w.state === 'installed' && checkWaitingWorker());
+}
+
 function setupServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.register('./sw.js').then((reg) => {
-    const check = () => {
-      if (reg.waiting && navigator.serviceWorker.controller) {
-        ui.swWaiting = reg.waiting;
-        // ゲーム中は描画し直さず、ホームや終了画面で知らせる
-        if (['home', 'gameEnd', 'history', 'settings'].includes(ui.screen)) render();
-      }
-    };
-    check();
-    reg.addEventListener('updatefound', () => {
-      const w = reg.installing;
-      if (w) w.addEventListener('statechange', () => w.state === 'installed' && check());
-    });
+  navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then((reg) => {
+    ui.swReg = reg;
+    checkWaitingWorker();
+    watchInstalling(reg);
+    reg.addEventListener('updatefound', () => watchInstalling(reg));
   }).catch((e) => console.warn('Service Workerを登録できませんでした', e));
+
+  // ホーム画面から開いたアプリは閉じずに再表示されることが多いので、表示のたびに更新を確認する
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && ui.swReg) ui.swReg.update().catch(() => {});
+  });
 
   let reloading = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -1156,9 +1179,39 @@ function setupServiceWorker() {
 }
 
 function applyUpdate() {
-  if (!ui.swWaiting) return;
+  if (!ui.swWaiting || ui.applyingUpdate) return;
   ui.applyingUpdate = true;
   ui.swWaiting.postMessage({ type: 'SKIP_WAITING' });
+}
+
+/** 設定画面の「最新版を確認」 */
+async function checkForUpdate() {
+  const reg = ui.swReg;
+  if (!reg) {
+    await alertDialog('確認できません', ['このブラウザではオフライン機能（Service Worker）が使えないため、更新の確認はできません。ページを再読み込みしてください。']);
+    return;
+  }
+  try {
+    await reg.update();
+    const w = reg.installing;
+    if (w) {
+      await new Promise((resolve) => {
+        const done = () => ['installed', 'redundant', 'activated'].includes(w.state) && resolve();
+        w.addEventListener('statechange', done);
+        done();
+      });
+    }
+  } catch (e) {
+    console.warn(e);
+    await alertDialog('確認できませんでした', ['インターネットに接続しているか確認してください。']);
+    return;
+  }
+  if (reg.waiting && navigator.serviceWorker.controller) {
+    ui.swWaiting = reg.waiting;
+    applyUpdate();
+  } else {
+    await alertDialog('最新版です', [`モルとも Ver.${APP_VERSION} をお使いです。`]);
+  }
 }
 
 // ───────────── 起動 ─────────────

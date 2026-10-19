@@ -1,7 +1,7 @@
 // オフライン用のService Worker。
 // 新しい版は待機状態にとどめ、利用者が「更新する」を押したときだけ切り替える（ゲーム中に強制リロードしない）。
 // 配信ファイルを変更したら CACHE_VERSION を上げること。
-const CACHE_VERSION = 'molkky-v1.1.0';
+const CACHE_VERSION = 'molkky-v1.1.1';
 const ASSETS = [
   './',
   './index.html',
@@ -21,7 +21,10 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_VERSION).then((cache) => cache.addAll(ASSETS)));
+  // HTTPキャッシュに残った古いファイルを取り込まないよう、必ずサーバーから取り直す
+  event.waitUntil(
+    caches.open(CACHE_VERSION).then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' })))),
+  );
 });
 
 self.addEventListener('activate', (event) => {
