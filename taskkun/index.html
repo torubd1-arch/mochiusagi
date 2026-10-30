@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>タスクくん</title>
+  <meta name="description" content="シンプルな個人用ToDo。今日のタスクだけを見やすく。">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="タスクくん">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="top-row">
+        <button id="monthLabel" class="month-btn" type="button"></button>
+        <div class="top-actions">
+          <button id="todayBtn" class="today-btn" type="button">今日</button>
+          <button id="calBtn" class="icon-btn" type="button" aria-label="月間カレンダー">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          </button>
+          <button id="menuBtn" class="icon-btn" type="button" aria-label="メニュー">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </button>
+        </div>
+      </div>
+      <nav id="week" class="week" aria-label="週の日付"></nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="day-head">
+        <h1 id="dayTitle" class="day-title"></h1>
+        <span id="dayTag" class="day-tag"></span>
+        <span id="dayCount" class="day-count"></span>
+      </div>
+      <p id="dayNote" class="note" hidden>この日に登録したタスクだけを表示しています</p>
+      <ul id="openList" class="list"></ul>
+      <p id="empty" class="empty" hidden></p>
+      <ul id="doneList" class="list done"></ul>
+    </main>
+
+    <form id="addForm" class="add-bar" autocomplete="off">
+      <input id="addInput" type="text" enterkeyhint="done" placeholder="タスクを追加" aria-label="新しいタスク" maxlength="500">
+      <button type="submit" class="add-btn">追加</button>
+    </form>
+  </div>
+
+  <dialog id="calDialog" class="dlg">
+    <div class="dlg-body">
+      <div class="cal-head">
+        <button id="calPrev" class="icon-btn" type="button" aria-label="前の月">‹</button>
+        <span id="calTitle" class="cal-title"></span>
+        <button id="calNext" class="icon-btn" type="button" aria-label="次の月">›</button>
+      </div>
+      <div id="calGrid" class="cal-grid"></div>
+      <div class="dlg-actions">
+        <button id="calToday" class="btn" type="button">今日へ</button>
+        <button class="btn" type="button" data-close>閉じる</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="editDialog" class="dlg dlg-top">
+    <form id="editForm" class="dlg-body" method="dialog">
+      <label class="field">
+        <span class="field-label">タスク</span>
+        <textarea id="editText" rows="3" maxlength="500" required></textarea>
+      </label>
+      <label class="field">
+        <span class="field-label">日付</span>
+        <input id="editDate" type="date" required>
+      </label>
+      <p id="editInfo" class="edit-info"></p>
+      <div class="dlg-actions">
+        <button id="editDelete" class="btn btn-danger" type="button">削除</button>
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-close>キャンセル</button>
+        <button class="btn btn-primary" type="submit">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="menuDialog" class="dlg">
+    <div class="dlg-body">
+      <h2 class="menu-title">タスクくん</h2>
+      <button id="exportBtn" class="menu-item" type="button">バックアップを書き出す</button>
+      <button id="importBtn" class="menu-item" type="button">バックアップから復元</button>
+      <p id="menuInfo" class="menu-info"></p>
+      <div class="dlg-actions">
+        <span class="spacer"></span>
+        <button class="btn" type="button" data-close>閉じる</button>
+      </div>
+    </div>
+  </dialog>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+</body>
+</html>
