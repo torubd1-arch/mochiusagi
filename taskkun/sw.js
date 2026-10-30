@@ -1,6 +1,6 @@
 // オフライン用の Service Worker。
 // 配信ファイルを変更したら CACHE_VERSION を上げること（上げると次回起動時に新しい版へ切り替わる）。
-const CACHE_VERSION = 'taskkun-v1.0.0';
+const CACHE_VERSION = 'taskkun-v1.1.0';
 const ASSETS = [
   './',
   './index.html',

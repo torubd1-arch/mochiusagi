@@ -5,7 +5,7 @@ import {
 } from './logic.js';
 import { loadTasks, saveTasks } from './store.js';
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 const $ = (id) => document.getElementById(id);
 
@@ -127,7 +127,12 @@ function taskItem(t, sel) {
   if (doneOn && doneOn !== sel) meta.push(`${shortDate(doneOn)} 完了`);
   if (meta.length) body.append(el('span', 'task-meta', meta.join(' ・ ')));
 
-  li.append(label, body);
+  // 左スワイプで行がずれ、下に隠れた削除ボタンが見える
+  const del = el('button', 'task-del', '削除');
+  del.type = 'button';
+  const row = el('div', 'task-row');
+  row.append(label, body);
+  li.append(del, row);
   return li;
 }
 
@@ -205,13 +210,17 @@ function saveEdit() {
   render();
 }
 
+function deleteTask(id) {
+  state.tasks = state.tasks.filter((t) => t.id !== id);
+  persist();
+  render();
+}
+
 function deleteEditing() {
   const t = findTask(state.editingId);
   if (!t || !confirm(`「${t.text}」を削除しますか？`)) return;
-  state.tasks = state.tasks.filter((x) => x.id !== t.id);
-  persist();
   $('editDialog').close();
-  render();
+  deleteTask(t.id);
 }
 
 function openCalendar() {
@@ -286,20 +295,39 @@ function checkDateChange() {
   render();
 }
 
-/** 横スワイプで日付を移動する */
-function bindSwipe(target, step) {
+/** 横スワイプを検出する。onSwipe(dx, 開始時の要素) */
+function bindSwipe(target, onSwipe) {
   let start = null;
   target.addEventListener('touchstart', (e) => {
-    start = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+    start = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY, el: e.target } : null;
   }, { passive: true });
   target.addEventListener('touchend', (e) => {
     if (!start) return;
     const dx = e.changedTouches[0].clientX - start.x;
     const dy = e.changedTouches[0].clientY - start.y;
+    const el = start.el;
     start = null;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    selectDate(addDays(state.selected, dx < 0 ? step : -step));
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    onSwipe(dx, el);
   }, { passive: true });
+}
+
+function closeSwipedTask() {
+  const open = document.querySelector('.task.swiped');
+  if (open) open.classList.remove('swiped');
+  return !!open;
+}
+
+/** 一覧のスワイプ：タスク行の上なら削除ボタンの出し入れ、それ以外は日付移動 */
+function onMainSwipe(dx, target) {
+  const li = target.closest('.task');
+  if (!li) {
+    selectDate(addDays(state.selected, dx < 0 ? 1 : -1));
+    return;
+  }
+  const wasOpen = li.classList.contains('swiped');
+  closeSwipedTask();
+  if (dx < 0 && !wasOpen) li.classList.add('swiped');
 }
 
 function bindEvents() {
@@ -323,6 +351,11 @@ function bindEvents() {
       setCompleted(e.target.closest('.task').dataset.id, e.target.checked);
     });
     list.addEventListener('click', (e) => {
+      const del = e.target.closest('.task-del');
+      if (del) {
+        deleteTask(del.closest('.task').dataset.id);
+        return;
+      }
       const body = e.target.closest('.task-body');
       if (body) openEditor(body.closest('.task').dataset.id);
     });
@@ -367,8 +400,18 @@ function bindEvents() {
     });
   }
 
-  bindSwipe($('main'), 1);
-  bindSwipe($('week'), 7);
+  // 削除ボタンが出ている間は、削除ボタン以外のタップで閉じるだけにする（誤操作防止）
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.task-del') || !document.querySelector('.task.swiped')) return;
+    closeSwipedTask();
+    if (e.target.closest('#main')) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  bindSwipe($('main'), onMainSwipe);
+  bindSwipe($('week'), (dx) => selectDate(addDays(state.selected, dx < 0 ? 7 : -7)));
 
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') checkDateChange();
