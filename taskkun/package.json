@@ -1,0 +1,11 @@
+{
+  "name": "taskkun",
+  "version": "1.0.0",
+  "private": true,
+  "description": "タスクくん（シンプルな個人用ToDo）",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "serve": "npx --yes http-server . -p 8080 -c-1"
+  }
+}
