@@ -1,0 +1,11 @@
+{
+  "name": "golfmemo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ゴルフメモ（スイングの注意点を見返す個人用メモ）",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "serve": "npx --yes http-server . -p 8080 -c-1"
+  }
+}

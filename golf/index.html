@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ゴルフメモ</title>
+  <meta name="description" content="練習やラウンドの前に、スイングの注意点を短時間で見返す個人用メモ。">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ゴルフメモ">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <a id="backLink" class="icon-btn" href="#/" aria-label="ホームへ戻る" hidden>
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </a>
+      <h1 id="pageTitle" class="page-title"></h1>
+      <button id="newBtn" class="new-btn" type="button" aria-label="注意点を新規登録">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </header>
+
+    <main id="main" class="main">
+      <section id="homeView" hidden>
+        <h2 class="section-title">今、意識するポイント</h2>
+        <div id="points" class="points"></div>
+        <p id="pointsEmpty" class="empty" hidden>右上の＋から注意点を登録し、最重要ポイントに指定するとここに表示されます</p>
+        <h2 class="section-title">カテゴリ</h2>
+        <nav id="categories" class="categories" aria-label="カテゴリ"></nav>
+        <a class="settings-link" href="#/settings">設定・バックアップ</a>
+      </section>
+
+      <section id="categoryView" hidden>
+        <p id="dragHint" class="hint" hidden>長押ししてドラッグすると並び替えできます</p>
+        <ul id="noteList" class="notes"></ul>
+        <p id="categoryEmpty" class="empty" hidden>注意点はまだありません</p>
+      </section>
+
+      <section id="settingsView" hidden>
+        <h2 class="section-title">習得済みポイント</h2>
+        <ul id="masteredList" class="notes"></ul>
+        <p id="masteredEmpty" class="empty" hidden>習得済みのポイントはありません</p>
+        <h2 class="section-title">バックアップ</h2>
+        <button id="exportBtn" class="wide-btn" type="button">バックアップを書き出す</button>
+        <button id="importBtn" class="wide-btn" type="button">バックアップから復元</button>
+        <p id="settingsInfo" class="info"></p>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="formDialog" class="sheet">
+    <form id="noteForm" class="sheet-form" novalidate autocomplete="off">
+      <div class="sheet-bar">
+        <button id="formCancel" class="bar-btn" type="button">キャンセル</button>
+        <span id="formTitle" class="sheet-title"></span>
+        <button class="bar-btn bar-save" type="submit">保存</button>
+      </div>
+      <div class="sheet-body">
+        <label class="field">
+          <span class="field-label">タイトル（必須）</span>
+          <input id="fieldTitle" type="text" maxlength="100" enterkeyhint="next">
+        </label>
+        <fieldset class="field">
+          <legend class="field-label">カテゴリ（必須）</legend>
+          <div id="fieldCategory" class="choices"></div>
+        </fieldset>
+        <label class="field">
+          <span class="field-label">補足メモ</span>
+          <textarea id="fieldMemo" rows="4" maxlength="2000"></textarea>
+        </label>
+        <div class="field">
+          <span class="field-label">参考動画URL</span>
+          <div id="urlList" class="url-list"></div>
+          <button id="addUrl" class="text-btn" type="button">＋ URLを追加</button>
+        </div>
+        <label class="switch">
+          <span>最重要ポイント</span>
+          <input id="fieldImportant" type="checkbox">
+        </label>
+        <p id="releaseHint" class="hint" hidden></p>
+        <label class="switch">
+          <span>習得済み</span>
+          <input id="fieldMastered" type="checkbox">
+        </label>
+        <button id="formDelete" class="wide-btn danger" type="button" hidden>この注意点を削除</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="limitDialog" class="dlg">
+    <div class="dlg-body">
+      <h2 class="dlg-title">最重要ポイントは3件までです</h2>
+      <p class="dlg-text">解除するポイントを選んでください。</p>
+      <div id="limitList" class="limit-list"></div>
+      <button class="wide-btn" type="button" data-close>やめる</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <input id="importFile" type="file" accept="application/json,.json" hidden>
+</body>
+</html>
