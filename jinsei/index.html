@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>人生コレクション100</title>
+  <meta name="description" content="これからやりたいことと、これまでに経験したことをコレクションする個人用アプリ。">
+  <meta name="theme-color" content="#fbf8f3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1c1a17" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="人生コレクション">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <a id="backLink" class="icon-btn" href="#/wish" aria-label="戻る" hidden>
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </a>
+      <div class="title-box">
+        <h1 id="pageTitle" class="page-title"></h1>
+        <p id="pageCount" class="page-count"></p>
+      </div>
+      <a id="settingsLink" class="icon-btn" href="#/settings" aria-label="設定・バックアップ">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </a>
+      <button id="newBtn" class="new-btn" type="button" aria-label="新しく登録">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+    </header>
+
+    <div id="reminder" class="reminder" hidden>
+      <p id="reminderText"></p>
+      <div class="reminder-actions">
+        <a class="text-btn strong" href="#/settings">バックアップへ</a>
+        <button id="reminderLater" class="text-btn" type="button">あとで</button>
+      </div>
+    </div>
+
+    <main id="main" class="main">
+      <!-- 一覧の上の検索・絞り込み（やりたいこと・思い出・すべてで共通） -->
+      <div id="filterBar" class="filter-bar" hidden>
+        <div class="search-row">
+          <label class="search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <input id="searchInput" type="search" placeholder="検索" autocomplete="off" enterkeyhint="search" aria-label="検索">
+          </label>
+          <button id="gachaBtn" class="tool-btn" type="button" hidden>🎲 ガチャ</button>
+          <div id="viewToggle" class="seg small" role="group" aria-label="表示の切り替え" hidden>
+            <button type="button" data-mode="cards">カード</button>
+            <button type="button" data-mode="timeline">年表</button>
+          </div>
+        </div>
+        <div id="statusChips" class="chips" hidden></div>
+        <div id="categoryChips" class="chips"></div>
+      </div>
+
+      <section id="wishView" hidden>
+        <ul id="wishList" class="rows"></ul>
+      </section>
+
+      <section id="memView" hidden>
+        <div id="cardGrid" class="cards"></div>
+        <div id="timeline" class="timeline" hidden></div>
+      </section>
+
+      <section id="allView" hidden>
+        <ul id="allList" class="rows"></ul>
+      </section>
+
+      <section id="archivedView" hidden>
+        <p class="hint">興味がなくなった項目を保管しています。開いて「復帰する」で元に戻せます。</p>
+        <ul id="archivedList" class="rows"></ul>
+      </section>
+
+      <p id="emptyText" class="empty" hidden></p>
+      <a id="archivedLink" class="sub-link" href="#/archived" hidden></a>
+
+      <section id="settingsView" hidden>
+        <h2 class="section-title">データ</h2>
+        <dl id="stats" class="stats"></dl>
+        <p class="info">使用量は「この端末で使っている量 / ブラウザが使える上限の目安」です。</p>
+        <p id="persistInfo" class="info"></p>
+        <a class="wide-btn" href="#/archived">保管中の項目を見る</a>
+
+        <h2 class="section-title">バックアップ</h2>
+        <p id="lastBackup" class="info"></p>
+        <button id="exportBtn" class="wide-btn primary" type="button">バックアップを作成（ZIP）</button>
+        <div id="exportReady" class="export-ready" hidden>
+          <p id="exportInfo" class="info"></p>
+          <button id="saveZipBtn" class="wide-btn primary" type="button">ファイルに保存する</button>
+        </div>
+        <button id="importBtn" class="wide-btn" type="button">バックアップから復元</button>
+        <input id="importFile" type="file" accept=".zip,application/zip" hidden>
+        <p id="backupMsg" class="info" role="status"></p>
+
+        <h2 class="section-title">大切なデータを守るために</h2>
+        <ul class="notes">
+          <li>データと写真はこの端末の中だけに保存されます。サーバーには送りません。</li>
+          <li>Safari の「履歴とWebサイトデータを消去」や、ホーム画面のアプリの削除でデータは消えます。</li>
+          <li>機種変更の前には、バックアップの ZIP を「ファイル」アプリや iCloud Drive に保存し、新しい iPhone で復元してください。</li>
+          <li>Safari とホーム画面のアプリでは保存先が別です。ホーム画面に追加して使うのがおすすめです。</li>
+          <li>ときどき（月に1回くらい）バックアップを作成しておくと安心です。</li>
+        </ul>
+        <p class="version">人生コレクション100 v1.0.0</p>
+      </section>
+    </main>
+
+    <nav id="tabs" class="tabs" aria-label="画面の切り替え">
+      <a href="#/wish" data-tab="wish">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="3"/></svg>
+        <span>やりたいこと</span>
+      </a>
+      <a href="#/memories" data-tab="memories">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+        <span>思い出</span>
+      </a>
+      <a href="#/all" data-tab="all">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <span>すべて</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- 詳細 -->
+  <dialog id="detailDialog" class="sheet">
+    <div class="sheet-head">
+      <button class="text-btn" type="button" data-close>閉じる</button>
+      <span class="sheet-title"></span>
+      <button id="detailEdit" class="text-btn strong" type="button">編集</button>
+    </div>
+    <div class="sheet-body">
+      <div id="detailPhotos" class="photo-strip"></div>
+      <p id="detailPhotoPos" class="photo-pos" hidden></p>
+      <div class="detail-title-row">
+        <h2 id="detailTitle" class="detail-title"></h2>
+        <button id="detailFav" class="star-btn big" type="button" aria-pressed="false" aria-label="お気に入り">★</button>
+      </div>
+      <p id="detailMeta" class="detail-meta"></p>
+      <p id="detailNote" class="detail-note"></p>
+      <div class="detail-actions">
+        <button id="detailAchieve" class="wide-btn primary" type="button">🎉 達成した！</button>
+        <button id="detailAgain" class="wide-btn" type="button">もう一度やりたいことに登録</button>
+        <button id="detailArchive" class="wide-btn" type="button"></button>
+        <button id="detailDelete" class="wide-btn danger" type="button">完全に削除</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 登録・編集 -->
+  <dialog id="formDialog" class="sheet">
+    <form id="itemForm" method="dialog" novalidate>
+      <div class="sheet-head">
+        <button id="formCancel" class="text-btn" type="button">キャンセル</button>
+        <span id="formHeading" class="sheet-title"></span>
+        <button id="formSave" class="text-btn strong" type="submit">保存</button>
+      </div>
+      <div class="sheet-body">
+        <p id="formError" class="form-error" role="alert" hidden></p>
+        <label class="field">
+          <span class="label">タイトル</span>
+          <input id="fTitle" name="title" type="text" maxlength="200" autocomplete="off" enterkeyhint="done" placeholder="例：オーロラを見る">
+        </label>
+
+        <div class="field">
+          <span class="label">種類</span>
+          <div class="seg" role="radiogroup" aria-label="種類">
+            <label><input type="radio" name="kind" value="wish"><span>これからやりたい</span></label>
+            <label><input type="radio" name="kind" value="done"><span>過去に経験した</span></label>
+          </div>
+        </div>
+
+        <div id="dateField" class="field">
+          <span class="label">達成日・時期（わかる範囲で）</span>
+          <div class="seg wrap" role="radiogroup" aria-label="日付の細かさ">
+            <label><input type="radio" name="precision" value="none"><span>なし</span></label>
+            <label><input type="radio" name="precision" value="decade"><span>年代</span></label>
+            <label><input type="radio" name="precision" value="year"><span>年</span></label>
+            <label><input type="radio" name="precision" value="month"><span>年月</span></label>
+            <label><input type="radio" name="precision" value="day"><span>年月日</span></label>
+          </div>
+          <div class="date-inputs">
+            <select id="fDecade" aria-label="年代"></select>
+            <label id="fYearBox" class="inline"><input id="fYear" type="text" inputmode="numeric" maxlength="4" placeholder="2024" aria-label="年">年</label>
+            <label id="fMonthBox" class="inline"><select id="fMonth" aria-label="月"></select>月</label>
+            <label id="fDayBox" class="inline"><select id="fDay" aria-label="日"></select>日</label>
+          </div>
+        </div>
+
+        <label class="field">
+          <span class="label">カテゴリ（任意）</span>
+          <select id="fCategory" name="category"></select>
+        </label>
+
+        <label class="check-field">
+          <input id="fFavorite" name="favorite" type="checkbox">
+          <span>★ お気に入り</span>
+        </label>
+
+        <label class="field">
+          <span id="noteLabel" class="label">メモ</span>
+          <textarea id="fNote" name="note" rows="4" maxlength="5000"></textarea>
+        </label>
+
+        <div class="field">
+          <span class="label">写真（任意）</span>
+          <div id="formPhotos" class="form-photos"></div>
+          <p id="photoHint" class="hint small" hidden>写真をタップすると代表写真（先頭）になります。◀ ▶ で並べ替え。</p>
+          <label class="wide-btn">
+            ＋ 写真を追加
+            <input id="photoInput" type="file" accept="image/*" multiple hidden>
+          </label>
+          <p id="photoStatus" class="info" role="status"></p>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ガチャ -->
+  <dialog id="gachaDialog" class="center-dialog">
+    <p class="gacha-label">今日のやりたいこと</p>
+    <div id="gachaCard" class="gacha-card">
+      <span id="gachaEmoji" class="gacha-emoji"></span>
+      <p id="gachaTitle" class="gacha-title"></p>
+    </div>
+    <div class="dialog-actions">
+      <button id="gachaAgain" class="wide-btn" type="button">🎲 もう一回</button>
+      <button id="gachaOpen" class="wide-btn primary" type="button">詳しく見る</button>
+      <button class="text-btn" type="button" data-close>閉じる</button>
+    </div>
+  </dialog>
+
+  <!-- 確認 -->
+  <dialog id="confirmDialog" class="center-dialog">
+    <p id="confirmText" class="confirm-text"></p>
+    <div id="confirmButtons" class="dialog-actions"></div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" popover="manual" hidden>
+    <span id="toastText"></span>
+    <button id="toastAction" class="toast-action" type="button" hidden></button>
+  </div>
+</body>
+</html>
