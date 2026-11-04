@@ -202,24 +202,31 @@ input[type="text"]:focus { border-color: var(--accent); }
   font-weight: 800;
 }
 .order-name { flex: 1; min-width: 0; font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
-.order-members { margin: 8px 0 0 44px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.order-members { margin: 8px 0 0 12px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .order-members li { display: flex; align-items: center; gap: 6px; }
 .order-members .mname { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.drag-zone {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
+.drag-handle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-left: 2px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: #ece6d8;
+  color: var(--ink);
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
   touch-action: none; /* ここでのスワイプはページスクロールではなく並べ替えに使う */
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
-.drag-handle { flex: none; width: 28px; text-align: center; font-size: 1.4rem; font-weight: 800; color: var(--muted); }
 .dragging { opacity: 0.9; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); outline: 3px solid var(--sel-ring); position: relative; z-index: 2; background: var(--surface); }
-.dragging .drag-zone { cursor: grabbing; }
+.dragging .drag-handle { cursor: grabbing; background: var(--sel-ring); }
 
 /* ── 得点入力 ── */
 .scoreboard {

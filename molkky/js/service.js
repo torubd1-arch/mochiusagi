@@ -91,6 +91,25 @@ export async function startNextGame(store, session, order) {
   return { session: nextSession, game };
 }
 
+/**
+ * まだ投擲がないゲームの開始を取り消し、順番決めに戻れるようにする。
+ * 第1ゲームなら対戦ごと削除し（登録情報は開始時に確定するため）、第2ゲーム以降はそのゲームだけを削除する。
+ */
+export async function cancelGameStart(store, session, game) {
+  const lastId = session.gameIds[session.gameIds.length - 1];
+  if (session.status !== 'inProgress' || lastId !== game.id || game.status !== 'inProgress') {
+    throw new ServiceError('このゲームは取り消せません');
+  }
+  const guard = { store: 'games', id: game.id, field: 'throwCount', equals: 0 };
+  if (session.gameIds.length === 1) {
+    await store.commit({ deleteSessions: [session.id], deleteGames: [game.id] }, guard);
+    return { session: null };
+  }
+  const nextSession = { ...session, gameIds: session.gameIds.slice(0, -1) };
+  await store.commit({ sessions: [nextSession], deleteGames: [game.id] }, guard);
+  return { session: nextSession };
+}
+
 /** 対戦を終了する。進行中ゲームは中断扱いにする */
 export async function endSession(store, session) {
   const games = [];
