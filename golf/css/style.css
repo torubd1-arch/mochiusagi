@@ -355,8 +355,19 @@ a { color: inherit; }
 
 .url-list { display: grid; gap: 8px; }
 .url-row { display: flex; gap: 4px; }
+.url-btn {
+  flex: none;
+  min-width: 52px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-size: 15px;
+  font-weight: 700;
+}
 .url-row input { flex: 1; min-width: 0; }
-.url-remove { flex: none; width: 48px; border: 0; background: none; color: var(--sub); font-size: 26px; }
+.url-remove { flex: none; width: 40px; border: 0; background: none; color: var(--sub); font-size: 26px; }
 .text-btn { min-height: 48px; padding: 0 2px; border: 0; background: none; color: var(--green); font-weight: 700; }
 
 .switch {
