@@ -9,11 +9,11 @@ import { loadNotes, saveNotes, STORAGE_KEY, BROKEN_KEY } from '../js/store.js';
 const AT = '2026-11-01T00:00:00.000Z';
 
 function note(id, category = 'iron', extra = {}) {
-  return { id, title: id, category, memo: '', urls: [], important: false, mastered: false, createdAt: AT, updatedAt: AT, ...extra };
+  return { id, title: id, category, memo: '', urls: [], color: 'white', important: false, mastered: false, createdAt: AT, updatedAt: AT, ...extra };
 }
 
 function fields(extra = {}) {
-  return { title: '左足に体重', category: 'driver', memo: '', urls: [], important: false, mastered: false, ...extra };
+  return { title: '左足に体重', category: 'driver', color: 'white', memo: '', urls: [], important: false, mastered: false, ...extra };
 }
 
 function memoryStorage(initial = {}) {
@@ -109,6 +109,19 @@ test('ホームの最重要はカテゴリ順で、習得済みを含まない',
   assert.deepEqual(ids(importantNotes(notes)), ['d', 'p']);
 });
 
+test('背景色は保存され、色のない古いデータは白として読み込む', () => {
+  const [added] = saveNote([], fields({ color: 'blue' }));
+  assert.equal(added.color, 'blue');
+  const edited = saveNote([added], { ...added, color: 'red' });
+  assert.equal(edited[0].color, 'red');
+  assert.equal(setImportant(edited, added.id, true)[0].color, 'red', '他の操作で色が変わらない');
+
+  const { color, ...old } = note('a');
+  assert.equal(normalizeNote(old).color, 'white');
+  assert.equal(normalizeNote(note('a', 'iron', { color: 'pink' })), null);
+  assert.equal(normalizeNote(note('a', 'iron', { color: '<b>' })), null);
+});
+
 test('削除', () => {
   assert.deepEqual(ids(deleteNote([note('a'), note('b')], 'a')), ['b']);
 });
@@ -141,6 +154,7 @@ test('不正なバックアップは全体を受け付けない', () => {
     ['タイトルなし', backup([note('a', 'iron', { title: '  ' })])],
     ['不明なカテゴリ', backup([note('a', 'wedge')])],
     ['危険なURL', backup([note('a', 'iron', { urls: ['javascript:alert(1)'] })])],
+    ['不明な背景色', backup([note('a', 'iron', { color: 'url(x)' })])],
     ['ID重複', backup([good, good])],
     ['最重要4件', backup([...threeImportant(), note('d', 'iron', { important: true })])],
   ];

@@ -95,7 +95,7 @@ a { color: inherit; }
 .section-title { margin: 20px 0 10px; font-size: 15px; font-weight: 700; color: var(--sub); }
 
 /* 最重要ポイント */
-.points { display: grid; gap: 14px; }
+.points { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
 .point {
   padding: 18px;
   border: 1px solid var(--line);
@@ -118,19 +118,37 @@ a { color: inherit; }
   overflow-wrap: anywhere;
 }
 .point-memo { margin: 10px 0 0; font-size: 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
-.videos { display: grid; gap: 8px; margin-top: 14px; }
+.videos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 14px; }
 .video {
   display: flex;
   align-items: center;
-  min-height: 48px;
-  padding: 0 14px;
+  gap: 6px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--line);
   border-radius: 12px;
+  background: rgba(255, 255, 255, 0.75);
+  cursor: default;
+}
+.video-url {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  color: var(--sub);
+}
+.video-btn {
+  flex: none;
+  min-width: 64px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 10px;
   background: var(--green-soft);
   color: var(--green);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  text-decoration: none;
-  overflow-wrap: anywhere;
 }
 
 /* カテゴリ入口 */
@@ -312,6 +330,29 @@ a { color: inherit; }
 .choice input:checked + span { border-color: var(--green); background: var(--green); color: #fff; }
 .choice input:focus-visible + span { outline: 3px solid #86b89a; outline-offset: 2px; }
 
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { position: relative; display: block; }
+.swatch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.swatch-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #b9c0b8;
+  border-radius: 50%;
+}
+.swatch input:checked + .swatch-dot { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--green); }
+.swatch input:checked + .swatch-dot::after {
+  content: "";
+  width: 9px;
+  height: 17px;
+  border: solid var(--green);
+  border-width: 0 3px 3px 0;
+  transform: translateY(-2px) rotate(45deg);
+}
+.swatch input:focus-visible + .swatch-dot { outline: 3px solid #86b89a; outline-offset: 4px; }
+
 .url-list { display: grid; gap: 8px; }
 .url-row { display: flex; gap: 4px; }
 .url-row input { flex: 1; min-width: 0; }
@@ -399,3 +440,12 @@ a { color: inherit; }
   font-weight: 600;
   z-index: 10;
 }
+
+/* 注意点の背景色（カード・一覧で共通。上の background より後に置く） */
+.bg-white { background: #ffffff; }
+.bg-red { background: #fde3e3; }
+.bg-orange { background: #feead5; }
+.bg-yellow { background: #fcf3c4; }
+.bg-green { background: #dff1e4; }
+.bg-blue { background: #dfe9fb; }
+.bg-purple { background: #ece3f8; }
