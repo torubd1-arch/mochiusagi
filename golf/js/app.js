@@ -5,7 +5,7 @@ import {
 } from './logic.js';
 import { loadNotes, saveNotes } from './store.js';
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const LONG_PRESS_MS = 350;
 const DRAG_SCROLL_EDGE = 70; // 画面の上下端からこの距離に指が入ると自動スクロールする
 const $ = (id) => document.getElementById(id);
@@ -50,6 +50,8 @@ function button(className, text, data) {
 
 function showToast(message) {
   const toast = $('toast');
+  // 開いているダイアログの上に出すため、ダイアログの中へ移す
+  (document.querySelector('dialog[open]') || document.body).append(toast);
   toast.textContent = message;
   toast.hidden = false;
   clearTimeout(toastTimer);
@@ -227,10 +229,27 @@ function addUrlRow(value = '') {
   input.placeholder = 'https://';
   input.value = value;
   input.setAttribute('aria-label', '参考動画URL');
-  row.append(input, button('url-remove', '×', { removeUrl: '' }));
-  row.lastChild.setAttribute('aria-label', 'このURLを取り除く');
+  const copy = button('url-btn', 'コピー', { urlAction: 'copy' });
+  copy.setAttribute('aria-label', 'このURLをコピー');
+  const open = button('url-btn', '開く', { urlAction: 'open' });
+  open.setAttribute('aria-label', 'このURLをブラウザで開く');
+  const remove = button('url-remove', '×', { removeUrl: '' });
+  remove.setAttribute('aria-label', 'このURLを取り除く');
+  row.append(input, copy, open, remove);
   $('urlList').append(row);
   return input;
+}
+
+/** 入力欄の URL を、保存時と同じ検証を通した形で返す。空や不正なら案内して null */
+function urlOfRow(row) {
+  const text = row.querySelector('input').value.trim();
+  if (!text) {
+    showToast('URLを入力してください');
+    return null;
+  }
+  const url = normalizeUrl(text);
+  if (!url) alert(`動画URLを確認してください。\n${text}\n（https から始まるURLを入力してください）`);
+  return url;
 }
 
 function readForm() {
@@ -515,6 +534,12 @@ function bindEvents() {
   $('fieldMastered').addEventListener('change', onMasteredChange);
   $('addUrl').addEventListener('click', () => addUrlRow().focus());
   $('urlList').addEventListener('click', (e) => {
+    const action = e.target.closest('[data-url-action]');
+    if (action) {
+      const url = urlOfRow(action.closest('.url-row'));
+      if (url) (action.dataset.urlAction === 'copy' ? copyUrl : openInBrowser)(url);
+      return;
+    }
     const remove = e.target.closest('[data-remove-url]');
     if (!remove) return;
     remove.closest('.url-row').remove();
