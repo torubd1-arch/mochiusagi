@@ -1,11 +1,11 @@
 // 画面の描画と操作
 import {
-  CATEGORIES, categoryLabel, normalizeUrl, urlLabel, importantNotes, notesInCategory, masteredNotes,
+  CATEGORIES, COLORS, DEFAULT_COLOR, categoryLabel, normalizeUrl, importantNotes, notesInCategory, masteredNotes,
   needsRelease, saveNote, setImportant, setMastered, deleteNote, reorderCategory, buildBackup, parseBackup,
 } from './logic.js';
 import { loadNotes, saveNotes } from './store.js';
 
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.1.0';
 const LONG_PRESS_MS = 350;
 const DRAG_SCROLL_EDGE = 70; // 画面の上下端からこの距離に指が入ると自動スクロールする
 const $ = (id) => document.getElementById(id);
@@ -91,7 +91,7 @@ function renderHome() {
 }
 
 function pointCard(note) {
-  const card = el('article', 'point');
+  const card = el('article', `point bg-${note.color}`);
   card.dataset.edit = note.id;
   card.append(el('p', 'point-cat', categoryLabel(note.category)));
   const title = el('h3', 'point-title');
@@ -105,13 +105,47 @@ function pointCard(note) {
 function videoLinks(urls) {
   const wrap = el('div', 'videos');
   urls.forEach((url) => {
-    const link = el('a', 'video', `▶ ${urlLabel(url)}`);
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    wrap.append(link);
+    const row = el('div', 'video');
+    const copy = button('video-btn', 'コピー', { copyUrl: url });
+    copy.setAttribute('aria-label', `${url} をコピー`);
+    const open = button('video-btn', '開く', { openUrl: url });
+    open.setAttribute('aria-label', `${url} をブラウザで開く`);
+    row.append(el('span', 'video-url', url.replace(/^https:\/\//, '')), copy, open);
+    wrap.append(row);
   });
   return wrap;
+}
+
+async function copyUrl(url) {
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch {
+    // Clipboard API が使えない環境向け
+    const area = el('textarea');
+    area.value = url;
+    area.readOnly = true;
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.append(area);
+    area.select();
+    area.setSelectionRange(0, url.length);
+    const ok = document.execCommand('copy');
+    area.remove();
+    if (!ok) {
+      alert(`コピーできませんでした。\n${url}`);
+      return;
+    }
+  }
+  showToast('URLをコピーしました');
+}
+
+function openInBrowser(url) {
+  // ホーム画面のアプリからは、アプリ内の簡易表示ではなく Safari で開く（iOS 17 以降の x-safari- スキーム）
+  if (navigator.standalone) {
+    location.href = `x-safari-${url}`;
+    return;
+  }
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 function renderCategory(category) {
@@ -122,7 +156,7 @@ function renderCategory(category) {
 }
 
 function noteRow(note) {
-  const li = el('li', 'note');
+  const li = el('li', `note bg-${note.color}`);
   li.dataset.id = note.id;
   const body = button('note-body', null, { edit: note.id });
   body.append(el('span', 'note-title', note.title));
@@ -140,7 +174,7 @@ function noteRow(note) {
 function renderSettings() {
   const mastered = masteredNotes(state.notes);
   $('masteredList').replaceChildren(...mastered.map((note) => {
-    const li = el('li', 'note');
+    const li = el('li', `note bg-${note.color}`);
     const body = button('note-body', null, { edit: note.id });
     body.append(el('span', 'note-cat', categoryLabel(note.category)), el('span', 'note-title', note.title));
     li.append(body, button('note-action restore', '戻す', { restore: note.id }));
@@ -201,9 +235,11 @@ function addUrlRow(value = '') {
 
 function readForm() {
   const category = document.querySelector('input[name="category"]:checked');
+  const color = document.querySelector('input[name="color"]:checked');
   return {
     title: $('fieldTitle').value,
     category: category ? category.value : '',
+    color: color ? color.value : DEFAULT_COLOR,
     memo: $('fieldMemo').value,
     urlTexts: [...$('urlList').querySelectorAll('input')].map((i) => i.value.trim()).filter(Boolean),
     important: $('fieldImportant').checked,
@@ -229,6 +265,8 @@ function openForm(id, category = '') {
   $('formDelete').hidden = !note;
   const selected = note ? note.category : category;
   for (const radio of document.querySelectorAll('input[name="category"]')) radio.checked = radio.value === selected;
+  const color = note ? note.color : DEFAULT_COLOR;
+  for (const radio of document.querySelectorAll('input[name="color"]')) radio.checked = radio.value === color;
   $('urlList').replaceChildren();
   (note && note.urls.length ? note.urls : ['']).forEach((url) => addUrlRow(url));
   state.form = { id, releaseId: null, initial: '' };
@@ -249,7 +287,7 @@ function closeForm() {
 
 function submitForm() {
   const { id, releaseId } = state.form;
-  const { title, category, memo, urlTexts, important, mastered } = readForm();
+  const { title, category, color, memo, urlTexts, important, mastered } = readForm();
   if (!title.trim()) {
     alert('タイトルを入力してください。');
     return;
@@ -264,7 +302,7 @@ function submitForm() {
     alert(`動画URLを確認してください。\n${bad}\n（https から始まるURLを入力してください）`);
     return;
   }
-  const next = saveNote(state.notes, { id, title, category, memo, urls: [...new Set(urls)], important, mastered }, { releaseId });
+  const next = saveNote(state.notes, { id, title, category, color, memo, urls: [...new Set(urls)], important, mastered }, { releaseId });
   if (!next) {
     alert('最重要ポイントは3件までです。');
     return;
@@ -440,11 +478,13 @@ function bindDrag(list) {
 
 function onMainClick(e) {
   if (Date.now() < ignoreClickUntil) return;
-  if (e.target.closest('a')) return; // 動画リンクは編集を開かない
-  const target = e.target.closest('[data-star],[data-master],[data-restore],[data-edit]');
+  const target = e.target.closest('[data-copy-url],[data-open-url],.video,[data-star],[data-master],[data-restore],[data-edit]');
   if (!target) return;
-  const { star, master, restore, edit } = target.dataset;
-  if (star) toggleImportant(star);
+  const { copyUrl: copy, openUrl: open, star, master, restore, edit } = target.dataset;
+  if (copy) copyUrl(copy);
+  else if (open) openInBrowser(open);
+  else if (target.classList.contains('video')) return; // URL の文字部分では編集を開かない
+  else if (star) toggleImportant(star);
   else if (master) markMastered(master);
   else if (restore) restoreNote(restore);
   else openForm(edit);
@@ -505,14 +545,25 @@ function bindEvents() {
   });
 }
 
-function setupCategoryChoices() {
+function radio(name, value) {
+  const input = el('input');
+  input.type = 'radio';
+  input.name = name;
+  input.value = value;
+  return input;
+}
+
+function setupChoices() {
   $('fieldCategory').replaceChildren(...CATEGORIES.map((c) => {
     const label = el('label', 'choice');
-    const radio = el('input');
-    radio.type = 'radio';
-    radio.name = 'category';
-    radio.value = c.id;
-    label.append(radio, el('span', null, c.label));
+    label.append(radio('category', c.id), el('span', null, c.label));
+    return label;
+  }));
+  $('fieldColor').replaceChildren(...COLORS.map((c) => {
+    const label = el('label', 'swatch');
+    const input = radio('color', c.id);
+    input.setAttribute('aria-label', c.label);
+    label.append(input, el('span', `swatch-dot bg-${c.id}`));
     return label;
   }));
 }
@@ -527,7 +578,7 @@ function setupServiceWorker() {
   });
 }
 
-setupCategoryChoices();
+setupChoices();
 bindEvents();
 state.route = parseRoute();
 render();

@@ -15,6 +15,18 @@ export const CATEGORIES = [
   { id: 'other', label: '共通・その他' },
 ];
 
+/** 注意点の背景色。先頭が既定値 */
+export const COLORS = [
+  { id: 'white', label: '白' },
+  { id: 'red', label: '赤' },
+  { id: 'orange', label: 'オレンジ' },
+  { id: 'yellow', label: '黄' },
+  { id: 'green', label: '緑' },
+  { id: 'blue', label: '青' },
+  { id: 'purple', label: '紫' },
+];
+export const DEFAULT_COLOR = COLORS[0].id;
+
 const categoryIndex = (id) => CATEGORIES.findIndex((c) => c.id === id);
 
 export function categoryLabel(id) {
@@ -57,14 +69,16 @@ function isDateTime(value) {
 export function normalizeNote(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const { id, title, category, memo, urls, important, mastered, createdAt, updatedAt } = raw;
+  const color = raw.color ?? DEFAULT_COLOR; // 色を追加する前のデータは既定色にする
   if (typeof id !== 'string' || !id) return null;
+  if (!COLORS.some((c) => c.id === color)) return null;
   if (typeof title !== 'string' || !title.trim()) return null;
   if (categoryIndex(category) < 0 || typeof memo !== 'string' || !Array.isArray(urls)) return null;
   if (typeof important !== 'boolean' || typeof mastered !== 'boolean') return null;
   if (!isDateTime(createdAt) || !isDateTime(updatedAt)) return null;
   const cleanUrls = urls.map(normalizeUrl);
   if (cleanUrls.includes(null)) return null;
-  return { id, title, category, memo, urls: cleanUrls, important: important && !mastered, mastered, createdAt, updatedAt };
+  return { id, title, category, memo, urls: cleanUrls, color, important: important && !mastered, mastered, createdAt, updatedAt };
 }
 
 /** ホームに出す最重要ポイント（カテゴリ順） */
@@ -107,6 +121,7 @@ export function saveNote(notes, fields, { releaseId = null, now = new Date() } =
     category: fields.category,
     memo: fields.memo.trim(),
     urls: fields.urls,
+    color: fields.color || DEFAULT_COLOR,
     important: fields.important && !fields.mastered,
     mastered: fields.mastered,
     createdAt: current ? current.createdAt : stamp,
