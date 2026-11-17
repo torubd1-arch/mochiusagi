@@ -1,0 +1,11 @@
+{
+  "name": "approach30",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ショートアプローチ30（5〜20ydのアプローチ練習記録）",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.js\"",
+    "serve": "npx --yes http-server . -p 8080 -c-1"
+  }
+}
