@@ -38,7 +38,7 @@ const NOW = new Date('2026-11-17T10:00:00.000Z');
 
 test('練習設定（モード・球数・距離・クラブ）を保存して復元できる', () => {
   const storage = memoryStorage();
-  const s = { mode: 'fixed', totalShots: 20, club: 'PW', randomDistances: [6, 9, 18], fixedDistance: 11 };
+  const s = { mode: 'fixed', totalShots: 20, club: 'PW', randomDistances: [5, 30, 60], fixedDistance: 50 };
   assert.equal(saveSettings(s, storage).ok, true);
   assert.equal(JSON.parse(storage.data.get(KEYS.settings)).version, SCHEMA_VERSION);
   assert.deepEqual(loadSettings(storage).value, s);

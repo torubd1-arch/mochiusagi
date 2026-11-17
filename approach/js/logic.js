@@ -1,7 +1,5 @@
 // 出題・判定・集計の純粋ロジック（DOM・localStorage に依存しない。テスト対象）
 
-export const MIN_DISTANCE = 5;
-export const MAX_DISTANCE = 20;
 export const SHOT_COUNTS = [10, 20, 30];
 export const MODES = ['random', 'fixed'];
 export const MODE_LABELS = { random: 'ランダム', fixed: '固定' };
@@ -35,10 +33,12 @@ export const DEFAULT_SETTINGS = Object.freeze({
   fixedDistance: 15,
 });
 
-export const ALL_DISTANCES = Array.from({ length: MAX_DISTANCE - MIN_DISTANCE + 1 }, (_, i) => MIN_DISTANCE + i);
+/** 選べる目標距離（yd）。距離を増やすときはここに追加する */
+export const ALL_DISTANCES = Object.freeze([5, 10, 15, 20, 30, 40, 50, 60]);
+const DISTANCE_ERROR = `距離は${ALL_DISTANCES.join('・')}ydから選んでください`;
 
 export function isValidDistance(d) {
-  return Number.isInteger(d) && d >= MIN_DISTANCE && d <= MAX_DISTANCE;
+  return ALL_DISTANCES.includes(d);
 }
 
 /** 範囲外・重複を除き昇順にした距離一覧 */
@@ -76,10 +76,10 @@ export function validateSettings(settings) {
   if (!CLUB_IDS.includes(settings.club)) return 'クラブを選んでください';
   if (settings.mode === 'random') {
     const raw = Array.isArray(settings.randomDistances) ? settings.randomDistances : [];
-    if (raw.some((d) => !isValidDistance(d))) return `距離は${MIN_DISTANCE}〜${MAX_DISTANCE}ydで選んでください`;
+    if (raw.some((d) => !isValidDistance(d))) return DISTANCE_ERROR;
     if (cleanDistances(raw).length < 2) return 'ランダムでは距離を2つ以上選んでください';
   } else if (!isValidDistance(settings.fixedDistance)) {
-    return `距離は${MIN_DISTANCE}〜${MAX_DISTANCE}ydで選んでください`;
+    return DISTANCE_ERROR;
   }
   return null;
 }
