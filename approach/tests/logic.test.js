@@ -46,42 +46,44 @@ test('初期設定は 30球・SW・ランダム（10/15/20yd）、固定は15yd'
 });
 
 test('ランダムと固定を切り替えられ、球数とクラブの選択が保持される', () => {
-  const s = normalizeSettings({ mode: 'fixed', totalShots: 20, club: 'AW', fixedDistance: 12, randomDistances: [5, 8] });
-  assert.deepEqual(s, { mode: 'fixed', totalShots: 20, club: 'AW', randomDistances: [5, 8], fixedDistance: 12 });
+  const s = normalizeSettings({ mode: 'fixed', totalShots: 20, club: 'AW', fixedDistance: 40, randomDistances: [5, 50] });
+  assert.deepEqual(s, { mode: 'fixed', totalShots: 20, club: 'AW', randomDistances: [5, 50], fixedDistance: 40 });
   assert.equal(normalizeSettings({ ...s, mode: 'random' }).mode, 'random');
   // 不正な値は初期値に戻す
-  const bad = normalizeSettings({ mode: 'x', totalShots: 25, club: 'DR', fixedDistance: 21, randomDistances: [3, 30] });
+  const bad = normalizeSettings({ mode: 'x', totalShots: 25, club: 'DR', fixedDistance: 21, randomDistances: [3, 25] });
   assert.deepEqual(bad, normalizeSettings(undefined));
 });
 
-test('5〜20yd の範囲外は指定できない', () => {
-  assert.deepEqual(ALL_DISTANCES, [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]);
-  assert.deepEqual(toggleDistance([10, 15], 4), [10, 15]);
-  assert.deepEqual(toggleDistance([10, 15], 21), [10, 15]);
-  assert.match(validateSettings(settings({ mode: 'fixed', fixedDistance: 4 })), /5〜20yd/);
-  assert.match(validateSettings(settings({ mode: 'fixed', fixedDistance: 21 })), /5〜20yd/);
-  assert.match(validateSettings(settings({ mode: 'fixed', fixedDistance: 12.5 })), /5〜20yd/);
-  assert.match(validateSettings(settings({ randomDistances: [10, 25] })), /5〜20yd/);
-  assert.throws(() => createSession(settings({ mode: 'fixed', fixedDistance: 21 })));
+test('選択肢（5・10・15・20・30・40・50・60yd）以外は指定できない', () => {
+  assert.deepEqual(ALL_DISTANCES, [5, 10, 15, 20, 30, 40, 50, 60]);
+  for (const bad of [4, 7, 12, 25, 61, 70, 12.5, '10']) {
+    assert.deepEqual(toggleDistance([10, 15], bad), [10, 15], String(bad));
+    assert.match(validateSettings(settings({ mode: 'fixed', fixedDistance: bad })), /選んでください/, String(bad));
+  }
+  assert.match(validateSettings(settings({ randomDistances: [10, 25] })), /5・10・15・20・30・40・50・60yd/);
+  assert.throws(() => createSession(settings({ mode: 'fixed', fixedDistance: 7 })));
+  // 古い設定に選択肢外の距離が残っていても読み込み時に外す
+  assert.deepEqual(normalizeSettings({ randomDistances: [7, 10, 60], fixedDistance: 13 }).randomDistances, [10, 60]);
+  assert.equal(normalizeSettings({ fixedDistance: 13 }).fixedDistance, 15);
 });
 
-test('固定距離は 1yd 単位で指定できる', () => {
+test('固定距離はすべての選択肢を指定できる', () => {
   for (const d of ALL_DISTANCES) {
     assert.equal(validateSettings(settings({ mode: 'fixed', fixedDistance: d })), null);
   }
 });
 
 test('ランダムは複数距離を選べ、1種類では開始できない', () => {
-  let list = toggleDistance([], 7);
-  list = toggleDistance(list, 13);
-  list = toggleDistance(list, 19);
-  assert.deepEqual(list, [7, 13, 19]);
-  assert.deepEqual(toggleDistance(list, 13), [7, 19]); // もう一度押すと外れる
-  assert.equal(validateSettings(settings({ randomDistances: [7, 19] })), null);
-  assert.match(validateSettings(settings({ randomDistances: [7] })), /2つ以上/);
+  let list = toggleDistance([], 60);
+  list = toggleDistance(list, 5);
+  list = toggleDistance(list, 30);
+  assert.deepEqual(list, [5, 30, 60]);
+  assert.deepEqual(toggleDistance(list, 30), [5, 60]); // もう一度押すと外れる
+  assert.equal(validateSettings(settings({ randomDistances: [5, 60] })), null);
+  assert.match(validateSettings(settings({ randomDistances: [40] })), /2つ以上/);
   assert.match(validateSettings(settings({ randomDistances: [] })), /2つ以上/);
-  assert.match(validateSettings(settings({ randomDistances: [7, 7] })), /2つ以上/);
-  assert.throws(() => createSession(settings({ randomDistances: [7] })), /2つ以上/);
+  assert.match(validateSettings(settings({ randomDistances: [40, 40] })), /2つ以上/);
+  assert.throws(() => createSession(settings({ randomDistances: [40] })), /2つ以上/);
 });
 
 // ---- 出題 ----
@@ -94,8 +96,8 @@ test('ランダム出題：10・15・20yd × 30球は各10回', () => {
 
 test('ランダム出題：割り切れない場合も回数の差は最大1回、同じ距離は連続しない', () => {
   const cases = [
-    [[10, 15, 20], 20], [[10, 15, 20], 10], [[5, 20], 10], [[5, 20], 30], [[5, 6, 7, 8], 30],
-    [ALL_DISTANCES, 10], [ALL_DISTANCES, 30], [[8, 12, 16, 18, 20], 20], [[9, 11, 13, 15, 17, 19, 20], 30],
+    [[10, 15, 20], 20], [[10, 15, 20], 10], [[5, 60], 10], [[5, 60], 30], [[30, 40, 50, 60], 30],
+    [ALL_DISTANCES, 10], [ALL_DISTANCES, 20], [ALL_DISTANCES, 30], [[5, 15, 30, 50, 60], 20], [[5, 10, 20, 30, 40, 50, 60], 30],
   ];
   for (let seed = 1; seed <= 300; seed++) {
     for (const [ds, total] of cases) {
