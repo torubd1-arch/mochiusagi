@@ -1,8 +1,8 @@
 {
   "name": "approach30",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "ショートアプローチ30（5〜20ydのアプローチ練習記録）",
+  "description": "ショートアプローチ30（5〜60ydのアプローチ練習記録）",
   "type": "module",
   "scripts": {
     "test": "node --test \"tests/*.test.js\"",
