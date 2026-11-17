@@ -5,7 +5,7 @@ import {
 } from './logic.js';
 import { loadTasks, saveTasks } from './store.js';
 
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 const $ = (id) => document.getElementById(id);
 
@@ -114,13 +114,24 @@ function taskItem(t, sel) {
   const label = el('label', 'check');
   const cb = document.createElement('input');
   cb.type = 'checkbox';
+  cb.name = 'done';
   cb.checked = !!t.completedAt;
   cb.setAttribute('aria-label', `${t.text} を${t.completedAt ? '未完了に戻す' : '完了にする'}`);
   label.append(cb, el('span', 'box'));
 
+  // 着手済：完了とは別のチェック。たまに使う状態なので、完了とは独立して付け外しする
+  const startLabel = el('label', 'check check-start');
+  const sb = document.createElement('input');
+  sb.type = 'checkbox';
+  sb.name = 'started';
+  sb.checked = !!t.startedAt;
+  sb.setAttribute('aria-label', `${t.text} を${t.startedAt ? '着手済から外す' : '着手済にする'}`);
+  startLabel.append(sb, el('span', 'box', '着'));
+
   const body = el('button', 'task-body');
   body.type = 'button';
   body.append(el('span', 'task-text', t.text));
+  if (t.startedAt && !t.completedAt) body.append(el('span', 'badge-start', '着手済'));
   const meta = [];
   if (t.date < sel) meta.push(`${shortDate(t.date)} 登録`);
   const doneOn = completedDateOf(t);
@@ -131,7 +142,7 @@ function taskItem(t, sel) {
   const del = el('button', 'task-del', '削除');
   del.type = 'button';
   const row = el('div', 'task-row');
-  row.append(label, body);
+  row.append(label, startLabel, body);
   li.append(del, row);
   return li;
 }
@@ -178,6 +189,14 @@ function setCompleted(id, completed) {
   render();
 }
 
+function setStarted(id, started) {
+  const t = findTask(id);
+  if (!t) return;
+  t.startedAt = started ? new Date().toISOString() : null;
+  persist();
+  render();
+}
+
 function openEditor(id) {
   const t = findTask(id);
   if (!t) return;
@@ -185,6 +204,7 @@ function openEditor(id) {
   $('editText').value = t.text;
   $('editDate').value = t.date;
   const info = [`作成：${new Date(t.createdAt).toLocaleString('ja-JP')}`];
+  if (t.startedAt) info.push(`着手：${new Date(t.startedAt).toLocaleString('ja-JP')}`);
   if (t.completedAt) info.push(`完了：${new Date(t.completedAt).toLocaleString('ja-JP')}`);
   $('editInfo').textContent = info.join('\n');
   $('editDialog').showModal();
@@ -237,8 +257,9 @@ function shiftCalendar(months) {
 }
 
 function openMenu() {
-  const open = state.tasks.filter((t) => !t.completedAt).length;
-  $('menuInfo').textContent = `保存中のタスク：${state.tasks.length} 件（未完了 ${open} 件）\nデータはこの端末のブラウザ内に保存されます。\nバージョン ${APP_VERSION}`;
+  const open = state.tasks.filter((t) => !t.completedAt);
+  const started = open.filter((t) => t.startedAt).length;
+  $('menuInfo').textContent = `保存中のタスク：${state.tasks.length} 件（未完了 ${open.length} 件・うち着手済 ${started} 件）\nデータはこの端末のブラウザ内に保存されます。\nバージョン ${APP_VERSION}`;
   $('menuDialog').showModal();
 }
 
@@ -348,7 +369,9 @@ function bindEvents() {
   for (const list of [$('openList'), $('doneList')]) {
     list.addEventListener('change', (e) => {
       if (e.target.type !== 'checkbox') return;
-      setCompleted(e.target.closest('.task').dataset.id, e.target.checked);
+      const id = e.target.closest('.task').dataset.id;
+      if (e.target.name === 'started') setStarted(id, e.target.checked);
+      else setCompleted(id, e.target.checked);
     });
     list.addEventListener('click', (e) => {
       const del = e.target.closest('.task-del');

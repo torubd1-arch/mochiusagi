@@ -47,6 +47,7 @@ export function completedDateOf(task) {
 /**
  * タスクが一覧に載る最終日。
  * 未完了なら今日まで繰り越し、完了済みなら完了日まで。登録日より前にはならない。
+ * 着手済（startedAt）は完了ではないので、未完了と同じく繰り越す。
  */
 function lastShownDate(task, todayKey) {
   const end = task.completedAt ? completedDateOf(task) : todayKey;
@@ -76,19 +77,25 @@ function newId() {
 }
 
 export function createTask(text, dateKey, now = new Date()) {
-  return { id: newId(), text, date: dateKey, createdAt: now.toISOString(), completedAt: null };
+  return { id: newId(), text, date: dateKey, createdAt: now.toISOString(), startedAt: null, completedAt: null };
+}
+
+function isOptionalTime(value) {
+  return value == null || (typeof value === 'string' && !Number.isNaN(Date.parse(value)));
 }
 
 /** 保存データ・バックアップの1件を検証して整形する。不正なら null */
 export function normalizeTask(raw) {
   if (!raw || typeof raw !== 'object') return null;
-  const { id, text, date, createdAt, completedAt } = raw;
+  const { id, text, date, createdAt, startedAt, completedAt } = raw;
   if (typeof id !== 'string' || !id) return null;
   if (typeof text !== 'string' || !text.trim()) return null;
   if (!isDateKey(date)) return null;
   if (typeof createdAt !== 'string' || Number.isNaN(Date.parse(createdAt))) return null;
-  if (completedAt != null && (typeof completedAt !== 'string' || Number.isNaN(Date.parse(completedAt)))) return null;
-  return { id, text, date, createdAt, completedAt: completedAt ?? null };
+  if (!isOptionalTime(completedAt)) return null;
+  // startedAt（着手済にした日時）は後から追加した項目。古いデータには無いので null とみなす
+  if (!isOptionalTime(startedAt)) return null;
+  return { id, text, date, createdAt, startedAt: startedAt ?? null, completedAt: completedAt ?? null };
 }
 
 export function buildBackup(tasks, now = new Date()) {

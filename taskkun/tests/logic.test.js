@@ -15,7 +15,7 @@ function at(key, hour = 12) {
 }
 
 function task(id, date, completedOn = null) {
-  return { id, text: id, date, createdAt: at(date, 9), completedAt: completedOn ? at(completedOn) : null };
+  return { id, text: id, date, createdAt: at(date, 9), startedAt: null, completedAt: completedOn ? at(completedOn) : null };
 }
 
 const ids = (list) => list.map((t) => t.id);
@@ -101,12 +101,40 @@ test('未完了は登録日順、完了は完了日時順に並ぶ', () => {
   assert.deepEqual(ids(r.done), ['y', 'z']);
 });
 
+test('着手済のタスクは消し込まれず、未完了として繰り越される', () => {
+  const t = task('s', '2026-10-27');
+  t.startedAt = at('2026-10-28');
+  for (const day of ['2026-10-27', '2026-10-28', TODAY]) {
+    const r = tasksForDate([t], day, TODAY);
+    assert.deepEqual(ids(r.open), ['s'], day);
+    assert.deepEqual(r.done, [], day);
+  }
+});
+
+test('着手済のまま完了にすると完了扱いになり、完了を外すと着手済に戻る', () => {
+  const t = task('s', '2026-10-28', '2026-10-29');
+  t.startedAt = at('2026-10-28');
+  assert.deepEqual(ids(tasksForDate([t], '2026-10-29', TODAY).done), ['s']);
+  assert.deepEqual(tasksForDate([t], TODAY, TODAY).open, []);
+  t.completedAt = null;
+  assert.deepEqual(ids(tasksForDate([t], TODAY, TODAY).open), ['s']);
+  assert.ok(t.startedAt);
+});
+
+test('startedAt の無い古いデータは未着手として読み込め、不正な値の行は除外される', () => {
+  const { startedAt, ...old } = task('old', TODAY);
+  assert.deepEqual(parseBackup(JSON.stringify({ tasks: [old] })), [{ ...old, startedAt: null }]);
+  const bad = { ...task('bad', TODAY), startedAt: 'xxx' };
+  assert.deepEqual(ids(parseBackup(JSON.stringify({ tasks: [old, bad] }))), ['old']);
+});
+
 test('createTask は必要な項目を持つ', () => {
   const t = createTask('牛乳を買う', TODAY, new Date(2026, 9, 30, 8));
   assert.equal(typeof t.id, 'string');
   assert.equal(t.text, '牛乳を買う');
   assert.equal(t.date, TODAY);
   assert.equal(t.completedAt, null);
+  assert.equal(t.startedAt, null);
   assert.ok(!Number.isNaN(Date.parse(t.createdAt)));
 });
 
