@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="クラブ距離表">
+  <meta name="theme-color" content="#ffffff">
+  <title>クラブ距離表</title>
+  <meta name="description" content="クラブごとのキャリーとトータルの飛距離をさっと確認する距離表。">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- A. 距離表 -->
+    <section id="view-table" class="view">
+      <div class="sticky-head">
+        <header class="topbar">
+          <h1>クラブ距離表</h1>
+          <button id="btn-edit" class="btn-secondary" type="button">編集</button>
+        </header>
+        <div class="row row-head">
+          <div class="cell club">CLUB</div>
+          <div class="cell carry">CARRY</div>
+          <div class="cell total">TOTAL</div>
+        </div>
+      </div>
+      <div id="table-body"></div>
+      <p class="unit-note">単位：yd</p>
+    </section>
+
+    <!-- B. 編集 -->
+    <section id="view-edit" class="view hidden">
+      <div class="sticky-head">
+        <header class="topbar">
+          <h1>編集</h1>
+          <button id="btn-done" class="btn-primary" type="button">距離表へ戻る</button>
+        </header>
+      </div>
+      <div id="edit-list"></div>
+      <button id="btn-add" class="btn-add" type="button">＋ クラブを追加</button>
+    </section>
+
+  </div>
+  <script src="app.js"></script>
+  <script>
+    /* ホーム画面のアプリでオフラインでも開けるようにする */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>
