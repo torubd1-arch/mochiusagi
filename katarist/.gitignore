@@ -1,0 +1,6 @@
+# 記事本文を含むため外部へ出さない
+data/
+output/
+logs/
+__pycache__/
+*.pyc
