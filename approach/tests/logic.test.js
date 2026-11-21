@@ -50,21 +50,21 @@ test('ランダムと固定を切り替えられ、球数とクラブの選択�
   assert.deepEqual(s, { mode: 'fixed', totalShots: 20, club: 'AW', randomDistances: [5, 50], fixedDistance: 40 });
   assert.equal(normalizeSettings({ ...s, mode: 'random' }).mode, 'random');
   // 不正な値は初期値に戻す
-  const bad = normalizeSettings({ mode: 'x', totalShots: 25, club: 'DR', fixedDistance: 21, randomDistances: [3, 25] });
+  const bad = normalizeSettings({ mode: 'x', totalShots: 25, club: 'DR', fixedDistance: 21, randomDistances: [3, 60] });
   assert.deepEqual(bad, normalizeSettings(undefined));
 });
 
-test('選択肢（5・10・15・20・30・40・50・60yd）以外は指定できない', () => {
-  assert.deepEqual(ALL_DISTANCES, [5, 10, 15, 20, 30, 40, 50, 60]);
-  for (const bad of [4, 7, 12, 25, 61, 70, 12.5, '10']) {
+test('選択肢（5・10・15・20・25・30・40・50yd）以外は指定できない', () => {
+  assert.deepEqual(ALL_DISTANCES, [5, 10, 15, 20, 25, 30, 40, 50]);
+  for (const bad of [4, 7, 12, 24, 60, 70, 12.5, '10']) {
     assert.deepEqual(toggleDistance([10, 15], bad), [10, 15], String(bad));
     assert.match(validateSettings(settings({ mode: 'fixed', fixedDistance: bad })), /選んでください/, String(bad));
   }
-  assert.match(validateSettings(settings({ randomDistances: [10, 25] })), /5・10・15・20・30・40・50・60yd/);
+  assert.match(validateSettings(settings({ randomDistances: [10, 60] })), /5・10・15・20・25・30・40・50yd/);
   assert.throws(() => createSession(settings({ mode: 'fixed', fixedDistance: 7 })));
   // 古い設定に選択肢外の距離が残っていても読み込み時に外す
-  assert.deepEqual(normalizeSettings({ randomDistances: [7, 10, 60], fixedDistance: 13 }).randomDistances, [10, 60]);
-  assert.equal(normalizeSettings({ fixedDistance: 13 }).fixedDistance, 15);
+  assert.deepEqual(normalizeSettings({ randomDistances: [7, 10, 25, 60], fixedDistance: 60 }).randomDistances, [10, 25]);
+  assert.equal(normalizeSettings({ fixedDistance: 60 }).fixedDistance, 15);
 });
 
 test('固定距離はすべての選択肢を指定できる', () => {
@@ -74,12 +74,12 @@ test('固定距離はすべての選択肢を指定できる', () => {
 });
 
 test('ランダムは複数距離を選べ、1種類では開始できない', () => {
-  let list = toggleDistance([], 60);
+  let list = toggleDistance([], 50);
   list = toggleDistance(list, 5);
   list = toggleDistance(list, 30);
-  assert.deepEqual(list, [5, 30, 60]);
-  assert.deepEqual(toggleDistance(list, 30), [5, 60]); // もう一度押すと外れる
-  assert.equal(validateSettings(settings({ randomDistances: [5, 60] })), null);
+  assert.deepEqual(list, [5, 30, 50]);
+  assert.deepEqual(toggleDistance(list, 30), [5, 50]); // もう一度押すと外れる
+  assert.equal(validateSettings(settings({ randomDistances: [5, 50] })), null);
   assert.match(validateSettings(settings({ randomDistances: [40] })), /2つ以上/);
   assert.match(validateSettings(settings({ randomDistances: [] })), /2つ以上/);
   assert.match(validateSettings(settings({ randomDistances: [40, 40] })), /2つ以上/);
@@ -96,8 +96,8 @@ test('ランダム出題：10・15・20yd × 30球は各10回', () => {
 
 test('ランダム出題：割り切れない場合も回数の差は最大1回、同じ距離は連続しない', () => {
   const cases = [
-    [[10, 15, 20], 20], [[10, 15, 20], 10], [[5, 60], 10], [[5, 60], 30], [[30, 40, 50, 60], 30],
-    [ALL_DISTANCES, 10], [ALL_DISTANCES, 20], [ALL_DISTANCES, 30], [[5, 15, 30, 50, 60], 20], [[5, 10, 20, 30, 40, 50, 60], 30],
+    [[10, 15, 20], 20], [[10, 15, 20], 10], [[5, 50], 10], [[5, 50], 30], [[25, 30, 40, 50], 30],
+    [ALL_DISTANCES, 10], [ALL_DISTANCES, 20], [ALL_DISTANCES, 30], [[5, 15, 25, 40, 50], 20], [[5, 10, 20, 25, 30, 40, 50], 30],
   ];
   for (let seed = 1; seed <= 300; seed++) {
     for (const [ds, total] of cases) {

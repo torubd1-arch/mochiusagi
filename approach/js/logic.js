@@ -34,7 +34,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
 });
 
 /** 選べる目標距離（yd）。距離を増やすときはここに追加する */
-export const ALL_DISTANCES = Object.freeze([5, 10, 15, 20, 30, 40, 50, 60]);
+export const ALL_DISTANCES = Object.freeze([5, 10, 15, 20, 25, 30, 40, 50]);
 const DISTANCE_ERROR = `距離は${ALL_DISTANCES.join('・')}ydから選んでください`;
 
 export function isValidDistance(d) {
