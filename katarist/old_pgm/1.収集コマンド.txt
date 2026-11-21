@@ -1,0 +1,1 @@
+python value_investor_thesis_collector.py --code 4709
