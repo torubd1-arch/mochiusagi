@@ -5,13 +5,27 @@ import {
 } from './logic.js';
 import { loadNotes, saveNotes } from './store.js';
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 const LONG_PRESS_MS = 350;
 const DRAG_SCROLL_EDGE = 70; // 画面の上下端からこの距離に指が入ると自動スクロールする
+const HOME_CATEGORY_KEY = 'golfmemo.homeCategory'; // ホームで最後に選んだカテゴリ（この端末の表示設定）
 const $ = (id) => document.getElementById(id);
+
+/** 前回選んだカテゴリ。なければ最重要ポイントのある最初のカテゴリ */
+function initialHomeCategory(notes) {
+  try {
+    const saved = localStorage.getItem(HOME_CATEGORY_KEY);
+    if (categoryLabel(saved)) return saved;
+  } catch {
+    // 読めなくても既定のカテゴリで表示する
+  }
+  const withPoints = CATEGORIES.find((c) => importantNotes(notes, c.id).length > 0);
+  return (withPoints || CATEGORIES[0]).id;
+}
 
 const state = {
   notes: loadNotes(),
+  homeCategory: null,
   route: { name: 'home' },
   form: null, // 編集中の { id, releaseId, initial }
   onRelease: null, // 上限ダイアログで解除先を選んだときの処理
@@ -81,21 +95,42 @@ function render() {
 }
 
 function renderHome() {
-  const points = importantNotes(state.notes);
+  const category = state.homeCategory;
+  const label = categoryLabel(category);
+  $('homeTabs').replaceChildren(...CATEGORIES.map((c) => {
+    const tab = button('tab', null, { homeCategory: c.id });
+    tab.id = `tab-${c.id}`;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', String(c.id === category));
+    tab.append(el('span', null, c.label));
+    const count = importantNotes(state.notes, c.id).length;
+    if (count) tab.append(el('span', 'tab-count', `★${count}`));
+    return tab;
+  }));
+  $('points').setAttribute('aria-labelledby', `tab-${category}`);
+
+  const points = importantNotes(state.notes, category);
   $('points').replaceChildren(...points.map(pointCard));
   $('pointsEmpty').hidden = points.length > 0;
-  $('categories').replaceChildren(...CATEGORIES.map((c) => {
-    const link = el('a', 'category');
-    link.href = `#/category/${c.id}`;
-    link.append(el('span', 'category-name', c.label), el('span', 'category-count', String(notesInCategory(state.notes, c.id).length)));
-    return link;
-  }));
+  $('pointsEmpty').textContent = `「${label}」の最重要ポイントはまだありません。右上の＋から登録し、最重要ポイントに指定するとここに表示されます（3件まで）`;
+  const link = $('categoryLink');
+  link.href = `#/category/${category}`;
+  link.textContent = `${label}の一覧（${notesInCategory(state.notes, category).length}件）`;
+}
+
+function selectHomeCategory(category) {
+  state.homeCategory = category;
+  try {
+    localStorage.setItem(HOME_CATEGORY_KEY, category);
+  } catch {
+    // 保存できなくても切り替えは続ける
+  }
+  renderHome();
 }
 
 function pointCard(note) {
   const card = el('article', `point bg-${note.color}`);
   card.dataset.edit = note.id;
-  card.append(el('p', 'point-cat', categoryLabel(note.category)));
   const title = el('h3', 'point-title');
   title.append(button('point-title-btn', note.title, { edit: note.id }));
   card.append(title);
@@ -188,10 +223,11 @@ function renderSettings() {
 
 // ---- 最重要・習得済み ----
 
-/** 上限のとき、解除する注意点を選んでもらう。onPick(解除するid) */
-function askRelease(excludeId, onPick) {
-  const others = importantNotes(state.notes).filter((n) => n.id !== excludeId);
+/** カテゴリの上限のとき、同じカテゴリから解除する注意点を選んでもらう。onPick(解除するid) */
+function askRelease(category, excludeId, onPick) {
+  const others = importantNotes(state.notes, category).filter((n) => n.id !== excludeId);
   state.onRelease = onPick;
+  $('limitTitle').textContent = `「${categoryLabel(category)}」の最重要ポイントは3件までです`;
   $('limitList').replaceChildren(...others.map((n) => button('limit-item', n.title, { release: n.id })));
   $('limitDialog').showModal();
 }
@@ -202,8 +238,8 @@ function toggleImportant(id) {
     commit(setImportant(state.notes, id, false));
     return;
   }
-  if (needsRelease(state.notes, id)) {
-    askRelease(id, (releaseId) => commit(setImportant(state.notes, id, true, { releaseId })));
+  if (needsRelease(state.notes, id, note.category)) {
+    askRelease(note.category, id, (releaseId) => commit(setImportant(state.notes, id, true, { releaseId })));
     return;
   }
   commit(setImportant(state.notes, id, true));
@@ -323,10 +359,17 @@ function submitForm() {
   }
   const next = saveNote(state.notes, { id, title, category, color, memo, urls: [...new Set(urls)], important, mastered }, { releaseId });
   if (!next) {
-    alert('最重要ポイントは3件までです。');
+    // 最重要のままカテゴリを変えた・カテゴリを後から選んだなどで、そのカテゴリが3件埋まっている
+    askRelease(category, id, (picked) => {
+      setRelease(picked);
+      submitForm();
+    });
     return;
   }
-  if (commit(next)) $('formDialog').close();
+  if (!commit(next)) return;
+  $('formDialog').close();
+  // ホームから最重要として保存したら、そのカテゴリのタブを表示する
+  if (state.route.name === 'home' && important && !mastered) selectHomeCategory(category);
 }
 
 function deleteFromForm() {
@@ -341,12 +384,20 @@ function onImportantChange() {
     setRelease(null);
     return;
   }
-  if (!needsRelease(state.notes, state.form.id)) return;
+  const { category } = readForm();
+  // カテゴリが未選択なら、保存時にそのカテゴリの上限を確認する
+  if (!category || !needsRelease(state.notes, state.form.id, category)) return;
   input.checked = false;
-  askRelease(state.form.id, (releaseId) => {
+  askRelease(category, state.form.id, (releaseId) => {
     input.checked = true;
     setRelease(releaseId);
   });
+}
+
+/** カテゴリを変えたら、別のカテゴリ向けに選んでいた解除先は取り消す */
+function onCategoryChange() {
+  const { releaseId } = state.form;
+  if (releaseId && findNote(releaseId).category !== readForm().category) setRelease(null);
 }
 
 function onMasteredChange() {
@@ -516,7 +567,13 @@ function bindEvents() {
     $('main').scrollTop = 0;
   });
 
-  $('newBtn').addEventListener('click', () => openForm(null, state.route.category));
+  // ホームでは選んでいるカテゴリ、一覧ではそのカテゴリを最初から選んでおく
+  $('newBtn').addEventListener('click', () => openForm(null, state.route.name === 'home' ? state.homeCategory : state.route.category));
+  $('homeTabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-home-category]');
+    if (tab) selectHomeCategory(tab.dataset.homeCategory);
+  });
+  $('fieldCategory').addEventListener('change', onCategoryChange);
   $('main').addEventListener('click', onMainClick);
   bindDrag($('noteList'));
 
@@ -605,6 +662,7 @@ function setupServiceWorker() {
 
 setupChoices();
 bindEvents();
+state.homeCategory = initialHomeCategory(state.notes);
 state.route = parseRoute();
 render();
 setupServiceWorker();
