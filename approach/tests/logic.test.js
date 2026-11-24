@@ -153,12 +153,12 @@ test('固定距離モードは全球同じ距離・同じクラブ', () => {
 // ---- 練習中（判定） ----
 
 test('表示する距離・クラブは出題順どおり', () => {
-  let s = createSession(settings({ club: 'PW', totalShots: 10 }), { rng: seeded(3), id: 'x' });
+  let s = createSession(settings({ club: '7I', totalShots: 10 }), { rng: seeded(3), id: 'x' });
   for (let i = 0; i < 10; i++) {
     const cur = currentShot(s);
     assert.equal(cur.shotNumber, i + 1);
     assert.equal(cur.targetDistance, s.distanceSequence[i]);
-    assert.equal(cur.club, 'PW');
+    assert.equal(cur.club, '7I');
     s = recordShot(s, 'success');
   }
 });
@@ -298,9 +298,9 @@ test('クラブ別集計（固定距離モードのクラブも含む・打球0�
     sessionOf('b', { mode: 'fixed', club: 'AW', shots: [[15, 's'], [15, 'f:top'], [15, 'n:duff'], [15, 's'], [15, 's']] }),
   ];
   const rows = summarizeByClub(overallShots(history));
-  assert.deepEqual(rows.map((r) => [r.club, r.total, r.success, r.top]), [['PW', 0, 0, 0], ['AW', 5, 3, 1], ['SW', 4, 3, 1]]);
-  assert.equal(rows[1].successRate, 60);
-  assert.equal(rows[1].topRate, 20);
+  assert.deepEqual(rows.map((r) => [r.club, r.total, r.success, r.top]), [['7I', 0, 0, 0], ['PW', 0, 0, 0], ['AW', 5, 3, 1], ['SW', 4, 3, 1]]);
+  assert.equal(rows[2].successRate, 60);
+  assert.equal(rows[2].topRate, 20);
   assert.equal(formatRate(rows[0].successRate), '—');
 });
 
