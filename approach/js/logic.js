@@ -6,6 +6,7 @@ export const MODE_LABELS = { random: 'ランダム', fixed: '固定' };
 
 /** クラブ定義。将来クラブを増やすときはここに追加する */
 export const CLUBS = [
+  { id: '7I', loft: 30 },
   { id: 'PW', loft: 45 },
   { id: 'AW', loft: 50 },
   { id: 'SW', loft: 55 },
