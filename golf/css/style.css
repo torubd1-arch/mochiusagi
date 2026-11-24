@@ -103,7 +103,6 @@ a { color: inherit; }
   background: var(--surface);
   cursor: pointer;
 }
-.point-cat { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: var(--green); }
 .point-title { margin: 0; }
 .point-title-btn {
   display: block;
@@ -151,22 +150,40 @@ a { color: inherit; }
   font-weight: 700;
 }
 
-/* カテゴリ入口 */
-.categories { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.category {
+/* ホームのカテゴリ切り替え */
+.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.tab {
+  position: relative;
+  min-height: 50px;
+  padding: 0 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: min(16px, 4.3vw); /* 「共通・その他」を幅320pxでも1行に収める */
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tab[aria-selected="true"] { border-color: var(--green); background: var(--green); color: #fff; }
+/* 最重要の件数は右上に小さく出し、カテゴリ名の幅を変えない */
+.tab-count { position: absolute; top: 3px; right: 6px; font-size: 11px; line-height: 1; color: var(--gold); }
+.tab[aria-selected="true"] .tab-count { color: #fff; opacity: 0.85; }
+
+/* カテゴリの一覧へ */
+.list-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  min-height: 68px;
-  padding: 0 14px;
+  min-height: 60px;
+  margin-top: 14px;
+  padding: 0 16px;
   border: 1px solid var(--line);
   border-radius: 14px;
   background: var(--surface);
+  font-size: 17px;
+  font-weight: 700;
   text-decoration: none;
 }
-.category-name { font-size: 18px; font-weight: 700; line-height: 1.25; }
-.category-count { font-size: 16px; font-weight: 600; color: var(--sub); }
+.list-link::after { content: "›"; font-size: 26px; color: var(--sub); }
 
 .settings-link {
   display: block;

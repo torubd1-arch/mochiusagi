@@ -81,12 +81,11 @@ export function normalizeNote(raw) {
   return { id, title, category, memo, urls: cleanUrls, color, important: important && !mastered, mastered, createdAt, updatedAt };
 }
 
-/** ホームに出す最重要ポイント（カテゴリ順） */
-export function importantNotes(notes) {
-  return notes
-    .filter((n) => n.important && !n.mastered)
-    .sort((a, b) => categoryIndex(a.category) - categoryIndex(b.category))
-    .slice(0, MAX_IMPORTANT);
+const importantIn = (notes, category) => notes.filter((n) => n.important && !n.mastered && n.category === category);
+
+/** ホームに出す、そのカテゴリの最重要ポイント（上限はカテゴリごと） */
+export function importantNotes(notes, category) {
+  return importantIn(notes, category).slice(0, MAX_IMPORTANT);
 }
 
 export function notesInCategory(notes, category) {
@@ -97,9 +96,9 @@ export function masteredNotes(notes) {
   return notes.filter((n) => n.mastered);
 }
 
-/** id の注意点を最重要にするとき、先に解除が必要なら true */
-export function needsRelease(notes, id) {
-  return notes.filter((n) => n.important && !n.mastered && n.id !== id).length >= MAX_IMPORTANT;
+/** id の注意点を category の最重要にするとき、同じカテゴリで先に解除が必要なら true */
+export function needsRelease(notes, id, category) {
+  return importantIn(notes, category).filter((n) => n.id !== id).length >= MAX_IMPORTANT;
 }
 
 function newId() {
@@ -110,7 +109,7 @@ function newId() {
 /**
  * 追加・更新。fields.id があれば更新。releaseId は同時に最重要を解除する注意点。
  * 習得済みは最重要にしない。カテゴリを変えた注意点は移動先の末尾に置く。
- * 最重要が上限を超えるなら null を返す。
+ * 移動先のカテゴリで最重要が上限を超えるなら null を返す。
  */
 export function saveNote(notes, fields, { releaseId = null, now = new Date() } = {}) {
   const current = fields.id ? notes.find((n) => n.id === fields.id) : null;
@@ -128,7 +127,7 @@ export function saveNote(notes, fields, { releaseId = null, now = new Date() } =
     updatedAt: stamp,
   };
   const released = notes.map((n) => (n.id === releaseId ? { ...n, important: false } : n));
-  if (note.important && needsRelease(released, note.id)) return null;
+  if (note.important && needsRelease(released, note.id, note.category)) return null;
   if (!current) return [...released, note];
   if (current.category !== note.category) return [...released.filter((n) => n.id !== note.id), note];
   return released.map((n) => (n.id === note.id ? note : n));
@@ -182,8 +181,10 @@ export function parseBackup(text) {
     seen.add(note.id);
     return note;
   });
-  if (notes.filter((n) => n.important).length > MAX_IMPORTANT) {
-    throw new Error(`最重要ポイントが ${MAX_IMPORTANT} 件を超えています。`);
+  for (const c of CATEGORIES) {
+    if (importantIn(notes, c.id).length > MAX_IMPORTANT) {
+      throw new Error(`「${c.label}」の最重要ポイントが ${MAX_IMPORTANT} 件を超えています。`);
+    }
   }
   return notes;
 }

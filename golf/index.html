@@ -32,10 +32,10 @@
     <main id="main" class="main">
       <section id="homeView" hidden>
         <h2 class="section-title">今、意識するポイント</h2>
-        <div id="points" class="points"></div>
-        <p id="pointsEmpty" class="empty" hidden>右上の＋から注意点を登録し、最重要ポイントに指定するとここに表示されます</p>
-        <h2 class="section-title">カテゴリ</h2>
-        <nav id="categories" class="categories" aria-label="カテゴリ"></nav>
+        <div id="homeTabs" class="tabs" role="tablist" aria-label="カテゴリ"></div>
+        <div id="points" class="points" role="tabpanel" aria-labelledby=""></div>
+        <p id="pointsEmpty" class="empty" hidden></p>
+        <a id="categoryLink" class="list-link" href="#/"></a>
         <a class="settings-link" href="#/settings">設定・バックアップ</a>
       </section>
 
@@ -102,7 +102,7 @@
 
   <dialog id="limitDialog" class="dlg">
     <div class="dlg-body">
-      <h2 class="dlg-title">最重要ポイントは3件までです</h2>
+      <h2 id="limitTitle" class="dlg-title"></h2>
       <p class="dlg-text">解除するポイントを選んでください。</p>
       <div id="limitList" class="limit-list"></div>
       <button class="wide-btn" type="button" data-close>やめる</button>

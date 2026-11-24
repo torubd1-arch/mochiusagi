@@ -69,13 +69,31 @@ test('カテゴリを変えると移動先の末尾に入る', () => {
   assert.deepEqual(ids(notesInCategory(next, 'iron')), ['b']);
 });
 
-test('最重要は3件まで', () => {
+test('最重要はカテゴリごとに3件まで', () => {
   const notes = [...threeImportant(), note('d')];
-  assert.equal(needsRelease(notes, 'd'), true);
-  assert.equal(needsRelease(notes, 'a'), false, '指定済みの本人の編集は上限に当たらない');
+  assert.equal(needsRelease(notes, 'd', 'iron'), true);
+  assert.equal(needsRelease(notes, 'a', 'iron'), false, '指定済みの本人の編集は上限に当たらない');
   assert.equal(setImportant(notes, 'd', true), null);
-  assert.equal(saveNote(notes, fields({ important: true })), null);
+  assert.equal(saveNote(notes, fields({ category: 'iron', important: true })), null);
   assert.ok(saveNote(notes, { ...notes[0], title: '変更' }), '指定済みの注意点は編集できる');
+});
+
+test('他のカテゴリの最重要は上限に数えない', () => {
+  const notes = [...threeImportant(), note('x', 'driver')];
+  assert.equal(needsRelease(notes, 'x', 'driver'), false);
+  const next = setImportant(notes, 'x', true);
+  assert.equal(next.filter((n) => n.important).length, 4);
+  const more = saveNote(saveNote(next, fields({ important: true })), fields({ title: '3件目', important: true }));
+  assert.deepEqual(importantNotes(more, 'driver').map((n) => n.title), ['x', '左足に体重', '3件目']);
+  assert.equal(saveNote(more, fields({ title: '4件目', important: true })), null);
+});
+
+test('最重要のままカテゴリを移すとき、移動先が3件なら解除先が必要', () => {
+  const notes = [...threeImportant(), note('x', 'driver', { important: true })];
+  assert.equal(saveNote(notes, { ...notes[3], category: 'iron' }), null);
+  const moved = saveNote(notes, { ...notes[3], category: 'iron' }, { releaseId: 'a' });
+  assert.deepEqual(ids(importantNotes(moved, 'iron')), ['b', 'c', 'x']);
+  assert.deepEqual(importantNotes(moved, 'driver'), []);
 });
 
 test('解除先を指定すると4件目を最重要にできる', () => {
@@ -89,7 +107,7 @@ test('習得済みにすると最重要が解除され、枠が空く。復帰�
   const next = setMastered(notes, 'a', true);
   assert.equal(next[0].important, false);
   assert.deepEqual(ids(masteredNotes(next)), ['a']);
-  assert.equal(needsRelease(next, 'd'), false);
+  assert.equal(needsRelease(next, 'd', 'iron'), false);
   assert.ok(!ids(notesInCategory(next, 'iron')).includes('a'));
 
   const restored = setMastered(next, 'a', false);
@@ -100,13 +118,16 @@ test('習得済みにすると最重要が解除され、枠が空く。復帰�
   assert.equal(both[0].important, false);
 });
 
-test('ホームの最重要はカテゴリ順で、習得済みを含まない', () => {
+test('ホームの最重要は指定カテゴリのものだけで、習得済みを含まない', () => {
   const notes = [
     note('p', 'putter', { important: true }),
     note('d', 'driver', { important: true }),
-    note('m', 'iron', { important: true, mastered: true }),
+    note('m', 'driver', { important: true, mastered: true }),
+    note('n', 'driver'),
   ];
-  assert.deepEqual(ids(importantNotes(notes)), ['d', 'p']);
+  assert.deepEqual(ids(importantNotes(notes, 'driver')), ['d']);
+  assert.deepEqual(ids(importantNotes(notes, 'putter')), ['p']);
+  assert.deepEqual(importantNotes(notes, 'iron'), []);
 });
 
 test('背景色は保存され、色のない古いデータは白として読み込む', () => {
@@ -138,6 +159,8 @@ test('バックアップを書き出して復元すると元に戻る', () => {
   const notes = [note('a', 'iron', { memo: '<b>メモ</b>', urls: ['https://youtu.be/x'], important: true }), note('b', 'other', { mastered: true })];
   assert.deepEqual(parseBackup(JSON.stringify(buildBackup(notes))), notes);
   assert.deepEqual(parseBackup(JSON.stringify(buildBackup([]))), []);
+  const sixImportant = [...threeImportant(), ...['x', 'y', 'z'].map((id) => note(id, 'driver', { important: true }))];
+  assert.equal(parseBackup(JSON.stringify(buildBackup(sixImportant))).length, 6, 'カテゴリが違えば3件を超えてよい');
 });
 
 test('不正なバックアップは全体を受け付けない', () => {
@@ -156,7 +179,7 @@ test('不正なバックアップは全体を受け付けない', () => {
     ['危険なURL', backup([note('a', 'iron', { urls: ['javascript:alert(1)'] })])],
     ['不明な背景色', backup([note('a', 'iron', { color: 'url(x)' })])],
     ['ID重複', backup([good, good])],
-    ['最重要4件', backup([...threeImportant(), note('d', 'iron', { important: true })])],
+    ['同じカテゴリに最重要4件', backup([...threeImportant(), note('d', 'iron', { important: true })])],
   ];
   for (const [name, text] of cases) assert.throws(() => parseBackup(text), Error, name);
 });
