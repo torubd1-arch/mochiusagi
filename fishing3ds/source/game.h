@@ -89,8 +89,13 @@ typedef enum {
 typedef enum { SZ_SMALL, SZ_MEDIUM, SZ_LARGE, SZ_COUNT } FishSize;
 
 typedef enum {
-  SP_MEDAKA, SP_FUNA, SP_BLUEGILL, SP_BASS, SP_KOI,
-  SP_NISHIKI, SP_NAMAZU, SP_GOLD, SP_BOOT, SP_COUNT
+  // 並びは得点（＝珍しさ・やりとりの手ごわさ）の低い順。下画面の釣果表もこの順
+  SP_MEDAKA, SP_MOTSUGO, SP_WAKASAGI, SP_FUNA, SP_OIKAWA,
+  SP_BLUEGILL, SP_DOJOU, SP_UGUI, SP_TANAGO, SP_BASS,
+  SP_KAJIKA, SP_AYU, SP_YAMAME, SP_NIJIMASU, SP_KOI,
+  SP_NAMAZU_S, SP_IWANA, SP_RAIGYO, SP_SOUGYO, SP_NISHIKI,
+  SP_NAMAZU, SP_CHOUZAME, SP_ITOU, SP_GOLD, SP_BOOT,
+  SP_COUNT
 } Species;
 
 typedef enum {
@@ -113,11 +118,23 @@ typedef enum {
 // やりとりでの暴れ方
 enum { RUSH_NONE, RUSH_WARN, RUSH_ON };
 
+// あそぶ人（タイトル画面で顔を選ぶ）。ずかんは人ごとに分けて記録する
+typedef enum { PL_BOY, PL_GIRL, PLAYER_COUNT } Player;
+
+// ハイスコアの記録（上位 TOP_COUNT 件。だれが出したかも残す）
+#define TOP_COUNT 5
+typedef struct {
+  int    score;
+  Player player;
+} ScoreEntry;
+
 // 入力（a, b などは「押した瞬間」だけ true。a_held は押している間 true）
-enum { CMD_NONE, CMD_START, CMD_RETRY, CMD_TITLE, CMD_PAUSE, CMD_RESUME, CMD_QUIT };
+enum { CMD_NONE, CMD_START, CMD_RETRY, CMD_TITLE, CMD_PAUSE, CMD_RESUME, CMD_QUIT,
+       CMD_SEL_BOY, CMD_SEL_GIRL };
 typedef struct {
   float move;            // -1..1（左右）
   bool  a, b, start, up, down;
+  bool  left, right;     // タイトル画面での人の選択用（押した瞬間）
   bool  a_held;          // やりとり中の巻き取りにだけ使う
   int   cmd;             // タッチ操作によるコマンド
 } GameInput;
@@ -195,11 +212,23 @@ typedef struct {
 
   // 直近の釣果
   Species   last_species;
+  bool      last_new;     // 直近の釣果が初めて釣った魚か
+
+  // あそぶ人（タイトル画面で選ぶ。タイトルに戻っても前回の選択のまま）
+  Player    player;
+
+  // ずかん（人ごと。アプリ起動中は保持。リトライ・タイトルに戻っても消えない）
+  bool      discovered[PLAYER_COUNT][SP_COUNT];
   int       last_points;
 
+  // ハイスコア TOP5（アプリ起動中は保持。得点の高い順、同点は先に出した方が上）
+  ScoreEntry top[TOP_COUNT];
+  int       top_count;    // 記録されている件数（0..TOP_COUNT）
+  int       top_pos;      // 今回のゲームが TOP5 の何位に入ったか（0始まり。-1=圏外）
+
   // 成績
-  int       score, high_score;
-  bool      new_record;
+  int       score, high_score;   // high_score = TOP5 の1位の得点
+  bool      new_record;          // 今回の得点がこれまでの1位を超えた
   int       casts;        // キャスティング回数
   int       hooks;        // 釣り上げ成功回数（長靴を含む）
   int       fish_caught;  // 釣った魚の数（長靴を除く）
@@ -219,7 +248,7 @@ extern const int   SPECIES_RARITY[SP_COUNT];
 extern const char *SPECIES_NAME_JP[SP_COUNT];
 extern const char *SPECIES_NAME_EN[SP_COUNT];
 extern const int   SIZE_SPAWN_PCT[SZ_COUNT];
-extern const int   SPECIES_PCT[SZ_COUNT][SP_COUNT];
+extern const int   SPECIES_PERMILLE[SZ_COUNT][SP_COUNT];  // 魚影サイズ別の魚種抽選（‰。各行の合計1000）
 extern const float SIZE_SPEED[SZ_COUNT];
 extern const float SIZE_LEN[SZ_COUNT];
 extern const float SIZE_GRACE[SZ_COUNT];
@@ -244,5 +273,9 @@ Species   game_roll_species(Game *g, FishSize size);
 void      game_spawn_fish(Game *g, int slot);
 char      game_rank(int score);
 int       game_success_rate(const Game *g);    // 0..100（%）
+int       game_discovered_count(const Game *g); // いまの人のずかんで発見済みの種類数
+int       game_discovered_count_of(const Game *g, Player p);
+bool      game_is_discovered(const Game *g, Species sp);  // いまの人が発見済みか
+void      game_record_score(Game *g, int score, Player p); // TOP5 に記録し、入った順位を top_pos に入れる（0点は記録しない）
 uint32_t  game_rand(Game *g);
 float     game_randf(Game *g);                 // [0,1)

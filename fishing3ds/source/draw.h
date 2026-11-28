@@ -19,6 +19,10 @@ float dr_get_alpha(void);
 
 u32   shade(u32 rgba, int amt); // shadeColor 相当（アルファは保持）
 
+// 単色塗り（シルエット表示用）。有効な間はすべての図形をこの色で塗る
+void  dr_set_tint(u32 rgb);
+void  dr_clear_tint(void);
+
 // 塗り
 void dr_tri(float x0, float y0, float x1, float y1, float x2, float y2, u32 c);
 void dr_rect(float x, float y, float w, float h, u32 c);

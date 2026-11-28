@@ -21,7 +21,7 @@ static C2D_TextBuf tbuf;
 
 void dr_init(void) { tbuf = C2D_TextBufNew(4096); dr_reset(); }
 void dr_exit(void) { C2D_TextBufDelete(tbuf); }
-void dr_frame_begin(void) { C2D_TextBufClear(tbuf); sp = 0; dr_reset(); }
+void dr_frame_begin(void) { C2D_TextBufClear(tbuf); sp = 0; dr_reset(); dr_clear_tint(); }
 
 void dr_reset(void) {
   cur.a = 1; cur.b = 0; cur.c = 0; cur.d = 1; cur.e = 0; cur.f = 0; cur.alpha = 1;
@@ -65,7 +65,13 @@ static inline float cur_scale(void) {
   float det = cur.a * cur.d - cur.b * cur.c;
   return sqrtf(fabsf(det));
 }
+static bool tint_on = false;
+static u32  tint_rgb = 0;
+void dr_set_tint(u32 rgb) { tint_on = true; tint_rgb = rgb; }
+void dr_clear_tint(void)  { tint_on = false; }
+
 static inline u32 to_c2d(u32 rgba) {
+  if (tint_on) rgba = (tint_rgb & 0xFFFFFF00u) | (rgba & 0xFF);
   u32 r = (rgba >> 24) & 0xFF, g = (rgba >> 16) & 0xFF, b = (rgba >> 8) & 0xFF;
   u32 a = (u32)((rgba & 0xFF) * cur.alpha + 0.5f);
   return C2D_Color32(r, g, b, a);

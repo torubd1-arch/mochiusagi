@@ -200,8 +200,19 @@ int main(void) {
   memset(&NONE_IN, 0, sizeof(NONE_IN));
 
   game_init(&G, 4242);
+  // TOP5 の見本（男の子・女の子の記録が混ざった状態）
+  game_record_score(&G, 820, PL_GIRL);
+  game_record_score(&G, 640, PL_BOY);
+  game_record_score(&G, 410, PL_GIRL);
+  game_record_score(&G, 230, PL_BOY);
+  G.discovered[PL_BOY][SP_MEDAKA] = G.discovered[PL_BOY][SP_FUNA] = G.discovered[PL_BOY][SP_KOI] = true;
+  G.discovered[PL_GIRL][SP_FUNA] = true;
   run(1.5f);
   render("01_title");
+  { GameInput r = NONE_IN; r.right = true; game_update(&G, 1.0f / 60, &r); }
+  run(0.2f);
+  render("01b_title_girl");
+  { GameInput l = NONE_IN; l.left = true; game_update(&G, 1.0f / 60, &l); }
 
   game_start(&G); clear_fx();
   run(3.0f);
@@ -278,6 +289,7 @@ int main(void) {
   for (int k = 0; k < SP_COUNT; k++) {
     char name[32];
     G.state = ST_CAUGHT; G.state_t = 0.5f; G.last_species = (Species)k; G.last_points = SPECIES_POINTS[k];
+    G.last_new = (k % 3 == 0); G.discovered[G.player][k] = true; G.counts[k] = 1 + k % 3;
     snprintf(name, sizeof(name), "card_%d", k);
     render(name);
   }

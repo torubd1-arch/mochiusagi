@@ -6,30 +6,50 @@
 #include <string.h>
 
 // ----------------------------------------------------------------
-//  テーブル
+//  テーブル（魚種の並びは game.h の Species と同じ）
 // ----------------------------------------------------------------
-const int SPECIES_POINTS[SP_COUNT] = { 10, 20, 30, 50, 80, 150, 200, 500, 0 };
-// 「最も珍しかった魚」の比較に使う順位（大きいほど珍しい。長靴は最下位）
-const int SPECIES_RARITY[SP_COUNT] = { 1, 2, 3, 4, 5, 6, 7, 8, 0 };
+const int SPECIES_POINTS[SP_COUNT] = {
+  10, 15, 20, 20, 25,     // メダカ モツゴ ワカサギ フナ オイカワ
+  30, 30, 30, 40, 50,     // ブルーギル ドジョウ ウグイ タナゴ ブラックバス
+  60, 60, 70, 70, 80,     // カジカ アユ ヤマメ ニジマス コイ
+  90, 120, 120, 130, 150, // ナマズ イワナ ライギョ ソウギョ ニシキゴイ
+  200, 300, 350, 500, 0,  // オオナマズ チョウザメ イトウ 黄金の魚 長靴
+};
+// 「最も珍しかった魚」の比較に使う順位（大きいほど珍しい。並び順＝珍しさ。長靴は最下位）
+const int SPECIES_RARITY[SP_COUNT] = {
+   1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13,
+  14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,  0,
+};
 
 const char *SPECIES_NAME_JP[SP_COUNT] = {
-  "メダカ", "フナ", "ブルーギル", "ブラックバス", "コイ",
-  "ニシキゴイ", "オオナマズ", "黄金の魚", "長靴"
+  "メダカ", "モツゴ", "ワカサギ", "フナ", "オイカワ",
+  "ブルーギル", "ドジョウ", "ウグイ", "タナゴ", "ブラックバス",
+  "カジカ", "アユ", "ヤマメ", "ニジマス", "コイ",
+  "ナマズ", "イワナ", "ライギョ", "ソウギョ", "ニシキゴイ",
+  "オオナマズ", "チョウザメ", "イトウ", "黄金の魚", "長靴",
 };
 const char *SPECIES_NAME_EN[SP_COUNT] = {
-  "Medaka", "Crucian Carp", "Bluegill", "Black Bass", "Carp",
-  "Nishikigoi", "Giant Catfish", "Golden Fish", "Old Boot"
+  "Medaka", "Stone Moroko", "Wakasagi", "Crucian Carp", "Pale Chub",
+  "Bluegill", "Loach", "Japanese Dace", "Bitterling", "Black Bass",
+  "Sculpin", "Ayu", "Yamame Trout", "Rainbow Trout", "Carp",
+  "Catfish", "Char", "Snakehead", "Grass Carp", "Nishikigoi",
+  "Giant Catfish", "Sturgeon", "Taimen", "Golden Fish", "Old Boot",
 };
 
 // 魚影サイズの出現確率（%）
 const int SIZE_SPAWN_PCT[SZ_COUNT] = { 50, 35, 15 };
 
-// 魚影サイズ別の魚種抽選（%）。各行の合計は100
-const int SPECIES_PCT[SZ_COUNT][SP_COUNT] = {
-  //  メダカ フナ ギル バス コイ ニシキ ナマズ 黄金 長靴
-  {     45,  30,  20,   0,   0,    0,    0,   0,   5 },  // 小
-  {      0,  15,  25,  35,  20,    0,    0,   0,   5 },  // 中
-  {      0,   0,   0,  15,  35,   25,   19,   1,   5 },  // 大
+// 魚影サイズ別の魚種抽選（‰。各行の合計は1000）
+const int SPECIES_PERMILLE[SZ_COUNT][SP_COUNT] = {
+  // 小：メダカ250 モツゴ170 ワカサギ140 フナ120 オイカワ80 ブルーギル90 ドジョウ60 タナゴ30 カジカ10 長靴50
+  { 250, 170, 140, 120,  80,   90,  60,   0,  30,   0,   10,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,    0,   0,   0,   0,  50 },
+  // 中：フナ120 ブルーギル150 ウグイ130 バス190 アユ90 ヤマメ70 ニジマス70 コイ50 ナマズ60 イワナ20 長靴50
+  {   0,   0,   0, 120,   0,  150,   0, 130,   0, 190,    0,  90,  70,  70,  50,
+     60,  20,   0,   0,   0,    0,   0,   0,   0,  50 },
+  // 大：バス120 コイ245 ライギョ160 ソウギョ120 ニシキ130 オオナマズ100 チョウザメ40 イトウ25 黄金10 長靴50
+  {   0,   0,   0,   0,   0,    0,   0,   0,   0, 120,    0,   0,   0,   0, 245,
+      0,   0, 160, 120, 130,  100,  40,  25,  10,  50 },
 };
 
 const float SIZE_SPEED[SZ_COUNT]          = { 42.0f, 28.0f, 17.0f };  // 遊泳速度 px/秒
@@ -40,23 +60,39 @@ const float SIZE_APPROACH_SPEED[SZ_COUNT] = { 52.0f, 42.0f, 34.0f };  // ウキ�
 // ランク C, B, A, S の最低点（これ未満は D）
 const int RANK_MIN_SCORE[4] = { 100, 250, 500, 800 };
 
-// フェイントの回数（最小〜最大）。レアな魚ほど多い
-//                                       メダカ フナ ギル バス コイ ニシキ ナマズ 黄金 長靴
-const int FEINT_MIN_COUNT[SP_COUNT] = {     0,   0,   0,   1,   1,    1,    2,   2,   0 };
-const int FEINT_MAX_COUNT[SP_COUNT] = {     1,   1,   2,   2,   2,    3,    3,   4,   1 };
+// フェイントの回数（最小〜最大）。レアな魚ほど多い（並びは Species と同じ）
+const int FEINT_MIN_COUNT[SP_COUNT] = { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 0 };
+const int FEINT_MAX_COUNT[SP_COUNT] = { 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 1 };
 
 // やりとりの強さ。下の魚ほど巻き上げが遅く・引きが強く・よく暴れ・予兆が短い
+// （珍しさの順に、旧版のフナ〜黄金の魚の値を補間して決めた）
 const FightParam FIGHT_PARAMS[SP_COUNT] = {
   //  reel   pull  rush  rush_min rush_max rush_len warn
-  { 1.20f, 0.00f, 0.00f, 9.9f, 9.9f, 0.00f, 0.00f },  // メダカ（暴れない）
-  { 0.90f, 0.05f, 0.60f, 2.0f, 3.0f, 0.35f, 0.50f },  // フナ
-  { 0.80f, 0.08f, 0.80f, 1.8f, 2.8f, 0.40f, 0.45f },  // ブルーギル
-  { 0.70f, 0.12f, 1.15f, 1.6f, 2.6f, 0.45f, 0.40f },  // ブラックバス
-  { 0.62f, 0.15f, 1.30f, 1.5f, 2.4f, 0.50f, 0.36f },  // コイ
-  { 0.55f, 0.18f, 1.42f, 1.4f, 2.2f, 0.55f, 0.33f },  // ニシキゴイ
-  { 0.50f, 0.22f, 1.55f, 1.3f, 2.0f, 0.60f, 0.30f },  // オオナマズ
-  { 0.45f, 0.26f, 1.75f, 1.2f, 1.8f, 0.65f, 0.27f },  // 黄金の魚
-  { 0.75f, 0.10f, 0.00f, 9.9f, 9.9f, 0.00f, 0.00f },  // 長靴（重いだけ）
+  { 1.20f, 0.00f, 0.00f, 9.90f, 9.90f, 0.00f, 0.00f },  // メダカ（暴れない）
+  { 0.90f, 0.05f, 0.60f, 2.00f, 3.00f, 0.35f, 0.50f },  // モツゴ
+  { 0.87f, 0.06f, 0.65f, 1.95f, 2.95f, 0.36f, 0.49f },  // ワカサギ
+  { 0.85f, 0.07f, 0.71f, 1.89f, 2.89f, 0.38f, 0.47f },  // フナ
+  { 0.82f, 0.07f, 0.76f, 1.84f, 2.84f, 0.39f, 0.46f },  // オイカワ
+  { 0.79f, 0.08f, 0.83f, 1.78f, 2.78f, 0.40f, 0.45f },  // ブルーギル
+  { 0.76f, 0.09f, 0.93f, 1.73f, 2.73f, 0.42f, 0.43f },  // ドジョウ
+  { 0.74f, 0.11f, 1.02f, 1.67f, 2.67f, 0.43f, 0.42f },  // ウグイ
+  { 0.71f, 0.12f, 1.12f, 1.62f, 2.62f, 0.45f, 0.40f },  // タナゴ
+  { 0.69f, 0.13f, 1.18f, 1.58f, 2.56f, 0.46f, 0.39f },  // ブラックバス
+  { 0.66f, 0.13f, 1.22f, 1.55f, 2.51f, 0.47f, 0.38f },  // カジカ
+  { 0.64f, 0.14f, 1.26f, 1.53f, 2.45f, 0.49f, 0.37f },  // アユ
+  { 0.62f, 0.15f, 1.30f, 1.50f, 2.40f, 0.50f, 0.36f },  // ヤマメ
+  { 0.60f, 0.16f, 1.33f, 1.47f, 2.35f, 0.51f, 0.35f },  // ニジマス
+  { 0.58f, 0.17f, 1.37f, 1.45f, 2.29f, 0.53f, 0.34f },  // コイ
+  { 0.56f, 0.17f, 1.40f, 1.42f, 2.24f, 0.54f, 0.34f },  // ナマズ
+  { 0.55f, 0.18f, 1.43f, 1.39f, 2.18f, 0.55f, 0.33f },  // イワナ
+  { 0.53f, 0.19f, 1.47f, 1.36f, 2.13f, 0.57f, 0.32f },  // ライギョ
+  { 0.52f, 0.21f, 1.50f, 1.34f, 2.07f, 0.58f, 0.31f },  // ソウギョ
+  { 0.50f, 0.22f, 1.54f, 1.31f, 2.02f, 0.60f, 0.30f },  // ニシキゴイ
+  { 0.49f, 0.23f, 1.59f, 1.28f, 1.96f, 0.61f, 0.29f },  // オオナマズ
+  { 0.48f, 0.24f, 1.64f, 1.25f, 1.91f, 0.62f, 0.29f },  // チョウザメ
+  { 0.46f, 0.25f, 1.70f, 1.23f, 1.85f, 0.64f, 0.28f },  // イトウ
+  { 0.45f, 0.26f, 1.75f, 1.20f, 1.80f, 0.65f, 0.27f },  // 黄金の魚
+  { 0.75f, 0.10f, 0.00f, 9.90f, 9.90f, 0.00f, 0.00f },  // 長靴（重いだけ）
 };
 
 // ----------------------------------------------------------------
@@ -76,17 +112,17 @@ static float clampf(float v, float lo, float hi) { return v < lo ? lo : (v > hi 
 // ----------------------------------------------------------------
 //  抽選
 // ----------------------------------------------------------------
-static int roll_pct(Game *g, const int *pct, int n) {
-  int r = (int)(game_rand(g) % 100u);
+static int roll_table(Game *g, const int *w, int n, uint32_t total) {
+  int r = (int)(game_rand(g) % total);
   for (int i = 0; i < n; i++) {
-    if (r < pct[i]) return i;
-    r -= pct[i];
+    if (r < w[i]) return i;
+    r -= w[i];
   }
   return n - 1;
 }
-FishSize game_roll_size(Game *g) { return (FishSize)roll_pct(g, SIZE_SPAWN_PCT, SZ_COUNT); }
+FishSize game_roll_size(Game *g) { return (FishSize)roll_table(g, SIZE_SPAWN_PCT, SZ_COUNT, 100u); }
 Species game_roll_species(Game *g, FishSize size) {
-  return (Species)roll_pct(g, SPECIES_PCT[size], SP_COUNT);
+  return (Species)roll_table(g, SPECIES_PERMILLE[size], SP_COUNT, 1000u);
 }
 
 // ----------------------------------------------------------------
@@ -189,11 +225,11 @@ static void reset_round(Game *g) {
   g->tension = g->progress = g->slack_t = 0;
   g->rush_phase = RUSH_NONE; g->rush_t = 0;
   g->feint_count = g->feint_next = 0;
-  g->score = 0; g->new_record = false;
+  g->score = 0; g->new_record = false; g->top_pos = -1;
   g->casts = g->hooks = g->fish_caught = 0;
   memset(g->counts, 0, sizeof(g->counts));
   g->rarest = -1;
-  g->last_species = SP_MEDAKA; g->last_points = 0;
+  g->last_species = SP_MEDAKA; g->last_points = 0; g->last_new = false;
   g->pause_sel = 0;
   for (int i = 0; i < FISH_COUNT; i++) game_spawn_fish(g, i);
 }
@@ -202,6 +238,9 @@ void game_init(Game *g, uint32_t seed) {
   memset(g, 0, sizeof(*g));
   g->rng = seed ? seed : 0x1234567u;
   g->high_score = 0;
+  g->top_count = 0;
+  g->top_pos = -1;
+  g->player = PL_BOY;
   reset_round(g);
   set_state(g, ST_TITLE);
 }
@@ -217,10 +256,26 @@ static void go_title(Game *g) {
   set_state(g, ST_TITLE);
 }
 
+void game_record_score(Game *g, int score, Player p) {
+  g->top_pos = -1;
+  if (score <= 0) return;                       // 0点は記録しない
+  int pos = g->top_count;
+  while (pos > 0 && g->top[pos - 1].score < score) pos--;   // 同点なら先に出した方が上
+  if (pos >= TOP_COUNT) return;                 // 圏外
+  int last = g->top_count < TOP_COUNT ? g->top_count : TOP_COUNT - 1;
+  for (int i = last; i > pos; i--) g->top[i] = g->top[i - 1];
+  g->top[pos].score = score;
+  g->top[pos].player = p;
+  if (g->top_count < TOP_COUNT) g->top_count++;
+  g->top_pos = pos;
+  g->high_score = g->top[0].score;
+}
+
 static void finish_game(Game *g) {
   g->time_left = 0;
   reel_in(g);
-  if (g->score > g->high_score) { g->high_score = g->score; g->new_record = true; }
+  g->new_record = g->score > g->high_score;
+  game_record_score(g, g->score, g->player);
   g->events |= EV_TIMEUP;
   set_state(g, ST_RESULT);
 }
@@ -242,6 +297,14 @@ char game_rank(int score) {
   if (score >= RANK_MIN_SCORE[0]) return 'C';
   return 'D';
 }
+
+int game_discovered_count_of(const Game *g, Player p) {
+  int n = 0;
+  for (int k = 0; k < SP_COUNT; k++) n += g->discovered[p][k] ? 1 : 0;
+  return n;
+}
+int game_discovered_count(const Game *g) { return game_discovered_count_of(g, g->player); }
+bool game_is_discovered(const Game *g, Species sp) { return g->discovered[g->player][sp]; }
 
 int game_success_rate(const Game *g) {
   if (g->casts <= 0) return 0;
@@ -323,6 +386,8 @@ static void land_fish(Game *g, Fish *tf) {
   g->hooks++;
   if (sp != SP_BOOT) g->fish_caught++;
   if (g->rarest < 0 || SPECIES_RARITY[sp] > SPECIES_RARITY[g->rarest]) g->rarest = sp;
+  g->last_new = !g->discovered[g->player][sp];
+  g->discovered[g->player][sp] = true;
   fish_remove(g, tf);
   reel_in(g);
   g->events |= EV_CATCH | EV_SPLASH;
@@ -493,6 +558,12 @@ void game_update(Game *g, float dt, const GameInput *in) {
       g->anim_t += dt;
       update_fish(g, dt);          // タイトル画面でも背景で魚影が泳ぐ
       g->state_t += dt;
+      // あそぶ人をえらぶ（左右キー・顔のタッチ）
+      if ((in->left && g->player != PL_BOY) || in->cmd == CMD_SEL_BOY) {
+        g->player = PL_BOY; g->events |= EV_MENU;
+      } else if ((in->right && g->player != PL_GIRL) || in->cmd == CMD_SEL_GIRL) {
+        g->player = PL_GIRL; g->events |= EV_MENU;
+      }
       if (in->a || in->cmd == CMD_START) game_start(g);
       return;
 

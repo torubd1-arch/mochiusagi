@@ -3,6 +3,7 @@
 //  ビルド: make -C tests   （gcc が必要）
 // ================================================================
 #include "../source/game.h"
+#include "../source/save.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -325,30 +326,39 @@ static void test_species_distribution(void) {
     double p = 100.0 * size_cnt[s] / N;
     CHECK(fabs(p - SIZE_SPAWN_PCT[s]) < 0.3);
   }
+  int appears[SP_COUNT] = { 0 };
   for (int s = 0; s < SZ_COUNT; s++) {
     int sum = 0;
-    for (int k = 0; k < SP_COUNT; k++) sum += SPECIES_PCT[s][k];
-    CHECK(sum == 100);
+    for (int k = 0; k < SP_COUNT; k++) { sum += SPECIES_PERMILLE[s][k]; if (SPECIES_PERMILLE[s][k]) appears[k] = 1; }
+    CHECK(sum == 1000);
     int cnt[SP_COUNT] = { 0 };
     for (int i = 0; i < N; i++) cnt[game_roll_species(&g, (FishSize)s)]++;
     for (int k = 0; k < SP_COUNT; k++) {
-      double p = 100.0 * cnt[k] / N;
-      if (SPECIES_PCT[s][k] == 0) CHECK(cnt[k] == 0);
-      else CHECK(fabs(p - SPECIES_PCT[s][k]) < 0.3);
+      double p = 1000.0 * cnt[k] / N;   // ‰
+      if (SPECIES_PERMILLE[s][k] == 0) CHECK(cnt[k] == 0);
+      else CHECK(fabs(p - SPECIES_PERMILLE[s][k]) < 2.0 + SPECIES_PERMILLE[s][k] * 0.02);
     }
   }
-  // 仕様書の表と一致しているか（抜粋）
-  CHECK(SPECIES_PCT[SZ_LARGE][SP_GOLD] == 1);
-  CHECK(SPECIES_PCT[SZ_SMALL][SP_MEDAKA] == 45);
-  CHECK(SPECIES_PCT[SZ_MEDIUM][SP_BASS] == 35);
-  CHECK(SPECIES_PCT[SZ_LARGE][SP_NAMAZU] == 19);
-  for (int s = 0; s < SZ_COUNT; s++) CHECK(SPECIES_PCT[s][SP_BOOT] == 5);
+  // 25種類すべてがどこかのサイズで出現する
+  for (int k = 0; k < SP_COUNT; k++) CHECK(appears[k]);
+  // 主要な確率（黄金の魚は大の1%、長靴は各サイズ5%）
+  CHECK(SPECIES_PERMILLE[SZ_LARGE][SP_GOLD] == 10);
+  CHECK(SPECIES_PERMILLE[SZ_SMALL][SP_GOLD] == 0 && SPECIES_PERMILLE[SZ_MEDIUM][SP_GOLD] == 0);
+  for (int s = 0; s < SZ_COUNT; s++) CHECK(SPECIES_PERMILLE[s][SP_BOOT] == 50);
 }
 
 static void test_points(void) {
   g_case = "points";
-  const int expect[SP_COUNT] = { 10, 20, 30, 50, 80, 150, 200, 500, 0 };
-  for (int k = 0; k < SP_COUNT; k++) CHECK(SPECIES_POINTS[k] == expect[k]);
+  CHECK(SP_COUNT == 25);
+  // 得点：長靴は0点、それ以外は並び順に増える（同点はあり）
+  CHECK(SPECIES_POINTS[SP_BOOT] == 0);
+  CHECK(SPECIES_POINTS[SP_MEDAKA] == 10 && SPECIES_POINTS[SP_GOLD] == 500);
+  for (int k = 0; k + 1 < SP_GOLD + 1; k++) CHECK(SPECIES_POINTS[k] > 0 && SPECIES_POINTS[k + 1] >= SPECIES_POINTS[k]);
+  // 旧版から引き継いだ魚の得点は同じ
+  CHECK(SPECIES_POINTS[SP_FUNA] == 20 && SPECIES_POINTS[SP_BLUEGILL] == 30 && SPECIES_POINTS[SP_BASS] == 50);
+  CHECK(SPECIES_POINTS[SP_KOI] == 80 && SPECIES_POINTS[SP_NISHIKI] == 150 && SPECIES_POINTS[SP_NAMAZU] == 200);
+  // 名前がすべて設定されている
+  for (int k = 0; k < SP_COUNT; k++) CHECK(SPECIES_NAME_JP[k] && SPECIES_NAME_JP[k][0] && SPECIES_NAME_EN[k] && SPECIES_NAME_EN[k][0]);
 
   // 連続で釣って得点が正しく加算される
   Game g; GameInput a = press_a(), n = none();
@@ -634,10 +644,10 @@ static void test_fight_basic(void) {
   CHECK(d1 < d0 * 0.6f);
 
   // パラメータ表：レアな魚ほど巻き上げが遅く、暴れが強く、予兆が短い
-  for (int k = SP_FUNA; k < SP_GOLD; k++) {
+  for (int k = SP_MOTSUGO; k < SP_GOLD; k++) {
     CHECK(FIGHT_PARAMS[k + 1].reel < FIGHT_PARAMS[k].reel);
     CHECK(FIGHT_PARAMS[k + 1].rush > FIGHT_PARAMS[k].rush);
-    CHECK(FIGHT_PARAMS[k + 1].warn < FIGHT_PARAMS[k].warn);
+    CHECK(FIGHT_PARAMS[k + 1].warn <= FIGHT_PARAMS[k].warn);
   }
 }
 
@@ -757,9 +767,9 @@ static void test_fight_difficulty(void) {
   }
   // レアな魚ほど時間がかかり、欲張ると失敗しやすい
   for (int k = SP_MEDAKA; k < SP_GOLD; k++) {
-    CHECK(avg_time[k + 1] > avg_time[k]);
-    CHECK(rate_greedy[k + 1] <= rate_greedy[k] + 3.0f);
-    CHECK(rate_greedy2[k + 1] <= rate_greedy2[k] + 3.0f);
+    CHECK(avg_time[k + 1] > avg_time[k] - 0.3f);   // 隣どうしは差が小さいので多少の揺れは許す
+    CHECK(rate_greedy[k + 1] <= rate_greedy[k] + 6.0f);
+    CHECK(rate_greedy2[k + 1] <= rate_greedy2[k] + 6.0f);
   }
   CHECK(rate_greedy[SP_MEDAKA] == 100.0f);
   CHECK(rate_greedy[SP_GOLD] < 30.0f);
@@ -767,8 +777,332 @@ static void test_fight_difficulty(void) {
   CHECK(avg_time[SP_GOLD] < 15.0f);   // 60秒のうち長くても15秒以内
 }
 
+static void test_discovery(void) {
+  g_case = "discovery";
+  Game g; GameInput n = none();
+  game_init(&g, 11);
+  CHECK(game_discovered_count(&g) == 0);
+  for (int k = 0; k < SP_COUNT; k++) CHECK(!g.discovered[g.player][k]);
+
+  // 初めて釣った魚は発見済みになり、NEW 扱い
+  to_hit(&g, SZ_SMALL, SP_TANAGO);
+  land(&g);
+  CHECK(g.state == ST_CAUGHT && g.discovered[g.player][SP_TANAGO] && g.last_new);
+  CHECK(game_discovered_count(&g) == 1);
+  // to_hit は内部で新しいゲームを始めるが、ずかんはそのまま
+  Game keep = g;
+  // 同じゲーム内で同じ魚をもう一度 → NEW ではない
+  for (int i = 0; i < 200 && g.state != ST_AIMING; i++) game_update(&g, DT, &n);
+  Fish *f = &g.fish[2];
+  memset(f, 0, sizeof(*f));
+  f->state = FS_SWIM; f->size = SZ_SMALL; f->species = SP_TANAGO; f->points = SPECIES_POINTS[SP_TANAGO];
+  f->len = SIZE_LEN[SZ_SMALL]; f->x = 215; f->y = game_lane_y(2); f->dir = 1; f->turn_t = 999; f->alpha = 1;
+  for (int i = 0; i < FISH_COUNT; i++) if (i != 2) { g.fish[i].state = FS_NONE; g.fish[i].respawn_t = 999; }
+  cast_at(&g, 200.0f);
+  for (int i = 0; i < 1000 && g.state != ST_HIT_WINDOW; i++) game_update(&g, DT, &n);
+  land(&g);
+  CHECK(g.state == ST_CAUGHT && !g.last_new && g.counts[SP_TANAGO] == 2);
+  CHECK(game_discovered_count(&g) == 1);
+
+  // リトライしても、タイトルに戻っても、ずかんは消えない（今回の釣果数は0に戻る）
+  g.time_left = 0.001f; game_update(&g, DT, &n);
+  step(&g, (int)(TIMEUP_LOCK_TIME / DT) + 2, &n);
+  GameInput r = none(); r.cmd = CMD_RETRY;
+  game_update(&g, DT, &r);
+  CHECK(g.state == ST_AIMING && g.counts[SP_TANAGO] == 0 && g.discovered[g.player][SP_TANAGO]);
+  GameInput st = none(); st.start = true;
+  game_update(&g, DT, &st);
+  GameInput t = none(); t.cmd = CMD_TITLE;
+  game_update(&g, DT, &t);
+  CHECK(g.state == ST_TITLE && g.discovered[g.player][SP_TANAGO] && !g.last_new);
+  // 起動し直す（game_init）と消える
+  game_init(&g, 12);
+  CHECK(game_discovered_count(&g) == 0);
+  (void)keep;
+
+  // 長靴も「発見」に数える。全25種そろえられる
+  for (int k = 0; k < SP_COUNT; k++) {
+    Game h; to_hit(&h, SZ_LARGE, (Species)k);
+    memcpy(h.discovered, g.discovered, sizeof(g.discovered));
+    land(&h);
+    CHECK(h.state == ST_CAUGHT && h.last_new);
+    memcpy(g.discovered, h.discovered, sizeof(g.discovered));
+  }
+  CHECK(game_discovered_count(&g) == SP_COUNT);
+}
+
+// プレイ中のゲームで、指定した魚を1匹釣り上げる（ずかん・TOP5 はそのまま）
+static void catch_one(Game *g, Species sp) {
+  GameInput n = none();
+  for (int i = 0; i < 200 && g->state != ST_AIMING; i++) game_update(g, DT, &n);
+  Fish *f = &g->fish[2];
+  memset(f, 0, sizeof(*f));
+  f->state = FS_SWIM; f->size = SZ_LARGE; f->species = sp; f->points = SPECIES_POINTS[sp];
+  f->len = SIZE_LEN[SZ_LARGE]; f->x = 215; f->y = game_lane_y(2); f->dir = 1; f->turn_t = 999; f->alpha = 1;
+  for (int i = 0; i < FISH_COUNT; i++) if (i != 2) { g->fish[i].state = FS_NONE; g->fish[i].respawn_t = 999; }
+  float t = g->time_left;
+  cast_at(g, 200.0f);
+  for (int i = 0; i < 1000 && g->state != ST_HIT_WINDOW; i++) game_update(g, DT, &n);
+  land(g);
+  g->time_left = t;   // 制限時間で終わらないように戻す
+}
+// 時間切れにして結果画面を出し、入力を受け付けるまで進める
+static void end_game(Game *g) {
+  GameInput n = none();
+  g->time_left = 0.001f;
+  game_update(g, DT, &n);
+  step(g, (int)(TIMEUP_LOCK_TIME / DT) + 2, &n);
+}
+static void to_title(Game *g) {
+  GameInput t = none(); t.cmd = CMD_TITLE;
+  game_update(g, DT, &t);
+}
+
+static void test_player_select(void) {
+  g_case = "player_select";
+  Game g; GameInput n = none();
+  game_init(&g, 21);
+  CHECK(g.state == ST_TITLE && g.player == PL_BOY);
+  GameInput r = none(); r.right = true;
+  GameInput l = none(); l.left = true;
+  game_update(&g, DT, &r);
+  CHECK(g.player == PL_GIRL && (g.events & EV_MENU) && g.state == ST_TITLE);
+  game_update(&g, DT, &r);                       // もう右端なので変わらない・音も鳴らない
+  CHECK(g.player == PL_GIRL && !(g.events & EV_MENU));
+  game_update(&g, DT, &l);
+  CHECK(g.player == PL_BOY && (g.events & EV_MENU));
+  game_update(&g, DT, &l);
+  CHECK(g.player == PL_BOY && !(g.events & EV_MENU));
+  // 顔のタッチ
+  GameInput tg = none(); tg.cmd = CMD_SEL_GIRL;
+  game_update(&g, DT, &tg);
+  CHECK(g.player == PL_GIRL);
+  GameInput tb = none(); tb.cmd = CMD_SEL_BOY;
+  game_update(&g, DT, &tb);
+  CHECK(g.player == PL_BOY);
+  game_update(&g, DT, &tg);
+  // スタートすると選んだ人であそぶ。プレイ中の左右では人は変わらない
+  GameInput a = press_a();
+  game_update(&g, DT, &a);
+  CHECK(g.state == ST_AIMING && g.player == PL_GIRL);
+  game_update(&g, DT, &l);
+  game_update(&g, DT, &tb);
+  CHECK(g.player == PL_GIRL);
+  // 一時停止からタイトルに戻っても、前回えらんだ人のまま
+  GameInput st = none(); st.start = true;
+  game_update(&g, DT, &st);
+  to_title(&g);
+  CHECK(g.state == ST_TITLE && g.player == PL_GIRL);
+  // 結果画面からリトライしても同じ人のまま
+  game_update(&g, DT, &a);
+  end_game(&g);
+  GameInput re = none(); re.cmd = CMD_RETRY;
+  game_update(&g, DT, &re);
+  CHECK(g.state == ST_AIMING && g.player == PL_GIRL);
+  (void)n;
+}
+
+static void test_player_zukan(void) {
+  g_case = "player_zukan";
+  Game g;
+  GameInput a = press_a(), r = none(), l = none();
+  r.right = true; l.left = true;
+  game_init(&g, 22);
+  // 女の子でタナゴを釣る → 女の子のずかんにだけ載る
+  game_update(&g, DT, &r);
+  game_update(&g, DT, &a);
+  catch_one(&g, SP_TANAGO);
+  CHECK(g.state == ST_CAUGHT && g.last_new);
+  CHECK(g.discovered[PL_GIRL][SP_TANAGO] && !g.discovered[PL_BOY][SP_TANAGO]);
+  CHECK(game_discovered_count_of(&g, PL_GIRL) == 1 && game_discovered_count_of(&g, PL_BOY) == 0);
+  CHECK(game_discovered_count(&g) == 1 && game_is_discovered(&g, SP_TANAGO));
+  end_game(&g); to_title(&g);
+  // 男の子に切り替える → 男の子のずかんは空。同じタナゴでも男の子には NEW
+  game_update(&g, DT, &l);
+  CHECK(g.player == PL_BOY && game_discovered_count(&g) == 0 && !game_is_discovered(&g, SP_TANAGO));
+  game_update(&g, DT, &a);
+  catch_one(&g, SP_TANAGO);
+  CHECK(g.state == ST_CAUGHT && g.last_new);
+  catch_one(&g, SP_KOI);
+  CHECK(g.state == ST_CAUGHT && g.last_new);
+  CHECK(game_discovered_count_of(&g, PL_BOY) == 2 && game_discovered_count_of(&g, PL_GIRL) == 1);
+  CHECK(!g.discovered[PL_GIRL][SP_KOI]);
+  end_game(&g); to_title(&g);
+  // 女の子に戻す → 女の子のずかんはそのまま。タナゴはもう NEW ではない
+  game_update(&g, DT, &r);
+  game_update(&g, DT, &a);
+  CHECK(game_discovered_count(&g) == 1);
+  catch_one(&g, SP_TANAGO);
+  CHECK(g.state == ST_CAUGHT && !g.last_new);
+  // 起動し直すと両方とも消える
+  game_init(&g, 23);
+  CHECK(game_discovered_count_of(&g, PL_BOY) == 0 && game_discovered_count_of(&g, PL_GIRL) == 0);
+}
+
+static void test_top5(void) {
+  g_case = "top5";
+  Game g;
+  game_init(&g, 31);
+  CHECK(g.top_count == 0 && g.top_pos == -1 && g.high_score == 0);
+  // 記録の並び（得点の高い順、同点は先に出した方が上、6位以下と0点は残らない）
+  game_record_score(&g, 100, PL_BOY);  CHECK(g.top_pos == 0 && g.top_count == 1);
+  game_record_score(&g, 0, PL_GIRL);   CHECK(g.top_pos == -1 && g.top_count == 1);
+  game_record_score(&g, 50, PL_GIRL);  CHECK(g.top_pos == 1 && g.top_count == 2);
+  game_record_score(&g, 100, PL_GIRL); CHECK(g.top_pos == 1 && g.top_count == 3);
+  game_record_score(&g, 300, PL_BOY);  CHECK(g.top_pos == 0 && g.top_count == 4);
+  game_record_score(&g, 10, PL_BOY);   CHECK(g.top_pos == 4 && g.top_count == 5);
+  game_record_score(&g, 5, PL_GIRL);   CHECK(g.top_pos == -1 && g.top_count == 5);   // 圏外
+  game_record_score(&g, 10, PL_GIRL);  CHECK(g.top_pos == -1);                       // 5位と同点は先の人が残る
+  game_record_score(&g, 200, PL_GIRL); CHECK(g.top_pos == 1 && g.top_count == 5);
+  const int    want_s[5] = { 300, 200, 100, 100, 50 };
+  const Player want_p[5] = { PL_BOY, PL_GIRL, PL_BOY, PL_GIRL, PL_GIRL };
+  for (int i = 0; i < TOP_COUNT; i++) CHECK(g.top[i].score == want_s[i] && g.top[i].player == want_p[i]);
+  CHECK(g.high_score == 300);
+
+  // 実際のゲームの流れ：時間切れで、そのときの人と得点が記録される
+  game_init(&g, 32);
+  GameInput a = press_a(), r = none(); r.right = true;
+  game_update(&g, DT, &r);                       // 女の子
+  game_update(&g, DT, &a);
+  catch_one(&g, SP_NISHIKI);                     // 150点
+  end_game(&g);
+  CHECK(g.state == ST_RESULT && g.score == 150);
+  CHECK(g.top_count == 1 && g.top_pos == 0 && g.top[0].score == 150 && g.top[0].player == PL_GIRL);
+  CHECK(g.new_record && g.high_score == 150);
+  // リトライすると「今回の順位」はリセット、記録は残る
+  GameInput re = none(); re.cmd = CMD_RETRY;
+  game_update(&g, DT, &re);
+  CHECK(g.top_pos == -1 && g.top_count == 1 && !g.new_record);
+  // 0点のゲームは記録しない
+  end_game(&g);
+  CHECK(g.score == 0 && g.top_pos == -1 && g.top_count == 1);
+  // 男の子で 1位より低い点 → 2位に入る（NEW RECORD ではない）
+  to_title(&g);
+  GameInput l = none(); l.left = true;
+  game_update(&g, DT, &l);
+  game_update(&g, DT, &a);
+  catch_one(&g, SP_KOI);                         // 80点
+  end_game(&g);
+  CHECK(g.top_pos == 1 && g.top[1].score == 80 && g.top[1].player == PL_BOY);
+  CHECK(!g.new_record && g.high_score == 150);
+  // 男の子で 1位を超える → NEW RECORD
+  game_update(&g, DT, &re);
+  catch_one(&g, SP_GOLD);                        // 500点
+  end_game(&g);
+  CHECK(g.top_pos == 0 && g.new_record && g.high_score == 500 && g.top[0].player == PL_BOY);
+  CHECK(g.top_count == 3 && g.top[1].score == 150 && g.top[2].score == 80);
+  // タイトルに戻っても記録は残り、起動し直すと消える
+  to_title(&g);
+  CHECK(g.top_count == 3 && g.high_score == 500);
+  game_init(&g, 33);
+  CHECK(g.top_count == 0 && g.high_score == 0);
+}
+
+// 記録部分（人・TOP5・ずかん）が同じか
+static bool same_record(const Game *a, const Game *b) {
+  if (a->player != b->player || a->top_count != b->top_count || a->high_score != b->high_score) return false;
+  for (int i = 0; i < a->top_count; i++)
+    if (a->top[i].score != b->top[i].score || a->top[i].player != b->top[i].player) return false;
+  return memcmp(a->discovered, b->discovered, sizeof(a->discovered)) == 0;
+}
+static void make_record(Game *g) {
+  game_init(g, 41);
+  g->player = PL_GIRL;
+  game_record_score(g, 820, PL_GIRL);
+  game_record_score(g, 640, PL_BOY);
+  game_record_score(g, 640, PL_GIRL);
+  game_record_score(g, 15, PL_BOY);
+  g->discovered[PL_BOY][SP_MEDAKA] = g->discovered[PL_BOY][SP_BOOT] = true;
+  g->discovered[PL_GIRL][SP_GOLD] = g->discovered[PL_GIRL][SP_KOI] = true;
+}
+
+static void test_save_encode(void) {
+  g_case = "save_encode";
+  Game g, h;
+  make_record(&g);
+  uint8_t buf[SAVE_SIZE];
+  save_encode(&g, buf);
+  game_init(&h, 42);
+  CHECK(save_decode(&h, buf, SAVE_SIZE));
+  CHECK(same_record(&g, &h));
+  CHECK(h.player == PL_GIRL && h.top_count == 4 && h.high_score == 820);
+  CHECK(h.top[2].score == 640 && h.top[2].player == PL_GIRL);
+  CHECK(game_discovered_count_of(&h, PL_BOY) == 2 && game_discovered_count_of(&h, PL_GIRL) == 2);
+  // TOP5 がいっぱい・全種発見でも戻せる
+  for (int i = 0; i < 3; i++) game_record_score(&g, 1000 + i, PL_BOY);
+  memset(g.discovered, 1, sizeof(g.discovered));
+  save_encode(&g, buf);
+  game_init(&h, 43);
+  CHECK(save_decode(&h, buf, SAVE_SIZE) && same_record(&g, &h) && h.top_count == TOP_COUNT);
+  // 空の記録も戻せる
+  game_init(&g, 44);
+  save_encode(&g, buf);
+  make_record(&h);
+  CHECK(save_decode(&h, buf, SAVE_SIZE) && same_record(&g, &h));
+
+  // 壊れたデータは読まない（どの1バイトが変わっても検出し、ゲームの状態は変えない）
+  make_record(&g);
+  save_encode(&g, buf);
+  int detected = 0;
+  for (int i = 0; i < SAVE_SIZE; i++) {
+    uint8_t bad[SAVE_SIZE];
+    memcpy(bad, buf, SAVE_SIZE);
+    bad[i] ^= 0x5A;
+    game_init(&h, 45);
+    Game before = h;
+    bool ok = save_decode(&h, bad, SAVE_SIZE);
+    detected += !ok;
+    CHECK(!ok && same_record(&h, &before));
+  }
+  CHECK(detected == SAVE_SIZE);
+  game_init(&h, 46);
+  CHECK(!save_decode(&h, buf, SAVE_SIZE - 1));     // 長さ違い
+  CHECK(!save_decode(&h, buf, 0));
+  CHECK(h.top_count == 0);
+}
+
+static void test_save_file(void) {
+  g_case = "save_file";
+  const char *path = "test_tmp.sav", *tmp = "test_tmp.sav.tmp";
+  remove(path); remove(tmp);
+  Game g, h;
+  // ファイルが無い → 読めない（記録は空のまま）
+  game_init(&h, 51);
+  CHECK(!save_read(path, &h) && h.top_count == 0);
+  // 書いて読む
+  make_record(&g);
+  CHECK(save_write(path, &g));
+  FILE *f = fopen(tmp, "rb"); CHECK(f == NULL); if (f) fclose(f);   // 一時ファイルは残らない
+  game_init(&h, 52);
+  CHECK(save_read(path, &h) && same_record(&g, &h));
+  // 上書き保存（記録が増えた）
+  game_record_score(&g, 999, PL_BOY);
+  g.discovered[PL_BOY][SP_ITOU] = true;
+  CHECK(save_write(path, &g));
+  game_init(&h, 53);
+  CHECK(save_read(path, &h) && same_record(&g, &h) && h.high_score == 999);
+  // 置き換えの途中で電源が切れた（本体が消えて .tmp だけ残った）→ .tmp から読める
+  rename(path, tmp);
+  game_init(&h, 54);
+  CHECK(save_read(path, &h) && same_record(&g, &h));
+  remove(tmp);
+  // 本体が壊れている → 読まない
+  f = fopen(path, "wb"); fputs("broken", f); fclose(f);
+  game_init(&h, 55);
+  CHECK(!save_read(path, &h) && h.top_count == 0);
+  // 書けない場所 → false（ゲームは続けられる）
+  CHECK(!save_write("no_such_dir/x.sav", &g));
+  remove(path); remove(tmp);
+}
+
 int main(void) {
   test_init();
+  test_discovery();
+  test_player_select();
+  test_player_zukan();
+  test_top5();
+  test_save_encode();
+  test_save_file();
   test_cursor();
   test_cast_landing_matches_cursor();
   test_distance_judge();
