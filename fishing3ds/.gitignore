@@ -1,0 +1,7 @@
+build/
+*.3dsx
+*.smdh
+*.elf
+tests/test_game
+tools/preview/preview
+tools/preview/out/
