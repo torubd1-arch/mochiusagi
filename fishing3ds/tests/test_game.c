@@ -1004,7 +1004,8 @@ static bool same_record(const Game *a, const Game *b) {
   if (a->player != b->player || a->top_count != b->top_count || a->high_score != b->high_score) return false;
   for (int i = 0; i < a->top_count; i++)
     if (a->top[i].score != b->top[i].score || a->top[i].player != b->top[i].player) return false;
-  return memcmp(a->discovered, b->discovered, sizeof(a->discovered)) == 0;
+  return memcmp(a->discovered, b->discovered, sizeof(a->discovered)) == 0 &&
+         memcmp(a->caught_total, b->caught_total, sizeof(a->caught_total)) == 0;
 }
 static void make_record(Game *g) {
   game_init(g, 41);
@@ -1015,6 +1016,8 @@ static void make_record(Game *g) {
   game_record_score(g, 15, PL_BOY);
   g->discovered[PL_BOY][SP_MEDAKA] = g->discovered[PL_BOY][SP_BOOT] = true;
   g->discovered[PL_GIRL][SP_GOLD] = g->discovered[PL_GIRL][SP_KOI] = true;
+  g->caught_total[PL_BOY][SP_MEDAKA] = 12; g->caught_total[PL_BOY][SP_BOOT] = 1;
+  g->caught_total[PL_GIRL][SP_GOLD] = 2; g->caught_total[PL_GIRL][SP_KOI] = 300;
 }
 
 static void test_save_encode(void) {
@@ -1274,6 +1277,127 @@ static void test_music_sequencer(void) {
   CHECK(rec_n == nb && m.song == -1);
 }
 
+static void test_zukan_mode(void) {
+  g_case = "zukan_mode";
+  Game g;
+  game_init(&g, 61);
+  GameInput x = none(); x.x = true;
+  GameInput l = none(); l.left = true;
+  GameInput r = none(); r.right = true;
+  GameInput u = none(); u.up = true;
+  GameInput d = none(); d.down = true;
+  GameInput b = none(); b.b = true;
+  // タイトルから X（またはボタンのタッチ）でずかんへ
+  game_update(&g, DT, &x);
+  CHECK(g.state == ST_ZUKAN && (g.events & EV_MENU) && g.zukan_sel == 0);
+  // 左上の端では左・上に動かない
+  game_update(&g, DT, &l); CHECK(g.zukan_sel == 0 && !(g.events & EV_MENU));
+  game_update(&g, DT, &u); CHECK(g.zukan_sel == 0);
+  // 右・下に動く
+  game_update(&g, DT, &r); CHECK(g.zukan_sel == 1 && (g.events & EV_MENU));
+  game_update(&g, DT, &d); CHECK(g.zukan_sel == 6);
+  // 右端で止まる（次の行に回り込まない）
+  for (int i = 0; i < 10; i++) game_update(&g, DT, &r);
+  CHECK(g.zukan_sel == 9);
+  // 下端で止まる
+  for (int i = 0; i < 10; i++) game_update(&g, DT, &d);
+  CHECK(g.zukan_sel == SP_COUNT - 1);
+  for (int i = 0; i < 10; i++) game_update(&g, DT, &l);
+  CHECK(g.zukan_sel == 20);
+  // マスのタッチ
+  GameInput c = none(); c.cmd = CMD_ZUKAN_CELL; c.cell = 23;
+  game_update(&g, DT, &c); CHECK(g.zukan_sel == 23);
+  c.cell = 99;
+  game_update(&g, DT, &c); CHECK(g.zukan_sel == 23);   // 範囲外は無視
+  // ずかんの中では A でゲームは始まらない。人も変わらない
+  GameInput a = press_a();
+  Player p = g.player;
+  game_update(&g, DT, &a);
+  CHECK(g.state == ST_ZUKAN && g.player == p);
+  // B（または「もどる」）でタイトルへ。選んでいた魚は覚えている
+  game_update(&g, DT, &b);
+  CHECK(g.state == ST_TITLE);
+  GameInput t = none(); t.cmd = CMD_ZUKAN;
+  game_update(&g, DT, &t);
+  CHECK(g.state == ST_ZUKAN && g.zukan_sel == 23);
+  t.cmd = CMD_TITLE;
+  game_update(&g, DT, &t);
+  CHECK(g.state == ST_TITLE);
+  // ずかんは時間制限なし（何秒いてもそのまま）
+  game_update(&g, DT, &x);
+  GameInput n = none();
+  step(&g, 60 * 120, &n);
+  CHECK(g.state == ST_ZUKAN && !game_is_playing(&g));
+
+  // 釣った数（累計）は人ごと・ゲームをまたいで増える
+  game_init(&g, 62);
+  game_update(&g, DT, &a);
+  catch_one(&g, SP_KOI);
+  catch_one(&g, SP_KOI);
+  CHECK(g.caught_total[PL_BOY][SP_KOI] == 2 && g.counts[SP_KOI] == 2);
+  end_game(&g);
+  GameInput re = none(); re.cmd = CMD_RETRY;
+  game_update(&g, DT, &re);
+  catch_one(&g, SP_KOI);
+  CHECK(g.caught_total[PL_BOY][SP_KOI] == 3 && g.counts[SP_KOI] == 1);
+  CHECK(g.caught_total[PL_GIRL][SP_KOI] == 0);
+  // 上限で止まる
+  g.caught_total[PL_BOY][SP_KOI] = CAUGHT_TOTAL_MAX;
+  catch_one(&g, SP_KOI);
+  CHECK(g.caught_total[PL_BOY][SP_KOI] == CAUGHT_TOTAL_MAX);
+
+  // レア度（★）は得点の順。長靴は0
+  int prev = 0;
+  for (int k = 0; k < SP_COUNT; k++) {
+    if (k == SP_BOOT) { CHECK(game_species_stars((Species)k) == 0); continue; }
+    int st = game_species_stars((Species)k);
+    CHECK(st >= 1 && st <= 5 && st >= prev);
+    prev = st;
+  }
+  CHECK(game_species_stars(SP_MEDAKA) == 1 && game_species_stars(SP_GOLD) == 5);
+  // 説明文がすべてある
+  for (int k = 0; k < SP_COUNT; k++) CHECK(SPECIES_DESC[k][0] && SPECIES_DESC[k][0][0] && SPECIES_DESC[k][1] && SPECIES_DESC[k][1][0]);
+}
+
+static void test_save_v1(void) {
+  g_case = "save_v1";
+  // 第1版のデータ（釣った数なし）を手で組み立てて読めるか
+  uint8_t v1[SAVE_SIZE_V1];
+  memset(v1, 0, sizeof(v1));
+  memcpy(v1, "WKFS", 4);
+  v1[4] = 1; v1[5] = PL_GIRL; v1[6] = 1;
+  v1[8] = 120; v1[9] = 0; v1[10] = 0; v1[11] = 0; v1[12] = PL_GIRL;   // TOP5 1件：120点 女の子
+  uint8_t *disc = v1 + 8 + TOP_COUNT * 5;
+  disc[PL_GIRL * SP_COUNT + SP_FUNA] = 1;
+  uint32_t h = 2166136261u;
+  for (int i = 0; i < SAVE_SIZE_V1 - 4; i++) { h ^= v1[i]; h *= 16777619u; }
+  v1[SAVE_SIZE_V1 - 4] = (uint8_t)h; v1[SAVE_SIZE_V1 - 3] = (uint8_t)(h >> 8);
+  v1[SAVE_SIZE_V1 - 2] = (uint8_t)(h >> 16); v1[SAVE_SIZE_V1 - 1] = (uint8_t)(h >> 24);
+  Game g;
+  game_init(&g, 71);
+  CHECK(save_decode(&g, v1, SAVE_SIZE_V1));
+  CHECK(g.player == PL_GIRL && g.top_count == 1 && g.top[0].score == 120 && g.high_score == 120);
+  CHECK(g.discovered[PL_GIRL][SP_FUNA] && g.caught_total[PL_GIRL][SP_FUNA] == 1);
+  CHECK(game_discovered_count_of(&g, PL_GIRL) == 1 && g.caught_total[PL_GIRL][SP_KOI] == 0);
+  // 第1版の長さで版数だけ2 → 読まない
+  v1[4] = 2;
+  game_init(&g, 72);
+  CHECK(!save_decode(&g, v1, SAVE_SIZE_V1) && g.top_count == 0);
+  // 未発見なのに釣った数がある第2版 → 読まない
+  game_init(&g, 73);
+  g.caught_total[PL_BOY][SP_KOI] = 3;
+  uint8_t buf[SAVE_SIZE];
+  save_encode(&g, buf);
+  Game h2; game_init(&h2, 74);
+  CHECK(!save_decode(&h2, buf, SAVE_SIZE));
+  // 釣った数も保存される
+  g.discovered[PL_BOY][SP_KOI] = true;
+  g.caught_total[PL_GIRL][SP_GOLD] = 1234; g.discovered[PL_GIRL][SP_GOLD] = true;
+  save_encode(&g, buf);
+  CHECK(save_decode(&h2, buf, SAVE_SIZE));
+  CHECK(h2.caught_total[PL_BOY][SP_KOI] == 3 && h2.caught_total[PL_GIRL][SP_GOLD] == 1234);
+}
+
 int main(void) {
   test_init();
   test_discovery();
@@ -1284,6 +1408,8 @@ int main(void) {
   test_save_file();
   test_music_data();
   test_music_sequencer();
+  test_zukan_mode();
+  test_save_v1();
   test_cursor();
   test_cast_landing_matches_cursor();
   test_distance_judge();

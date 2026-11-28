@@ -196,6 +196,7 @@ static void update_music(void) {
   float vol = BGM_VOL, speed = 1.0f;
   switch (G.state) {
     case ST_TITLE:
+    case ST_ZUKAN:
       music_play(&M, SONG_TITLE, now, false);
       break;
     case ST_RESULT:
@@ -225,7 +226,9 @@ static void update_music(void) {
 // ================================================================
 typedef struct { float x, y, w, h; } Rect;
 
-static const Rect BTN_START   = { 80, 154, 160, 40 };
+static const Rect BTN_START   = { 34, 154, 150, 40 };
+static const Rect BTN_ZUKAN   = { 194, 154, 92, 40 };
+static const Rect BTN_BACK    = { 10, 198, 100, 36 };
 static const Rect BTN_PLAYER[PLAYER_COUNT] = { { 28, 50, 124, 96 }, { 168, 50, 124, 96 } };
 static const Rect BTN_PAUSE   = { 246, 208, 70, 28 };
 static const Rect BTN_RETRY   = { 14, 196, 140, 38 };
@@ -823,6 +826,7 @@ static void draw_result_top(void) {
   dr_text("A：リトライ    B：タイトルへ", 200, 212, 13, RGB(0x4A5A6A), AL_CENTER, BL_MIDDLE);
 }
 
+static void draw_zukan_top(void);
 static void draw_top(void) {
   GameState vs = vis_state();
   draw_background();
@@ -840,6 +844,7 @@ static void draw_top(void) {
   draw_drops();
 
   if (vs == ST_TITLE) { draw_title_top(); return; }
+  if (vs == ST_ZUKAN) { draw_zukan_top(); return; }
   if (vs == ST_RESULT) { draw_result_top(); return; }
   draw_hud();
   if (vs == ST_HIT_WINDOW) draw_hit();
@@ -861,12 +866,13 @@ static void draw_top(void) {
 #define GRID_COLS 5
 #define GRID_CW   61.0f
 #define GRID_GAP  2.0f
-static void draw_species_grid(float y0, float ch) {
+//  counts: マスに出す数（プレイ中はそのゲームの釣果、ずかんでは累計）、sel: 選択中のマス（-1=なし）
+static void draw_species_grid(float y0, float ch, const int *counts, int sel) {
   char buf[16];
   for (int k = 0; k < SP_COUNT; k++) {
     int col = k % GRID_COLS, row = k / GRID_COLS;
     float x = 4 + col * (GRID_CW + GRID_GAP), y = y0 + row * (ch + GRID_GAP);
-    int n = G.counts[k];
+    int n = counts[k];
     bool found = game_is_discovered(&G, (Species)k);
     // マスに収まる大きさで魚を描く（横幅と高さの両方で制限）
     float s = 32.0f / art_width((Species)k);
@@ -885,8 +891,14 @@ static void draw_species_grid(float y0, float ch) {
     }
     dr_round_rect(x, y, GRID_CW, ch, 4, n ? RGB(0xFFFFFF) : RGB(0xE3ECF3));
     art_draw_fish((Species)k, ax, ay, s, n ? G.anim_t : 0);
-    snprintf(buf, sizeof(buf), "×%d", n);
+    snprintf(buf, sizeof(buf), "×%d", n > 999 ? 999 : n);
     dr_text(buf, x + GRID_CW - 2, y + ch - 1, ch > 24 ? 12 : 11, n ? RGB(0xE5533D) : RGB(0x9AA5B1), AL_RIGHT, BL_BOTTOM);
+  }
+  if (sel >= 0 && sel < SP_COUNT) {
+    // 選択中のマスを太い枠で囲む（点滅）
+    float x = 4 + (sel % GRID_COLS) * (GRID_CW + GRID_GAP), y = y0 + (sel / GRID_COLS) * (ch + GRID_GAP);
+    u32 c = fmodf(G.anim_t, 0.8f) < 0.5f ? RGB(0xFF8A00) : RGB(0xFFC04D);
+    dr_rect_stroke(x - 1, y - 1, GRID_CW + 2, ch + 2, 3, c);
   }
 }
 
@@ -964,7 +976,7 @@ static void draw_bottom_play(void) {
   dr_text(status_text(), 160, 15, 15, vis_state() == ST_HIT_WINDOW ? RGB(0xFFE14D) : RGB(0xFFFFFF), AL_CENTER, BL_MIDDLE);
   dr_text(hint_text(), 160, 45, 11, RGB(0x2E4A62), AL_CENTER, BL_MIDDLE);
   draw_gauge();
-  draw_species_grid(92, 21);
+  draw_species_grid(92, 21, G.counts, -1);
   dr_rect(0, 206, 320, 34, RGB(0xD6E4EE));
   snprintf(buf, sizeof(buf), "SCORE %d", G.score);
   art_draw_face(G.player, 17, 223, 10);   // いまあそんでいる人
@@ -1008,8 +1020,9 @@ static void draw_bottom_title(void) {
     dr_restore();
   }
   draw_button(BTN_START, "スタート", RGB(0xE5533D), fmodf(G.anim_t, 1.0f) < 0.5f, 20);
+  draw_button(BTN_ZUKAN, "ずかん", RGB(0x3E9E6E), false, 17);
   const char *lines[3] = {
-    "←→ か タッチ：えらぶ    A：スタート",
+    "←→/タッチ：えらぶ   A：スタート   X：ずかん",
     "ゲーム中  A：キャスト・合わせ   B：糸を回収",
     "スライドパッド/十字キー：ねらう   START：一時停止",
   };
@@ -1022,7 +1035,7 @@ static void draw_bottom_result(void) {
   dr_rect(0, 0, 320, 26, RGB(0x1B4965));
   snprintf(buf, sizeof(buf), "種類別の釣果    ずかん %d/%d", game_discovered_count(&G), SP_COUNT);
   dr_text(buf, 160, 13, 14, RGB(0xFFFFFF), AL_CENTER, BL_MIDDLE);
-  draw_species_grid(31, 26);
+  draw_species_grid(31, 26, G.counts, -1);
   snprintf(buf, sizeof(buf), "合計 %d点   ハイスコア %d点", G.score, G.high_score);
   dr_text(buf, 160, 178, 13, RGB(0x1B2A3A), AL_CENTER, BL_MIDDLE);
   bool ready = G.state_t >= TIMEUP_LOCK_TIME;
@@ -1031,6 +1044,126 @@ static void draw_bottom_result(void) {
   draw_button(BTN_RETRY, "リトライ", RGB(0xE5533D), false, 17);
   draw_button(BTN_TITLE, "タイトルへ", RGB(0x3E7CC8), false, 17);
   dr_restore();
+}
+
+// ================================================================
+//  ずかん
+// ================================================================
+#define ZK_Y0  30.0f     // 下画面の表の上端
+#define ZK_CH  30.0f     // 下画面のマスの高さ
+
+// 魚影のサイズのヒント（例：「小・中」）。その大きさの魚影から出ないなら空
+static void size_hint(Species sp, char *buf, size_t n) {
+  static const char *names[SZ_COUNT] = { "小", "中", "大" };
+  buf[0] = 0;
+  for (int z = 0; z < SZ_COUNT; z++) {
+    if (SPECIES_PERMILLE[z][sp] <= 0) continue;
+    if (buf[0]) strncat(buf, "・", n - strlen(buf) - 1);
+    strncat(buf, names[z], n - strlen(buf) - 1);
+  }
+}
+
+static void draw_stars(float x, float y, int n, float r) {
+  for (int i = 0; i < 5; i++)
+    dr_star(x + i * (r * 2.3f), y, r, r * 0.45f, 5, i < n ? RGB(0xF2B01E) : RGB(0xD6DEE6));
+}
+
+static void draw_zukan_top(void) {
+  char buf[64], hint[32];
+  Species sp = (Species)G.zukan_sel;
+  bool found = game_is_discovered(&G, sp);
+  int total = G.caught_total[G.player][sp];
+
+  dr_rect(0, 0, 400, 240, RGBA(0x0A2140, 0x70));
+  dr_round_rect(8, 6, 384, 228, 14, RGB(0x2E5E8A));
+  dr_round_rect(12, 10, 376, 220, 12, RGB(0xFFFBEF));
+  // 見出し
+  dr_round_rect(12, 10, 376, 30, 12, RGB(0x4FA3E0));
+  dr_rect(12, 28, 376, 12, RGB(0x4FA3E0));
+  art_draw_face(G.player, 32, 25, 10);
+  text_outline("さかな ずかん", 200, 25, 17, RGB(0xFFFFFF), RGB(0x1B3A5C), AL_CENTER, BL_MIDDLE);
+  int got = game_discovered_count(&G);
+  snprintf(buf, sizeof(buf), "%d/%d", got, SP_COUNT);
+  dr_text(buf, 376, 25, 14, RGB(0xFFFFFF), AL_RIGHT, BL_MIDDLE);
+
+  // 左：魚の絵（水の中）
+  dr_rect_vgrad(22, 48, 178, 120, RGB(0xBFE7F5), RGB(0x4E9BC9));
+  for (int i = 0; i < 3; i++) {
+    float bx = 40 + i * 58 + 6 * sinf(G.anim_t * 0.8f + i), by = 160 - fmodf(G.anim_t * 18 + i * 37, 100);
+    dr_circle(bx, by, 2.5f, RGBA(0xFFFFFF, 0x90));
+  }
+  float s = 150.0f / art_width(sp);
+  if (s > 2.6f) s = 2.6f;
+  float bob = sinf(G.anim_t * 2.0f) * 3;
+  if (found) {
+    art_draw_fish(sp, 111, 108 + bob, s, G.anim_t);
+  } else {
+    dr_save();
+    dr_set_tint(RGB(0x2E4A62));
+    art_draw_fish(sp, 111, 108 + bob, s, 0);
+    dr_clear_tint();
+    dr_restore();
+    text_outline("？", 111, 108, 40, RGB(0xFFFFFF), RGB(0x2E4A62), AL_CENTER, BL_MIDDLE);
+  }
+
+  // 右：データ
+  const float x0 = 212;
+  snprintf(buf, sizeof(buf), "No.%02d", G.zukan_sel + 1);
+  dr_text(buf, x0, 58, 12, RGB(0x6A8AA8), AL_LEFT, BL_MIDDLE);
+  if (found) {
+    dr_text(SPECIES_NAME_JP[sp], x0, 80, 20, RGB(0x1B2A3A), AL_LEFT, BL_MIDDLE);
+    dr_text(SPECIES_NAME_EN[sp], x0, 100, 11, RGB(0x6A8AA8), AL_LEFT, BL_MIDDLE);
+  } else {
+    dr_text("？？？", x0, 80, 20, RGB(0x8A96A3), AL_LEFT, BL_MIDDLE);
+  }
+  dr_text("レア度", x0, 120, 12, RGB(0x4A5A6A), AL_LEFT, BL_MIDDLE);
+  if (found && sp != SP_BOOT) draw_stars(x0 + 58, 120, game_species_stars(sp), 6);
+  else dr_text(found ? "－" : "？", x0 + 58, 120, 12, RGB(0x8A96A3), AL_LEFT, BL_MIDDLE);
+  dr_text("とくてん", x0, 139, 12, RGB(0x4A5A6A), AL_LEFT, BL_MIDDLE);
+  if (found) snprintf(buf, sizeof(buf), "%d 点", SPECIES_POINTS[sp]);
+  else snprintf(buf, sizeof(buf), "？ 点");
+  dr_text(buf, x0 + 58, 139, 12, RGB(0x1B2A3A), AL_LEFT, BL_MIDDLE);
+  dr_text("魚影", x0, 158, 12, RGB(0x4A5A6A), AL_LEFT, BL_MIDDLE);
+  size_hint(sp, hint, sizeof(hint));
+  dr_text(hint, x0 + 58, 158, 12, RGB(0x1B2A3A), AL_LEFT, BL_MIDDLE);
+  dr_text("釣った数", x0, 177, 12, RGB(0x4A5A6A), AL_LEFT, BL_MIDDLE);
+  snprintf(buf, sizeof(buf), "%d 匹", total);
+  if (sp == SP_BOOT) snprintf(buf, sizeof(buf), "%d 足", total);
+  dr_text(buf, x0 + 58, 177, 12, total ? RGB(0xE5533D) : RGB(0x8A96A3), AL_LEFT, BL_MIDDLE);
+
+  // 下：説明
+  dr_rect(22, 188, 356, 1.5f, RGB(0xD6DEE6));
+  if (found) {
+    dr_text(SPECIES_DESC[sp][0], 30, 201, 13, RGB(0x1B2A3A), AL_LEFT, BL_MIDDLE);
+    dr_text(SPECIES_DESC[sp][1], 30, 218, 13, RGB(0x1B2A3A), AL_LEFT, BL_MIDDLE);
+  } else {
+    dr_text("まだ 釣ったことのない 魚。", 30, 201, 13, RGB(0x6A7A8A), AL_LEFT, BL_MIDDLE);
+    snprintf(buf, sizeof(buf), "「%s」の 魚影を ねらってみよう！", hint);
+    dr_text(buf, 30, 218, 13, RGB(0x6A7A8A), AL_LEFT, BL_MIDDLE);
+  }
+  // 全部そろったら
+  if (got == SP_COUNT) {
+    dr_save(); dr_translate(330, 66); dr_rotate(0.2f);
+    float pulse = 1 + 0.06f * sinf(G.anim_t * 6);
+    dr_scale(pulse, pulse);
+    dr_star(0, 0, 30, 20, 12, RGB(0xFF5A4E));
+    text_outline("コンプ", 0, -5, 11, RGB(0xFFFFFF), RGB(0xB3261E), AL_CENTER, BL_MIDDLE);
+    text_outline("リート!", 0, 8, 11, RGB(0xFFFFFF), RGB(0xB3261E), AL_CENTER, BL_MIDDLE);
+    dr_restore();
+  }
+}
+
+static void draw_bottom_zukan(void) {
+  char buf[48];
+  dr_rect(0, 0, 320, 240, RGB(0xEAF6FB));
+  dr_rect(0, 0, 320, 26, RGB(0x1B4965));
+  snprintf(buf, sizeof(buf), "ずかん    %d/%d", game_discovered_count(&G), SP_COUNT);
+  dr_text(buf, 160, 13, 14, RGB(0xFFFFFF), AL_CENTER, BL_MIDDLE);
+  art_draw_face(G.player, 16, 13, 8);
+  draw_species_grid(ZK_Y0, ZK_CH, G.caught_total[G.player], G.zukan_sel);
+  draw_button(BTN_BACK, "もどる", RGB(0x3E7CC8), false, 15);
+  dr_text("十字キー/タッチ：えらぶ", 216, 213, 11, RGB(0x2E4A62), AL_CENTER, BL_MIDDLE);
+  dr_text("B：タイトルへ", 216, 228, 11, RGB(0x2E4A62), AL_CENTER, BL_MIDDLE);
 }
 
 static void draw_bottom_pause(void) {
@@ -1046,6 +1179,7 @@ static void draw_bottom(void) {
   switch (G.state) {
     case ST_TITLE:  draw_bottom_title(); break;
     case ST_RESULT: draw_bottom_result(); break;
+    case ST_ZUKAN:  draw_bottom_zukan(); break;
     case ST_PAUSE:  draw_bottom_pause(); break;
     default:        draw_bottom_play(); break;
   }
@@ -1066,6 +1200,7 @@ static void read_input(GameInput *in) {
   in->down  = (kDown & KEY_DOWN) != 0;
   in->left  = (kDown & KEY_LEFT) != 0;     // タイトル画面での人の選択
   in->right = (kDown & KEY_RIGHT) != 0;
+  in->x     = (kDown & KEY_X) != 0;       // タイトル画面でずかんを開く
 
   // 左右：十字キーを優先し、なければスライドパッドのアナログ値
   if (kHeld & KEY_DLEFT) in->move = -1.0f;
@@ -1089,6 +1224,15 @@ static void read_input(GameInput *in) {
         if (in_rect(x, y, BTN_START)) in->cmd = CMD_START;
         else if (in_rect(x, y, BTN_PLAYER[PL_BOY])) in->cmd = CMD_SEL_BOY;
         else if (in_rect(x, y, BTN_PLAYER[PL_GIRL])) in->cmd = CMD_SEL_GIRL;
+        else if (in_rect(x, y, BTN_ZUKAN)) in->cmd = CMD_ZUKAN;
+        break;
+      case ST_ZUKAN:
+        if (in_rect(x, y, BTN_BACK)) { in->cmd = CMD_TITLE; break; }
+        if (y >= ZK_Y0 && x >= 4) {
+          int col = (int)((x - 4) / (GRID_CW + GRID_GAP)), row = (int)((y - ZK_Y0) / (ZK_CH + GRID_GAP));
+          int k = row * GRID_COLS + col;
+          if (col < GRID_COLS && row < 5 && k < SP_COUNT) { in->cmd = CMD_ZUKAN_CELL; in->cell = k; }
+        }
         break;
       case ST_RESULT:
         if (in_rect(x, y, BTN_RETRY)) in->cmd = CMD_RETRY;

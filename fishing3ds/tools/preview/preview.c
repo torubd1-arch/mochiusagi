@@ -285,6 +285,21 @@ int main(void) {
   run(1.5f);
   render("12_result");
 
+  // ずかんモード（発見済みの魚と、未発見の魚）
+  game_init(&G, 777);
+  for (int k = 0; k < SP_COUNT; k += 2) { G.discovered[PL_BOY][k] = true; G.caught_total[PL_BOY][k] = 1 + k * 3; }
+  G.discovered[PL_BOY][SP_GOLD] = true; G.caught_total[PL_BOY][SP_GOLD] = 1;
+  { GameInput x = NONE_IN; x.x = true; game_update(&G, 1.0f / 60, &x); }
+  G.zukan_sel = SP_KOI; run(0.5f);
+  render("14_zukan_mode");
+  G.zukan_sel = SP_CHOUZAME; run(0.3f);
+  render("14b_zukan_unknown");
+  G.zukan_sel = SP_GOLD;
+  for (int k = 0; k < SP_COUNT; k++) { G.discovered[PL_BOY][k] = true; if (!G.caught_total[PL_BOY][k]) G.caught_total[PL_BOY][k] = 1; }
+  run(0.3f);
+  render("14c_zukan_complete");
+  run(0.1f);
+
   // 釣果カード（全魚種）
   for (int k = 0; k < SP_COUNT; k++) {
     char name[32];

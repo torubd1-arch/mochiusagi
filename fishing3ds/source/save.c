@@ -33,13 +33,21 @@ void save_encode(const Game *g, uint8_t out[SAVE_SIZE]) {
   }
   for (int pl = 0; pl < PLAYER_COUNT; pl++)
     for (int k = 0; k < SP_COUNT; k++) *p++ = g->discovered[pl][k] ? 1 : 0;
+  for (int pl = 0; pl < PLAYER_COUNT; pl++)
+    for (int k = 0; k < SP_COUNT; k++, p += 2) {
+      int n = g->caught_total[pl][k];
+      n = n < 0 ? 0 : n > CAUGHT_TOTAL_MAX ? CAUGHT_TOTAL_MAX : n;
+      p[0] = (uint8_t)n; p[1] = (uint8_t)(n >> 8);
+    }
   put32(p, checksum(out, SAVE_SIZE - 4));
 }
 
 bool save_decode(Game *g, const uint8_t *buf, size_t len) {
-  if (len != SAVE_SIZE) return false;
-  if (memcmp(buf, MAGIC, 4) != 0 || buf[4] != SAVE_VERSION) return false;
-  if (get32(buf + SAVE_SIZE - 4) != checksum(buf, SAVE_SIZE - 4)) return false;
+  if (len < 8 || memcmp(buf, MAGIC, 4) != 0) return false;
+  int ver = buf[4];
+  size_t size = ver == 1 ? SAVE_SIZE_V1 : ver == SAVE_VERSION ? SAVE_SIZE : 0;
+  if (size == 0 || len != size) return false;
+  if (get32(buf + size - 4) != checksum(buf, size - 4)) return false;
   int player = buf[5], count = buf[6];
   if (player >= PLAYER_COUNT || count > TOP_COUNT) return false;
   ScoreEntry top[TOP_COUNT];
@@ -59,19 +67,29 @@ bool save_decode(Game *g, const uint8_t *buf, size_t len) {
       if (*p > 1) return false;
       disc[pl][k] = *p++ != 0;
     }
+  int total[PLAYER_COUNT][SP_COUNT];
+  for (int pl = 0; pl < PLAYER_COUNT; pl++)
+    for (int k = 0; k < SP_COUNT; k++) {
+      if (ver == 1) { total[pl][k] = disc[pl][k] ? 1 : 0; continue; }
+      int n = p[0] | (p[1] << 8);
+      p += 2;
+      if (n > CAUGHT_TOTAL_MAX || (n > 0 && !disc[pl][k])) return false;   // 未発見なのに釣った数がある
+      total[pl][k] = n;
+    }
   // ここまで来たら正しいデータなので反映する
   g->player = (Player)player;
   memcpy(g->top, top, sizeof(top));
   g->top_count = count;
   g->high_score = count > 0 ? top[0].score : 0;
   memcpy(g->discovered, disc, sizeof(disc));
+  memcpy(g->caught_total, total, sizeof(total));
   return true;
 }
 
 static bool read_one(const char *path, Game *g) {
   FILE *f = fopen(path, "rb");
   if (!f) return false;
-  uint8_t buf[SAVE_SIZE + 1];
+  uint8_t buf[SAVE_SIZE + 1];   // 第1版（短い）も第2版も入る
   size_t n = fread(buf, 1, sizeof(buf), f);
   fclose(f);
   return save_decode(g, buf, n);

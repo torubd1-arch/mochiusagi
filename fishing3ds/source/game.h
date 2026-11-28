@@ -78,12 +78,17 @@
 #define LAND_X                96.0f   // 巻き上げ完了時の魚の位置（桟橋の手前）
 #define LAND_Y                204.0f
 
+// ずかん
+#define ZUKAN_COLS            5       // ずかんの表の列数（5×5）
+#define CAUGHT_TOTAL_MAX      9999    // 釣った数の上限（表示・保存用）
+
 // ----------------------------------------------------------------
 //  列挙
 // ----------------------------------------------------------------
 typedef enum {
   ST_TITLE, ST_AIMING, ST_CASTING, ST_FISH_APPROACH, ST_WAIT_BITE,
-  ST_HIT_WINDOW, ST_FIGHT, ST_CAUGHT, ST_MISSED, ST_PAUSE, ST_RESULT
+  ST_HIT_WINDOW, ST_FIGHT, ST_CAUGHT, ST_MISSED, ST_PAUSE, ST_RESULT,
+  ST_ZUKAN       // ずかんを眺める（タイトルから入る）
 } GameState;
 
 typedef enum { SZ_SMALL, SZ_MEDIUM, SZ_LARGE, SZ_COUNT } FishSize;
@@ -130,11 +135,16 @@ typedef struct {
 
 // 入力（a, b などは「押した瞬間」だけ true。a_held は押している間 true）
 enum { CMD_NONE, CMD_START, CMD_RETRY, CMD_TITLE, CMD_PAUSE, CMD_RESUME, CMD_QUIT,
-       CMD_SEL_BOY, CMD_SEL_GIRL };
+       CMD_SEL_BOY, CMD_SEL_GIRL,
+       CMD_ZUKAN,       // タイトル → ずかん
+       CMD_ZUKAN_CELL   // ずかんのマスをタッチ（GameInput.cell）
+};
 typedef struct {
   float move;            // -1..1（左右）
   bool  a, b, start, up, down;
-  bool  left, right;     // タイトル画面での人の選択用（押した瞬間）
+  bool  left, right;     // タイトル画面での人の選択・ずかんのカーソル用（押した瞬間）
+  bool  x;               // タイトル画面でずかんを開く
+  int   cell;            // CMD_ZUKAN_CELL のときのマス番号（0..SP_COUNT-1）
   bool  a_held;          // やりとり中の巻き取りにだけ使う
   int   cmd;             // タッチ操作によるコマンド
 } GameInput;
@@ -219,6 +229,8 @@ typedef struct {
 
   // ずかん（人ごと。アプリ起動中は保持。リトライ・タイトルに戻っても消えない）
   bool      discovered[PLAYER_COUNT][SP_COUNT];
+  int       caught_total[PLAYER_COUNT][SP_COUNT];  // これまでに釣った数（ずかん用。SD カードに保存）
+  int       zukan_sel;    // ずかんで選んでいる魚
   int       last_points;
 
   // ハイスコア TOP5（アプリ起動中は保持。得点の高い順、同点は先に出した方が上）
@@ -247,6 +259,7 @@ extern const int   SPECIES_POINTS[SP_COUNT];
 extern const int   SPECIES_RARITY[SP_COUNT];
 extern const char *SPECIES_NAME_JP[SP_COUNT];
 extern const char *SPECIES_NAME_EN[SP_COUNT];
+extern const char *SPECIES_DESC[SP_COUNT][2];   // ずかんの説明文（2行）
 extern const int   SIZE_SPAWN_PCT[SZ_COUNT];
 extern const int   SPECIES_PERMILLE[SZ_COUNT][SP_COUNT];  // 魚影サイズ別の魚種抽選（‰。各行の合計1000）
 extern const float SIZE_SPEED[SZ_COUNT];
@@ -276,6 +289,7 @@ int       game_success_rate(const Game *g);    // 0..100（%）
 int       game_discovered_count(const Game *g); // いまの人のずかんで発見済みの種類数
 int       game_discovered_count_of(const Game *g, Player p);
 bool      game_is_discovered(const Game *g, Species sp);  // いまの人が発見済みか
+int       game_species_stars(Species sp);  // ずかんのレア度（★1〜5。長靴は0）
 void      game_record_score(Game *g, int score, Player p); // TOP5 に記録し、入った順位を top_pos に入れる（0点は記録しない）
 uint32_t  game_rand(Game *g);
 float     game_randf(Game *g);                 // [0,1)

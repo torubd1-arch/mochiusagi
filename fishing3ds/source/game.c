@@ -36,6 +36,35 @@ const char *SPECIES_NAME_EN[SP_COUNT] = {
   "Giant Catfish", "Sturgeon", "Taimen", "Golden Fish", "Old Boot",
 };
 
+// ずかんの説明文（2行ずつ）
+const char *SPECIES_DESC[SP_COUNT][2] = {
+  [SP_MEDAKA]   = { "小川や 田んぼに すむ 小さな魚。", "むれで すいすい 泳ぐ。" },
+  [SP_MOTSUGO]  = { "池や 沼に すむ 小さな魚。", "口が小さく「クチボソ」とも よばれる。" },
+  [SP_WAKASAGI] = { "冷たい水が すきな 銀色の魚。", "冬は 氷に穴をあけて 釣ることも。" },
+  [SP_FUNA]     = { "池や 川で よく見かける 魚。", "釣りの はじめの一歩は フナから。" },
+  [SP_OIKAWA]   = { "川の 浅瀬に すむ 魚。", "オスは 青と赤の きれいな色になる。" },
+  [SP_BLUEGILL] = { "えらぶたの 青黒い点が めじるし。", "外国から来て 日本中に ふえた。" },
+  [SP_DOJOU]    = { "どろの中に もぐる 細長い魚。", "口の ひげで えさを さがす。" },
+  [SP_UGUI]     = { "川の 上流から 下流まで すむ魚。", "春には 赤い すじが 出る。" },
+  [SP_TANAGO]   = { "貝の中に たまごを うむ 小さな魚。", "ひし形の からだが きらきら光る。" },
+  [SP_BASS]     = { "大きな口で 小魚を ひとのみ。", "引きが強く 釣り人に 人気の魚。" },
+  [SP_KAJIKA]   = { "きれいな川の 石の下に かくれる。", "なかなか 見つからない はずかしがり屋。" },
+  [SP_AYU]      = { "スイカのような 香りがする 川の魚。", "石についた コケを 食べる。" },
+  [SP_YAMAME]   = { "山の 冷たい川に すむ魚。", "からだの もようは「パーマーク」。" },
+  [SP_NIJIMASU] = { "からだに にじ色の 帯がある。", "冷たい水で 元気に はねる。" },
+  [SP_KOI]      = { "長生きで 大きく育つ 池の ぬし。", "力が強く 引きも 重い。" },
+  [SP_NAMAZU_S] = { "長い ひげが じまんの 夜の魚。", "雨のあとに よく 釣れるという。" },
+  [SP_IWANA]    = { "川の いちばん 上流に すむ魚。", "白い はんてんが めじるし。" },
+  [SP_RAIGYO]   = { "ヘビのような もようの 大きな魚。", "水面で 空気を すうことが できる。" },
+  [SP_SOUGYO]   = { "水草を たくさん 食べる 大きな魚。", "1メートルを こえることも ある。" },
+  [SP_NISHIKI]  = { "赤・白・黒が うつくしい「泳ぐ宝石」。", "池で 大切に そだてられる。" },
+  [SP_NAMAZU]   = { "湖の そこで くらす 巨大な ナマズ。", "めったに 姿を 見せない。" },
+  [SP_CHOUZAME] = { "大むかしから 姿が かわらない 魚。", "背中の かたい うろこが めじるし。" },
+  [SP_ITOU]     = { "北の川に すむ 日本一大きな 川魚。", "「まぼろしの魚」と よばれる。" },
+  [SP_GOLD]     = { "金色に かがやく なぞの魚。", "釣れたら とっても ラッキー！" },
+  [SP_BOOT]     = { "だれかが 落とした 長ぐつ。", "魚じゃないけど ずかんに のせておこう。" },
+};
+
 // 魚影サイズの出現確率（%）
 const int SIZE_SPAWN_PCT[SZ_COUNT] = { 50, 35, 15 };
 
@@ -306,6 +335,12 @@ int game_discovered_count_of(const Game *g, Player p) {
 int game_discovered_count(const Game *g) { return game_discovered_count_of(g, g->player); }
 bool game_is_discovered(const Game *g, Species sp) { return g->discovered[g->player][sp]; }
 
+int game_species_stars(Species sp) {
+  int p = SPECIES_POINTS[sp];
+  if (sp == SP_BOOT) return 0;
+  return p < 30 ? 1 : p < 60 ? 2 : p < 100 ? 3 : p < 200 ? 4 : 5;
+}
+
 int game_success_rate(const Game *g) {
   if (g->casts <= 0) return 0;
   return (g->hooks * 100 + g->casts / 2) / g->casts;
@@ -388,6 +423,7 @@ static void land_fish(Game *g, Fish *tf) {
   if (g->rarest < 0 || SPECIES_RARITY[sp] > SPECIES_RARITY[g->rarest]) g->rarest = sp;
   g->last_new = !g->discovered[g->player][sp];
   g->discovered[g->player][sp] = true;
+  if (g->caught_total[g->player][sp] < CAUGHT_TOTAL_MAX) g->caught_total[g->player][sp]++;
   fish_remove(g, tf);
   reel_in(g);
   g->events |= EV_CATCH | EV_SPLASH;
@@ -564,8 +600,25 @@ void game_update(Game *g, float dt, const GameInput *in) {
       } else if ((in->right && g->player != PL_GIRL) || in->cmd == CMD_SEL_GIRL) {
         g->player = PL_GIRL; g->events |= EV_MENU;
       }
-      if (in->a || in->cmd == CMD_START) game_start(g);
+      if (in->a || in->cmd == CMD_START) { game_start(g); return; }
+      if (in->x || in->cmd == CMD_ZUKAN) { set_state(g, ST_ZUKAN); g->events |= EV_MENU; }
       return;
+
+    case ST_ZUKAN: {
+      g->anim_t += dt;
+      g->state_t += dt;
+      update_fish(g, dt);
+      if (in->b || in->cmd == CMD_TITLE) { set_state(g, ST_TITLE); g->events |= EV_MENU; return; }
+      // カーソル移動（表の端では止まる）
+      int sel = g->zukan_sel, col = sel % ZUKAN_COLS;
+      if (in->left && col > 0) sel--;
+      if (in->right && col < ZUKAN_COLS - 1 && sel + 1 < SP_COUNT) sel++;
+      if (in->up && sel - ZUKAN_COLS >= 0) sel -= ZUKAN_COLS;
+      if (in->down && sel + ZUKAN_COLS < SP_COUNT) sel += ZUKAN_COLS;
+      if (in->cmd == CMD_ZUKAN_CELL && in->cell >= 0 && in->cell < SP_COUNT) sel = in->cell;
+      if (sel != g->zukan_sel) { g->zukan_sel = sel; g->events |= EV_MENU; g->state_t = 0; }
+      return;
+    }
 
     case ST_PAUSE:
       // 時間・魚・アニメーションはすべて止める
