@@ -13,7 +13,7 @@
 - 言語：C（C99）
 - 開発環境：devkitPro / devkitARM、libctru、citro2d / citro3d
 - 対象：初代 Nintendo 3DS（New 3DS 専用機能は不使用）、立体視なし、通信なし
-- 外部素材なし（絵はすべて図形描画、効果音はプログラムで合成）
+- 外部素材なし（絵はすべて図形描画、効果音と BGM はプログラムで合成。曲もオリジナル）
 
 ---
 
@@ -143,13 +143,15 @@ fishing3ds/
 │   ├── save.h / save.c   記録（TOP5・ずかん）の SD カードへの保存・読み込み（3DS 非依存）
 │   ├── art.h / art.c     全25種のカラーイラスト（図形描画）
 │   ├── draw.h / draw.c   citro2d 上の簡易描画レイヤー（図形・文字）
+│   ├── music.h / music.c BGM の曲データとシーケンサー（3DS 非依存）
 │   └── audio.h / audio.c 簡易シンセ（ndsp）
 ├── tests/
 │   ├── test_game.c       ゲームロジックの自動テスト（PC 上で実行）
 │   └── Makefile
 ├── tools/
 │   ├── make_icon.py      アイコン生成（Pillow が必要）
-│   └── preview/          PC 用の画面プレビュー（描画コードを PC で動かして PNG 化）
+│   ├── preview/          PC 用の画面プレビュー（描画コードを PC で動かして PNG 化）
+│   └── music_preview/    BGM を PC で WAV に書き出す（`make` → `out/*.wav`）
 └── docs/
     ├── TEST_REPORT.md        テスト結果
     ├── DEVICE_CHECKLIST.md   実機確認用チェックリスト（テスト手順書）
@@ -224,7 +226,7 @@ make -C tests        # ビルドして実行。最後に PASS / FAIL の件数�
 
 ```bash
 cd tools/preview && mkdir -p out
-gcc -std=gnu99 -O2 -Ifake -I../../source -o preview preview.c ../../source/draw.c ../../source/art.c ../../source/game.c ../../source/save.c -lm
+gcc -std=gnu99 -O2 -Ifake -I../../source -o preview preview.c ../../source/draw.c ../../source/art.c ../../source/game.c ../../source/save.c ../../source/music.c -lm
 ./preview                       # out/ に各場面の PPM とテキスト一覧を出力
 python compose.py out           # PNG に合成（Windows 側の Python + Pillow。日本語フォントは BIZ UDゴシック）
 ```
@@ -249,10 +251,21 @@ SD:/
 
 （`fishing.smdh` はコピー不要です。アイコンと名前は `.3dsx` に埋め込まれています）
 
-### 効果音について
+### 効果音・BGM について
 
-効果音を鳴らすには、SD カードに `/3ds/dspfirm.cdc` が必要です（自分の本体から DSP1 などのツールで吸い出したもの）。
+効果音と BGM を鳴らすには、SD カードに `/3ds/dspfirm.cdc` が必要です（自分の本体から DSP1 などのツールで吸い出したもの）。
 無い場合でもゲームは**無音で正常に動作**します。
+
+| 場面 | 曲 | 雰囲気 |
+|---|---|---|
+| タイトル | 「みずべの あさ」 | ゆったりした 3 拍子。水面のきらめきのような分散和音 |
+| プレイ中 | 「つりびより」 | のんびりしたカントリー調（ベースと裏拍のきざみ）。残り 10 秒でテンポが 1.2 倍に |
+| やりとり中 | 「ひきが つよい」 | 速いテンポの短調。やりとりが終わると「つりびより」の続きに戻る |
+| 結果画面 | ファンファーレ | 「TIME UP!」の後に 1 回鳴らし、タイトルの曲へ |
+
+- 一時停止中は BGM も止まり、再開すると続きから鳴ります。
+- 釣れたときのジングルが聞こえるよう、釣果表示の間は BGM を小さくします。
+- 曲は PC で WAV に書き出して確認できます（`tools/music_preview` で `make`。WSL などの gcc が必要）。
 
 ---
 
@@ -327,3 +340,4 @@ SD:/
 22. **ハイスコア TOP5（追加仕様）**：得点と顔アイコンを上位5件まで記録。同点は先の記録が上、0 点は記録しない。「NEW RECORD!」は1位を更新したときだけ。
 23. **ずかんを人ごとに分ける（追加仕様）**：発見状況・「NEW!」の判定は、いまあそんでいる人のずかんで行う。
 24. **SD カードへの保存（追加仕様）**：TOP5・人ごとのずかん・最後にえらんだ人を `/3ds/fishing/fishing.sav` に保存。記録が変わったフレームだけ書き込む（毎フレームは書かない）。既存ファイルを壊さないよう、書き込むのはこのゲーム専用の `fishing.sav` と一時ファイル `fishing.sav.tmp` だけ。`/3ds/fishing/` フォルダが無い場合だけ作る。
+25. **BGM（追加仕様）**：タイトル・プレイ中・やりとり中・結果画面で曲を切り替える（曲はすべてオリジナル、矩形波・三角波で合成）。音量は効果音より小さめ。曲データとシーケンサーは 3DS 非依存の `music.c` にまとめ、PC でテストと WAV 書き出しができる。

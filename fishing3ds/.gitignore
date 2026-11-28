@@ -5,3 +5,5 @@ build/
 tests/test_game
 tools/preview/preview
 tools/preview/out/
+tools/music_preview/render_music
+tools/music_preview/out/

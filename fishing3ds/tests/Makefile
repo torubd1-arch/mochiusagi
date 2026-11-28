@@ -5,8 +5,8 @@ TARGET  := test_game
 
 all: run
 
-$(TARGET): test_game.c ../source/game.c ../source/game.h ../source/save.c ../source/save.h
-	$(CC) $(CFLAGS) -o $@ test_game.c ../source/game.c ../source/save.c -lm
+$(TARGET): test_game.c ../source/game.c ../source/game.h ../source/save.c ../source/save.h ../source/music.c ../source/music.h
+	$(CC) $(CFLAGS) -o $@ test_game.c ../source/game.c ../source/save.c ../source/music.c -lm
 
 run: $(TARGET)
 	./$(TARGET)

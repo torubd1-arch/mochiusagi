@@ -18,6 +18,7 @@
 #include "art.h"
 #include "audio.h"
 #include "save.h"
+#include "music.h"
 #include <sys/stat.h>
 
 #define PI_F  3.14159265f
@@ -169,6 +170,54 @@ static void handle_events(u32 ev) {
   if (ev & EV_REEL) se_reel();
   if (ev & EV_TIMEUP) se_timeup();
   if ((ev & EV_MENU) && !(ev & EV_START)) se_menu();
+}
+
+// ================================================================
+//  BGM（曲は music.c。ここでは画面の状態に合わせて曲を切り替える）
+// ================================================================
+#define BGM_VOL        0.60f   // ふだんの BGM の音量（効果音より少し小さく）
+#define BGM_VOL_CATCH  0.25f   // 釣れたときのジングル中は BGM を小さく
+#define BGM_VOL_GOLD   0.12f
+#define BGM_SPEED_WARN 1.2f    // 残り10秒からテンポを上げる
+static Music M;
+static bool  result_music = false;   // 結果画面のファンファーレを鳴らしたか
+
+static void bgm_note(int wave, double t, double dur, float freq, float vol, double decay) {
+  audio_voice(BUS_BGM, wave == WAVE_SQ ? WAVE_SQUARE : WAVE_TRIANGLE, t, dur, freq, freq, vol, decay);
+}
+
+static void update_music(void) {
+  double now = audio_now();
+  if (G.state == ST_PAUSE) { music_pause(&M, true, now); return; }   // 一時停止中は止める
+  music_pause(&M, false, now);
+  if (G.events & EV_START) { music_stop(&M); M.resume_step[SONG_PLAY] = 0; }   // 新しいゲームは曲の頭から
+  if (G.state != ST_RESULT) result_music = false;
+
+  float vol = BGM_VOL, speed = 1.0f;
+  switch (G.state) {
+    case ST_TITLE:
+      music_play(&M, SONG_TITLE, now, false);
+      break;
+    case ST_RESULT:
+      // 「TIME UP!」の間は止めて、結果が出たらファンファーレ（その後はタイトルの曲）
+      if (G.events & EV_TIMEUP) music_stop(&M);
+      if (!result_music && G.state_t >= TIMEUP_LOCK_TIME - 0.1f) {
+        music_play(&M, SONG_RESULT, now, false);
+        result_music = true;
+      }
+      break;
+    case ST_FIGHT:
+      music_play(&M, SONG_FIGHT, now, false);   // やりとりは毎回、頭から
+      break;
+    default:
+      music_play(&M, SONG_PLAY, now, true);     // やりとりが終わったら、続きから
+      if (G.state == ST_CAUGHT) vol = G.last_species == SP_GOLD ? BGM_VOL_GOLD : BGM_VOL_CATCH;
+      break;
+  }
+  if (game_is_playing(&G) && G.time_left <= TIME_WARN_SEC) speed = BGM_SPEED_WARN;
+  music_set_speed(&M, speed);
+  audio_set_bgm_volume(vol);
+  music_update(&M, now, bgm_note);
 }
 
 // ================================================================
@@ -1070,6 +1119,7 @@ int main(void) {
 
   dr_init();
   audio_init();
+  music_init(&M);
   game_init(&G, (u32)osGetTime() | 1u);
   save_load();
   fx_rng ^= (u32)osGetTime();
@@ -1090,6 +1140,7 @@ int main(void) {
     save_if_changed();
     if (G.quit) break;
     handle_events(G.events);
+    update_music();
 
     if (G.state != ST_PAUSE) {
       update_fx(dt);

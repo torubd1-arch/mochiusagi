@@ -4,6 +4,7 @@
 // ================================================================
 #include "../source/game.h"
 #include "../source/save.h"
+#include "../source/music.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -1095,6 +1096,184 @@ static void test_save_file(void) {
   remove(path); remove(tmp);
 }
 
+// ---- BGM ----
+typedef struct { int wave; double t, dur; float freq, vol; double decay; } RecNote;
+static RecNote rec[4096];
+static int rec_n = 0;
+static void rec_note(int wave, double t, double dur, float freq, float vol, double decay) {
+  if (rec_n < 4096) rec[rec_n++] = (RecNote){ wave, t, dur, freq, vol, decay };
+}
+// now を 1/60 秒ずつ進めながら music_update を呼ぶ。予約が先読みの範囲を超えないことも確かめる
+static int lookahead_ok = 1;
+static double run_music(Music *m, double now, double until) {
+  for (; now < until; now += 1.0 / 60.0) {
+    int before = rec_n;
+    music_update(m, now, rec_note);
+    for (int i = before; i < rec_n; i++)
+      if (rec[i].t > now + MUSIC_LOOKAHEAD + 1e-9 || rec[i].t < now - 1e-9) lookahead_ok = 0;
+  }
+  return now;
+}
+static int count_notes(const Song *s) {
+  int n = 0;
+  for (int p = 0; p < s->part_count; p++)
+    for (int i = 0; i < s->parts[p].count; i++) n += s->parts[p].notes[i].note ? 1 : 0;
+  return n;
+}
+
+static void test_music_data(void) {
+  g_case = "music_data";
+  for (int k = 0; k < SONG_COUNT; k++) {
+    const Song *s = &SONGS[k];
+    int total = song_steps(s, 0);
+    CHECK(total > 0 && s->bpm >= 60 && s->bpm <= 200);
+    CHECK(s->part_count >= 1 && s->part_count <= MUSIC_PARTS);
+    for (int p = 0; p < s->part_count; p++) {
+      const Part *pt = &s->parts[p];
+      // 全パートの長さがそろっている（ずれずにループする）
+      CHECK(song_steps(s, p) == total);
+      CHECK(pt->wave == WAVE_SQ || pt->wave == WAVE_TRI);
+      CHECK(pt->vol > 0 && pt->vol <= 0.35f && pt->gate > 0 && pt->gate <= 1.0f && pt->decay > 0);
+      for (int i = 0; i < pt->count; i++) {
+        CHECK(pt->notes[i].len >= 1);
+        CHECK(pt->notes[i].note == 0 || (pt->notes[i].note >= 33 && pt->notes[i].note <= 96));
+      }
+    }
+    // 1小節（3/4なら6、4/4なら8ステップ）の整数倍
+    CHECK(total % 6 == 0 || total % 8 == 0);
+    if (!s->loop) CHECK(s->next >= -1 && s->next < SONG_COUNT && SONGS[s->next].loop);
+  }
+  CHECK(fabsf(music_freq(69) - 440.0f) < 0.01f && fabsf(music_freq(81) - 880.0f) < 0.05f);
+}
+
+static void test_music_sequencer(void) {
+  g_case = "music_seq";
+  Music m;
+  const Song *s = &SONGS[SONG_PLAY];
+  int total = song_steps(s, 0);
+  double step = 60.0 / s->bpm / 2.0;
+
+  // 1周ぶんの音がすべて、決まったステップの時刻に予約される
+  music_init(&m);
+  rec_n = 0; lookahead_ok = 1;
+  music_play(&m, SONG_PLAY, 0.0, false);
+  double end1 = 0.05 + total * step;
+  run_music(&m, 0.0, end1 - MUSIC_LOOKAHEAD - 0.02);
+  CHECK(rec_n == count_notes(s));
+  int on_grid = 1, ordered = 1;
+  for (int i = 0; i < rec_n; i++) {
+    double k = (rec[i].t - 0.05) / step;
+    if (fabs(k - floor(k + 0.5)) > 1e-6) on_grid = 0;
+    if (i > 0 && rec[i].t < rec[i - 1].t - 1e-9) ordered = 0;
+  }
+  CHECK(on_grid && ordered && lookahead_ok);
+  CHECK(fabs(rec[0].t - 0.05) < 1e-9 && fabsf(rec[0].freq - music_freq(74)) < 0.01f);   // 最初の音は D5
+
+  // 何周しても、テンポを変えても、各パートの頭がそろう
+  music_init(&m);
+  rec_n = 0;
+  music_play(&m, SONG_PLAY, 0.0, false);
+  double now = run_music(&m, 0.0, 30.0);
+  music_set_speed(&m, 1.2f);
+  run_music(&m, now, 60.0);
+  CHECK(lookahead_ok);
+  // 各周の頭（ステップ0）ではメロディ・ベースが同じ時刻に鳴る
+  int loops = 0, aligned = 1;
+  for (int i = 0; i < rec_n; i++) {
+    if (rec[i].freq != music_freq(74) || rec[i].wave != WAVE_TRI || rec[i].vol != s->parts[0].vol) continue;
+    // メロディの D5 のうち、同じ時刻にベースの G2 があるもの＝周の頭
+    for (int j = 0; j < rec_n; j++)
+      if (fabs(rec[j].t - rec[i].t) < 1e-9 && fabsf(rec[j].freq - music_freq(43)) < 0.01f) { loops++; break; }
+  }
+  CHECK(loops >= 5);
+  // 周の頭以外でも、ベースの音はすべてメロディ・きざみと同じ時刻の格子に乗っている
+  for (int i = 1; i < rec_n; i++) if (rec[i].t < rec[i - 1].t - 1e-9) aligned = 0;
+  CHECK(aligned);
+  // テンポを上げた後は音の間隔が短い
+  double last_gap = 1e9;
+  for (int i = rec_n - 1; i > 0; i--) {
+    double d = rec[i].t - rec[i - 1].t;
+    if (d > 1e-6) { last_gap = d; break; }
+  }
+  CHECK(last_gap < step * 0.9 && fabs(last_gap / (step / 1.2) - floor(last_gap / (step / 1.2) + 0.5)) < 1e-6);
+
+  // 一時停止中は何も鳴らさない。再開すると now より後から続く
+  music_init(&m);
+  rec_n = 0;
+  music_play(&m, SONG_PLAY, 0.0, false);
+  now = run_music(&m, 0.0, 3.0);
+  int n0 = rec_n;
+  music_pause(&m, true, now);
+  now = run_music(&m, now, 8.0);
+  CHECK(rec_n == n0);
+  music_pause(&m, false, now);
+  run_music(&m, now, 9.0);
+  CHECK(rec_n > n0 && rec[n0].t >= now);
+
+  // 曲を切り替えて戻る（resume=true）と続きから、resume=false なら頭から
+  music_init(&m);
+  music_play(&m, SONG_PLAY, 0.0, false);
+  now = run_music(&m, 0.0, 5.0);
+  int at = m.step;
+  CHECK(at > 0);
+  music_play(&m, SONG_FIGHT, now, false);
+  CHECK(m.song == SONG_FIGHT && m.step == 0);
+  now = run_music(&m, now, 7.0);
+  music_play(&m, SONG_PLAY, now, true);
+  CHECK(m.song == SONG_PLAY && m.step == at);
+  music_play(&m, SONG_PLAY, now, false);           // 同じ曲なら頭に戻さない
+  CHECK(m.step == at);
+  music_play(&m, SONG_TITLE, now, false);
+  music_play(&m, SONG_PLAY, now, false);
+  CHECK(m.step == 0);
+  // 途中のステップから再開しても、パート同士がずれない（次の周の頭がそろう）
+  music_init(&m);
+  music_play(&m, SONG_PLAY, 0.0, false);
+  now = run_music(&m, 0.0, 4.3);
+  music_play(&m, SONG_FIGHT, now, false);
+  music_play(&m, SONG_PLAY, now, true);
+  rec_n = 0;
+  run_music(&m, now, now + total * step + 1.0);
+  int heads = 0;
+  for (int i = 0; i < rec_n; i++)
+    if (fabsf(rec[i].freq - music_freq(74)) < 0.01f && rec[i].vol == s->parts[0].vol)
+      for (int j = 0; j < rec_n; j++)
+        if (fabs(rec[j].t - rec[i].t) < 1e-9 && fabsf(rec[j].freq - music_freq(43)) < 0.01f) { heads++; break; }
+  CHECK(heads >= 1);
+
+  // ファンファーレは1回だけ鳴って、タイトルの曲に続く
+  music_init(&m);
+  rec_n = 0;
+  music_play(&m, SONG_RESULT, 0.0, false);
+  const Song *r = &SONGS[SONG_RESULT];
+  double rend = 0.05 + song_steps(r, 0) * 60.0 / r->bpm / 2.0;
+  run_music(&m, 0.0, rend + 1.0);
+  CHECK(m.song == SONG_TITLE);
+  int fan = 0; double first_title = -1;
+  for (int i = 0; i < rec_n; i++) {
+    if (rec[i].t < rend - 1e-9) fan++;
+    else if (first_title < 0) first_title = rec[i].t;
+  }
+  CHECK(fan == count_notes(r));
+  CHECK(first_title >= rend + 0.4 - 1e-9);
+
+  // HOME メニューなどで時間が飛んでも、たまった音を一度に鳴らさない
+  music_init(&m);
+  rec_n = 0;
+  music_play(&m, SONG_PLAY, 0.0, false);
+  run_music(&m, 0.0, 1.0);
+  int nb = rec_n;
+  music_update(&m, 20.0, rec_note);
+  CHECK(rec_n - nb <= 6);
+  for (int i = nb; i < rec_n; i++) CHECK(rec[i].t >= 20.0 - 1e-9);
+
+  // 止めたら何も鳴らない
+  music_stop(&m);
+  nb = rec_n;
+  run_music(&m, 20.0, 25.0);
+  CHECK(rec_n == nb && m.song == -1);
+}
+
 int main(void) {
   test_init();
   test_discovery();
@@ -1103,6 +1282,8 @@ int main(void) {
   test_top5();
   test_save_encode();
   test_save_file();
+  test_music_data();
+  test_music_sequencer();
   test_cursor();
   test_cast_landing_matches_cursor();
   test_distance_judge();
