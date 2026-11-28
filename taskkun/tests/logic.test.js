@@ -2,9 +2,31 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   toDateKey, addDays, isDateKey, weekStart, monthMatrix, tasksForDate, createTask, completedDateOf,
-  parseBackup, buildBackup,
+  doneCountByDate, parseBackup, buildBackup,
 } from '../js/logic.js';
 import { loadTasks, saveTasks } from '../js/store.js';
+
+test('カレンダーの完了件数は完了した日で数え、未完了・着手済は数えない', () => {
+  const at = (key, hour = 12) => {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, m - 1, d, hour).toISOString();
+  };
+  const t = (id, date, completedOn, startedOn) => ({
+    id, text: id, date, createdAt: at(date, 9),
+    startedAt: startedOn ? at(startedOn) : null, completedAt: completedOn ? at(completedOn) : null,
+  });
+  const counts = doneCountByDate([
+    t('a', '2026-10-27', '2026-10-29'),
+    t('b', '2026-10-29', '2026-10-29'),
+    t('c', '2026-11-02', '2026-10-30'), // 将来の予定を前倒しで完了 → 完了した日で数える
+    t('d', '2026-10-29', null, '2026-10-29'), // 着手済のみ
+    t('e', '2026-10-29'),
+  ]);
+  assert.equal(counts.get('2026-10-29'), 2);
+  assert.equal(counts.get('2026-10-30'), 1);
+  assert.equal(counts.get('2026-11-02'), undefined);
+  assert.equal(counts.size, 2);
+});
 
 const TODAY = '2026-10-30';
 

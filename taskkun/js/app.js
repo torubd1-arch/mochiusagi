@@ -1,11 +1,11 @@
 // 画面の描画と操作
 import {
   toDateKey, fromDateKey, isDateKey, addDays, weekStart, monthMatrix, tasksForDate, createTask,
-  completedDateOf, buildBackup, parseBackup,
+  completedDateOf, doneCountByDate, buildBackup, parseBackup,
 } from './logic.js';
 import { loadTasks, saveTasks } from './store.js';
 
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.3.0';
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 const $ = (id) => document.getElementById(id);
 
@@ -153,6 +153,7 @@ function renderCalendar() {
   const month = m.getMonth();
   $('calTitle').textContent = `${year}年${month + 1}月`;
   const marked = registeredDates();
+  const doneCounts = doneCountByDate(state.tasks);
   const grid = $('calGrid');
   grid.replaceChildren(...WEEKDAYS.map((w, i) => el('span', `cal-wd${i === 0 ? ' sun' : i === 6 ? ' sat' : ''}`, w)));
   for (const key of monthMatrix(year, month)) {
@@ -164,8 +165,10 @@ function renderCalendar() {
     if (key === state.today) btn.classList.add('is-today');
     if (key === state.selected) btn.classList.add('is-selected');
     if (marked.has(key)) btn.classList.add('has');
-    btn.setAttribute('aria-label', shortDate(key));
-    btn.append(el('span', 'num', String(d.getDate())), el('span', 'dot'));
+    const done = doneCounts.get(key) || 0;
+    btn.setAttribute('aria-label', done ? `${shortDate(key)} 完了 ${done} 件` : shortDate(key));
+    // 完了件数の欄は 0 件の日も空で置き、行の高さをそろえる
+    btn.append(el('span', 'num', String(d.getDate())), el('span', 'dot'), el('span', 'cal-done', done ? `✓${done}` : ''));
     grid.append(btn);
   }
 }

@@ -44,6 +44,16 @@ export function completedDateOf(task) {
   return task.completedAt ? toDateKey(new Date(task.completedAt)) : null;
 }
 
+/** 日付ごとの完了件数（カレンダー表示用）。実際に完了にした日で数え、着手済は含めない */
+export function doneCountByDate(tasks) {
+  const counts = new Map();
+  for (const t of tasks) {
+    const key = completedDateOf(t);
+    if (key) counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return counts;
+}
+
 /**
  * タスクが一覧に載る最終日。
  * 未完了なら今日まで繰り越し、完了済みなら完了日まで。登録日より前にはならない。
